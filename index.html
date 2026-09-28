@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Discord-login</title>
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      background: #1e1f22;
+      color: #f2f3f5;
+      font: 16px system-ui, sans-serif;
+    }
+    main {
+      width: min(420px, calc(100% - 40px));
+      padding: 32px;
+      box-sizing: border-box;
+      border-radius: 16px;
+      background: #2b2d31;
+    }
+    .muted { color: #b5bac1; }
+    .button {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      background: #5865f2;
+      color: white;
+      text-decoration: none;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Discord-login</h1>
+    {% if user %}
+      <p>Ingelogd als <strong>{{ user.username }}</strong>.</p>
+      <p class="muted">Discord-ID: {{ user.id }}</p>
+      <a class="button" href="{{ url_for('logout') }}">Uitloggen</a>
+    {% else %}
+      <p class="muted">Alleen je basisprofiel wordt opgevraagd.</p>
+      <a class="button" href="{{ url_for('login') }}">Inloggen met Discord</a>
+    {% endif %}
+  </main>
+</body>
+</html>
