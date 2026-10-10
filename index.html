@@ -1,50 +1,727 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Discord-login</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090b12">
+  <title>Nova AI — Jouw AI-werkruimte</title>
+
   <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090b12;
+      --panel: rgba(19, 22, 34, .86);
+      --panel-solid: #131622;
+      --border: rgba(255,255,255,.09);
+      --text: #f4f5fb;
+      --muted: #9298ab;
+      --accent: #a78bfa;
+      --accent-2: #6d5dfc;
+      --green: #6ee7b7;
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
-      min-height: 100vh;
       margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(ellipse at 80% 0%, rgba(109,93,252,.16), transparent 38%),
+        radial-gradient(ellipse at 0% 80%, rgba(49,185,166,.08), transparent 35%),
+        var(--bg);
+    }
+
+    button, input, textarea { font: inherit; }
+    button { color: inherit; cursor: pointer; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 264px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      padding: 22px 16px;
+      border-right: 1px solid var(--border);
+      background: rgba(10,12,19,.74);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 3px 8px 25px;
+      font-weight: 750;
+      letter-spacing: -.4px;
+      font-size: 19px;
+    }
+
+    .brand-mark {
       display: grid;
       place-items: center;
-      background: #1e1f22;
-      color: #f2f3f5;
-      font: 16px system-ui, sans-serif;
+      width: 35px;
+      height: 35px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #c4b5fd, #6855ed);
+      color: #10101a;
+      box-shadow: 0 5px 24px rgba(109,93,252,.3);
     }
-    main {
-      width: min(420px, calc(100% - 40px));
-      padding: 32px;
-      box-sizing: border-box;
-      border-radius: 16px;
-      background: #2b2d31;
+
+    .new-chat, .nav-link, .history-item, .profile-button {
+      border: 0;
+      color: inherit;
+      text-align: left;
+      background: transparent;
     }
-    .muted { color: #b5bac1; }
-    .button {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 12px 18px;
-      border-radius: 8px;
-      background: #5865f2;
-      color: white;
-      text-decoration: none;
+
+    .new-chat {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid rgba(180,163,255,.28);
+      border-radius: 13px;
+      background: rgba(109,93,252,.12);
+      transition: .2s;
+    }
+
+    .new-chat:hover { background: rgba(109,93,252,.22); }
+
+    .section-label {
+      margin: 27px 9px 10px;
+      color: #777e92;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
       font-weight: 700;
+    }
+
+    .nav-link, .history-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      color: #b9bed0;
+      font-size: 13px;
+    }
+
+    .nav-link:hover, .history-item:hover { background: rgba(255,255,255,.06); }
+    .history-item { color: #8d94a8; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+    .sidebar-spacer { flex: 1; }
+
+    .plan-card {
+      margin: 14px 2px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: linear-gradient(145deg, rgba(109,93,252,.13), rgba(255,255,255,.025));
+    }
+
+    .plan-card strong { display: block; font-size: 13px; margin-bottom: 6px; }
+    .plan-card p { margin: 0 0 12px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .plan-card button {
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      padding: 9px;
+      background: #eeeaff;
+      color: #211b40;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .profile-button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 8px 2px;
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+    }
+
+    .avatar {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f0abfc, #818cf8);
+      color: #20132d;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .profile-copy { display: flex; flex-direction: column; gap: 3px; }
+    .profile-copy strong { font-size: 12px; }
+    .profile-copy span { color: var(--muted); font-size: 10px; }
+
+    .main {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 34px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(9,11,18,.35);
+    }
+
+    .model-select {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 11px;
+      background: rgba(255,255,255,.035);
+      color: #dfe1ed;
+      font-size: 12px;
+    }
+
+    .top-actions { display: flex; align-items: center; gap: 9px; }
+    .top-button {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,.035);
+      font-size: 12px;
+    }
+    .top-button:hover { background: rgba(255,255,255,.09); }
+
+    .content {
+      width: min(900px, 100%);
+      margin: 0 auto;
+      padding: 42px 28px 22px;
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+    }
+
+    .welcome { text-align: center; margin: 28px 0 26px; }
+    .welcome-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 11px;
+      margin-bottom: 19px;
+      border: 1px solid rgba(167,139,250,.22);
+      border-radius: 99px;
+      color: #c5b8ff;
+      background: rgba(109,93,252,.09);
+      font-size: 11px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 49px);
+      line-height: 1.08;
+      letter-spacing: -2px;
+    }
+
+    h1 span {
+      color: transparent;
+      background: linear-gradient(90deg, #c4b5fd, #8b9dff, #75e0cf);
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+
+    .subtitle {
+      margin: 13px auto 0;
+      max-width: 520px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .suggestions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 11px;
+      width: min(660px, 100%);
+      margin: 0 auto 25px;
+    }
+
+    .suggestion {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      min-height: 69px;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,.025);
+      text-align: left;
+      transition: .2s;
+    }
+
+    .suggestion:hover {
+      transform: translateY(-2px);
+      border-color: rgba(167,139,250,.35);
+      background: rgba(167,139,250,.06);
+    }
+
+    .suggestion-icon {
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      flex: 0 0 auto;
+      border-radius: 9px;
+      background: rgba(167,139,250,.13);
+    }
+
+    .suggestion strong { display: block; font-size: 12px; margin: 1px 0 4px; }
+    .suggestion small { display: block; color: var(--muted); font-size: 10px; line-height: 1.4; }
+
+    .chat-area {
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+      padding: 8px 0 22px;
+    }
+
+    .chat-area.active { display: flex; }
+    .message { display: flex; gap: 11px; align-items: flex-start; }
+    .message.user { flex-direction: row-reverse; }
+    .message-avatar {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #b9a8ff, #6d5dfc);
+      color: #171329;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .message.user .message-avatar { background: #252a3a; color: #dce0ef; }
+    .bubble {
+      max-width: min(680px, 85%);
+      padding: 13px 15px;
+      border: 1px solid var(--border);
+      border-radius: 4px 15px 15px;
+      background: rgba(255,255,255,.035);
+      color: #e5e7f0;
+      font-size: 13px;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+    }
+    .message.user .bubble {
+      border-radius: 15px 4px 15px 15px;
+      background: rgba(109,93,252,.16);
+    }
+    .bubble pre {
+      max-width: 100%;
+      overflow: auto;
+      padding: 12px;
+      border-radius: 10px;
+      background: #090b12;
+      color: #c8d5ff;
+      font-size: 11px;
+      white-space: pre-wrap;
+    }
+    .typing { color: var(--muted); font-style: italic; }
+
+    .composer-wrap { margin-top: auto; padding-top: 12px; }
+    .composer {
+      position: relative;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 17px;
+      background: rgba(20,23,35,.92);
+      box-shadow: 0 15px 50px rgba(0,0,0,.18);
+    }
+
+    .composer textarea {
+      display: block;
+      width: 100%;
+      min-height: 58px;
+      max-height: 180px;
+      resize: vertical;
+      padding: 17px 58px 10px 17px;
+      border: 0;
+      outline: 0;
+      color: var(--text);
+      background: transparent;
+      font-size: 13px;
+    }
+    .composer textarea::placeholder { color: #777e92; }
+
+    .composer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px 10px 14px;
+    }
+    .composer-hint { color: #7d8498; font-size: 10px; }
+    .send-button {
+      display: grid;
+      place-items: center;
+      width: 35px;
+      height: 35px;
+      border: 0;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #b9a8ff, #7665ff);
+      color: #171329;
+      font-size: 17px;
+      font-weight: 800;
+      transition: .2s;
+    }
+    .send-button:hover { transform: scale(1.05); }
+    .send-button:disabled { opacity: .5; cursor: wait; }
+
+    .disclaimer {
+      margin: 10px 0 0;
+      color: #70778a;
+      text-align: center;
+      font-size: 10px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgba(0,0,0,.65);
+      backdrop-filter: blur(8px);
+    }
+    .modal-backdrop.open { display: grid; }
+    .modal {
+      width: min(410px, 100%);
+      padding: 25px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: #141724;
+      box-shadow: 0 25px 90px rgba(0,0,0,.5);
+    }
+    .modal-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+    .modal h2 { margin: 0 0 6px; font-size: 21px; }
+    .modal p { margin: 0; color: var(--muted); font-size: 12px; }
+    .close-modal { border: 0; background: transparent; color: var(--muted); font-size: 22px; }
+    .form-field { display: block; margin: 13px 0; color: #c6cada; font-size: 11px; }
+    .form-field input {
+      width: 100%;
+      margin-top: 7px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      color: var(--text);
+      background: rgba(255,255,255,.035);
+    }
+    .form-field input:focus { border-color: var(--accent); }
+    .submit-auth {
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px;
+      border: 0;
+      border-radius: 10px;
+      background: linear-gradient(100deg, #b9a8ff, #8170ff);
+      color: #171329;
+      font-weight: 750;
+    }
+    .auth-note { margin-top: 12px !important; text-align: center; font-size: 10px !important; }
+
+    @media (max-width: 760px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .topbar { height: 58px; padding: 0 15px; }
+      .content { padding: 25px 16px 16px; }
+      .welcome { margin: 27px 0 22px; }
+      .suggestions { gap: 8px; }
+      .suggestion { padding: 10px; min-height: 75px; }
+      .suggestion small { font-size: 9px; }
+      .top-button { padding: 7px 9px; font-size: 11px; }
+      .model-select { font-size: 11px; }
+    }
+
+    @media (max-width: 420px) {
+      .suggestions { grid-template-columns: 1fr; }
+      .suggestion { min-height: auto; }
+      h1 { letter-spacing: -1.4px; }
     }
   </style>
 </head>
+
 <body>
-  <main>
-    <h1>Discord-login</h1>
-    {% if user %}
-      <p>Ingelogd als <strong>{{ user.username }}</strong>.</p>
-      <p class="muted">Discord-ID: {{ user.id }}</p>
-      <a class="button" href="{{ url_for('logout') }}">Uitloggen</a>
-    {% else %}
-      <p class="muted">Alleen je basisprofiel wordt opgevraagd.</p>
-      <a class="button" href="{{ url_for('login') }}">Inloggen met Discord</a>
-    {% endif %}
-  </main>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">✦</span> nova<span style="color:#a78bfa">.</span></div>
+
+      <button class="new-chat" id="newChat"><span>＋</span> Nieuwe chat</button>
+
+      <div class="section-label">Werkruimte</div>
+      <button class="nav-link" id="homeButton">⌂ <span>AI Chat</span></button>
+      <button class="nav-link" id="clearHistory">◷ <span>Geschiedenis wissen</span></button>
+
+      <div class="section-label">Recente chats</div>
+      <div id="historyList">
+        <button class="history-item">✦ <span>Je chats verschijnen hier</span></button>
+      </div>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="plan-card">
+        <strong>Meer uit Nova halen</strong>
+        <p>Gebruik AI voor ideeën, code, uitleg en projecten.</p>
+        <button class="signup-trigger">Account aanmaken</button>
+      </div>
+
+      <button class="profile-button login-trigger">
+        <span class="avatar">N</span>
+        <span class="profile-copy"><strong>Gastgebruiker</strong><span>Inloggen of registreren</span></span>
+      </button>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="model-select" aria-label="AI-model">✦ <span>Nova Assistant</span> <span>⌄</span></button>
+        <div class="top-actions">
+          <button class="top-button login-trigger">Inloggen</button>
+          <button class="top-button signup-trigger">Account aanmaken</button>
+        </div>
+      </header>
+
+      <section class="content">
+        <div class="welcome" id="welcome">
+          <div class="welcome-badge"><span>✦</span> Jouw creatieve AI-werkruimte</div>
+          <h1>Waar kan ik je <span>mee helpen?</span></h1>
+          <p class="subtitle">Stel een vraag, schrijf code, werk ideeën uit of begin aan je volgende project.</p>
+        </div>
+
+        <div class="suggestions" id="suggestions">
+          <button class="suggestion" data-prompt="Schrijf een Discord-bot in JavaScript met een slash command.">
+            <span class="suggestion-icon">⌘</span>
+            <span><strong>Maak een Discord-bot</strong><small>Begin met een bot en slash commands</small></span>
+          </button>
+          <button class="suggestion" data-prompt="Help me een FiveM resource te maken met Lua en fxmanifest.">
+            <span class="suggestion-icon">⌁</span>
+            <span><strong>FiveM-project starten</strong><small>Lua, resources en configuratie</small></span>
+          </button>
+          <button class="suggestion" data-prompt="Leg dit onderwerp eenvoudig uit en geef een stappenplan.">
+            <span class="suggestion-icon">✧</span>
+            <span><strong>Leg iets helder uit</strong><small>Van eerste idee tot stappenplan</small></span>
+          </button>
+          <button class="suggestion" data-prompt="Schrijf een professionele website voor mijn project.">
+            <span class="suggestion-icon">▣</span>
+            <span><strong>Bouw een website</strong><small>Ideeën, HTML, CSS en JavaScript</small></span>
+          </button>
+        </div>
+
+        <div class="chat-area" id="chatArea" aria-live="polite"></div>
+
+        <div class="composer-wrap">
+          <form class="composer" id="chatForm">
+            <textarea id="prompt" rows="1" placeholder="Vraag Nova iets…"></textarea>
+            <div class="composer-bottom">
+              <span class="composer-hint">Enter om te versturen · Shift + Enter voor een nieuwe regel</span>
+              <button class="send-button" id="sendButton" type="submit" aria-label="Versturen">↑</button>
+            </div>
+          </form>
+          <p class="disclaimer">AI kan fouten maken. Controleer belangrijke informatie altijd.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="authModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h2 id="modalTitle">Welkom bij Nova</h2>
+          <p id="modalSubtitle">Log in of maak een account aan.</p>
+        </div>
+        <button class="close-modal" id="closeModal" aria-label="Sluiten">×</button>
+      </div>
+
+      <form id="authForm">
+        <label class="form-field">E-mailadres
+          <input type="email" placeholder="jij@voorbeeld.nl" required>
+        </label>
+        <label class="form-field">Wachtwoord
+          <input type="password" placeholder="Minimaal 8 tekens" minlength="8" required>
+        </label>
+        <button class="submit-auth" id="authSubmit" type="submit">Account aanmaken</button>
+      </form>
+      <p class="auth-note">Demo-interface: accountgegevens worden niet opgeslagen.</p>
+    </div>
+  </div>
+
+  <script>
+    const promptInput = document.getElementById("prompt");
+    const chatForm = document.getElementById("chatForm");
+    const chatArea = document.getElementById("chatArea");
+    const welcome = document.getElementById("welcome");
+    const suggestions = document.getElementById("suggestions");
+    const sendButton = document.getElementById("sendButton");
+    const historyList = document.getElementById("historyList");
+    const modal = document.getElementById("authModal");
+
+    function escapeHTML(value) {
+      return value.replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      })[char]);
+    }
+
+    function addMessage(text, role, isHTML = false) {
+      const message = document.createElement("div");
+      message.className = `message ${role}`;
+
+      const avatar = role === "user" ? "J" : "✦";
+      const content = isHTML ? text : escapeHTML(text).replace(/\n/g, "<br>");
+
+      message.innerHTML = `
+        <div class="message-avatar">${avatar}</div>
+        <div class="bubble">${content}</div>
+      `;
+      chatArea.appendChild(message);
+      message.scrollIntoView({ behavior: "smooth", block: "end" });
+      return message;
+    }
+
+    function startChat() {
+      welcome.style.display = "none";
+      suggestions.style.display = "none";
+      chatArea.classList.add("active");
+    }
+
+    async function sendMessage(text) {
+      const question = text.trim();
+      if (!question || sendButton.disabled) return;
+
+      startChat();
+      addMessage(question, "user");
+      promptInput.value = "";
+      sendButton.disabled = true;
+
+      const loading = addMessage('<span class="typing">Nova denkt na…</span>', "assistant", true);
+
+      try {
+        /*
+          ECHTE AI KOPPELING:
+          Stuur de vraag naar je eigen backend. Bewaar je API-sleutel nooit in deze HTML.
+
+          Voorbeeld:
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: question })
+          });
+          const data = await response.json();
+          const answer = data.answer;
+        */
+
+        await new Promise(resolve => setTimeout(resolve, 700));
+
+        const answer =
+          "Dit is een werkende UI-demo. Koppel een AI-model via een beveiligde backend om echte antwoorden te krijgen.\n\n" +
+          "Je vraag was: “" + question + "”\n\n" +
+          "Je backend kan AI-antwoorden terugsturen en bijvoorbeeld bestanden laten maken. Genereer ZIP-bestanden server-side en controleer invoer voordat je code of bestanden uitvoert.";
+
+        loading.querySelector(".bubble").innerHTML = escapeHTML(answer).replace(/\n/g, "<br>");
+      } catch (error) {
+        loading.querySelector(".bubble").textContent =
+          "Er ging iets mis. Controleer de serververbinding en probeer het opnieuw.";
+      } finally {
+        sendButton.disabled = false;
+        promptInput.focus();
+      }
+
+      const title = question.length > 34 ? question.slice(0, 34) + "…" : question;
+      if (!historyList.querySelector(".history-item[data-chat]")) historyList.innerHTML = "";
+      const item = document.createElement("button");
+      item.className = "history-item";
+      item.dataset.chat = "true";
+      item.textContent = "✦ " + title;
+      historyList.prepend(item);
+    }
+
+    chatForm.addEventListener("submit", event => {
+      event.preventDefault();
+      sendMessage(promptInput.value);
+    });
+
+    promptInput.addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        chatForm.requestSubmit();
+      }
+    });
+
+    document.querySelectorAll(".suggestion").forEach(button => {
+      button.addEventListener("click", () => sendMessage(button.dataset.prompt));
+    });
+
+    function resetChat() {
+      chatArea.innerHTML = "";
+      chatArea.classList.remove("active");
+      welcome.style.display = "";
+      suggestions.style.display = "";
+      promptInput.value = "";
+      promptInput.focus();
+    }
+
+    document.getElementById("newChat").addEventListener("click", resetChat);
+    document.getElementById("homeButton").addEventListener("click", resetChat);
+
+    document.getElementById("clearHistory").addEventListener("click", () => {
+      historyList.innerHTML = '<button class="history-item">✦ <span>Je chats verschijnen hier</span></button>';
+    });
+
+    let authMode = "signup";
+
+    function openAuth(mode) {
+      authMode = mode;
+      const signup = mode === "signup";
+      document.getElementById("modalTitle").textContent = signup ? "Maak je account aan" : "Welkom terug";
+      document.getElementById("modalSubtitle").textContent = signup
+        ? "Maak een account om met Nova aan de slag te gaan."
+        : "Log in op je Nova-account.";
+      document.getElementById("authSubmit").textContent = signup ? "Account aanmaken" : "Inloggen";
+      modal.classList.add("open");
+    }
+
+    document.querySelectorAll(".signup-trigger").forEach(button =>
+      button.addEventListener("click", () => openAuth("signup"))
+    );
+    document.querySelectorAll(".login-trigger").forEach(button =>
+      button.addEventListener("click", () => openAuth("login"))
+    );
+
+    document.getElementById("closeModal").addEventListener("click", () =>
+      modal.classList.remove("open")
+    );
+
+    modal.addEventListener("click", event => {
+      if (event.target === modal) modal.classList.remove("open");
+    });
+
+    document.getElementById("authForm").addEventListener("submit", event => {
+      event.preventDefault();
+      alert(authMode === "signup"
+        ? "Demo: koppel een backend om accounts veilig aan te maken."
+        : "Demo: koppel een backend om veilig in te loggen.");
+      modal.classList.remove("open");
+    });
+  </script>
 </body>
 </html>
