@@ -1,349 +1,368 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#090b12">
-  <title>Nova AI — Jouw AI-werkruimte</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg:#090b12; --border:rgba(255,255,255,.09);
-      --text:#f4f5fb; --muted:#9298ab; --accent:#a78bfa;
-    }
-    * { box-sizing:border-box }
-    body {
-      margin:0; min-height:100vh; color:var(--text);
-      font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
-      background:radial-gradient(ellipse at 80% 0%,rgba(109,93,252,.16),transparent 38%),var(--bg);
-    }
-    button,input,textarea { font:inherit }
-    button { color:inherit; cursor:pointer }
-    .app { min-height:100vh; display:grid; grid-template-columns:250px 1fr }
-    .sidebar { padding:22px 16px; border-right:1px solid var(--border); background:#0a0c13; display:flex; flex-direction:column }
-    .brand { padding:4px 8px 24px; font-size:20px; font-weight:750 }
-    .brand-mark { display:inline-grid; place-items:center; width:35px; height:35px; margin-right:8px; border-radius:12px; background:linear-gradient(135deg,#c4b5fd,#6855ed); color:#10101a }
-    .new-chat,.nav-link,.history-item,.profile-button { border:0; background:transparent; text-align:left }
-    .new-chat { padding:12px; border:1px solid #594b9b; border-radius:12px; background:#211c3b }
-    .section-label { margin:25px 8px 9px; color:#777e92; font-size:11px; text-transform:uppercase; letter-spacing:1px }
-    .nav-link,.history-item { display:block; width:100%; padding:10px; border-radius:9px; color:#b9bed0 }
-    .nav-link:hover,.history-item:hover { background:#ffffff0e }
-    .history-item { overflow:hidden; white-space:nowrap; text-overflow:ellipsis }
-    .spacer { flex:1 }
-    .plan-card { margin:14px 2px; padding:14px; border:1px solid var(--border); border-radius:14px }
-    .plan-card p,.profile-copy span { color:var(--muted); font-size:11px }
-    .plan-card button { width:100%; padding:9px; border:0; border-radius:9px; background:#eeeaff; color:#211b40 }
-    .profile-button { display:flex; gap:10px; align-items:center; padding:12px 5px 2px; border-top:1px solid var(--border) }
-    .avatar { display:grid; place-items:center; width:34px; height:34px; border-radius:50%; background:#b9a8ff; color:#20132d }
-    .profile-copy { display:grid; gap:3px }
-    .main { min-width:0; min-height:100vh; display:flex; flex-direction:column }
-    .topbar { height:65px; padding:0 30px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border) }
-    .top-actions { display:flex; gap:8px }
-    .top-button,.model-select { padding:9px 12px; border:1px solid var(--border); border-radius:10px; background:#ffffff08 }
-    .content { width:min(900px,100%); margin:auto; padding:35px 25px 20px; flex:1; display:flex; flex-direction:column }
-    .welcome { margin:30px 0 25px; text-align:center }
-    .badge { display:inline-block; margin-bottom:17px; padding:7px 11px; border:1px solid #594b9b; border-radius:30px; color:#c5b8ff; font-size:11px }
-    h1 { margin:0; font-size:clamp(32px,5vw,49px); letter-spacing:-2px }
-    h1 span { color:#b9a8ff }
-    .subtitle { max-width:520px; margin:13px auto; color:var(--muted); font-size:14px; line-height:1.6 }
-    .suggestions { width:min(660px,100%); margin:0 auto 24px; display:grid; grid-template-columns:1fr 1fr; gap:11px }
-    .suggestion { min-height:68px; padding:13px; border:1px solid var(--border); border-radius:13px; background:#ffffff06; text-align:left }
-    .suggestion:hover { border-color:#806be0 }
-    .suggestion strong,.suggestion small { display:block }
-    .suggestion strong { margin-bottom:4px; font-size:12px }
-    .suggestion small { color:var(--muted); font-size:10px }
-    .chat-area { display:none; flex-direction:column; gap:16px; padding:8px 0 20px }
-    .chat-area.active { display:flex }
-    .message { display:flex; align-items:flex-start; gap:10px }
-    .message.user { flex-direction:row-reverse }
-    .message-avatar { width:30px; height:30px; flex:0 0 30px; display:grid; place-items:center; border-radius:9px; background:#9b87fa; color:#171329 }
-    .message.user .message-avatar { background:#252a3a; color:#fff }
-    .bubble { max-width:85%; padding:13px 15px; border:1px solid var(--border); border-radius:4px 14px 14px; background:#ffffff08; font-size:13px; line-height:1.65; overflow-wrap:anywhere; white-space:pre-wrap }
-    .message.user .bubble { border-radius:14px 4px 14px 14px; background:#6d5dfc2b }
-    .typing { color:var(--muted); font-style:italic }
-    .composer-wrap { margin-top:auto; padding-top:12px }
-    .composer { border:1px solid #ffffff22; border-radius:16px; background:#141724 }
-    textarea { display:block; width:100%; min-height:58px; max-height:180px; resize:vertical; padding:16px; border:0; outline:0; color:var(--text); background:transparent }
-    textarea::placeholder { color:#777e92 }
-    .composer-bottom { display:flex; align-items:center; justify-content:space-between; padding:0 10px 10px 14px }
-    .hint,.disclaimer { color:#7d8498; font-size:10px }
-    .send-button { width:36px; height:36px; border:0; border-radius:10px; background:#a895ff; color:#171329; font-size:19px }
-    .send-button:disabled { opacity:.5; cursor:wait }
-    .disclaimer { margin:9px 0 0; text-align:center }
-    .modal-backdrop { position:fixed; inset:0; z-index:5; display:none; place-items:center; padding:20px; background:#000a }
-    .modal-backdrop.open { display:grid }
-    .modal { width:min(410px,100%); padding:24px; border:1px solid var(--border); border-radius:18px; background:#141724 }
-    .modal-head { display:flex; justify-content:space-between; margin-bottom:18px }
-    .modal h2 { margin:0 0 5px }
-    .modal p { color:var(--muted); font-size:12px }
-    .close-modal { border:0; background:none; font-size:22px }
-    .form-field { display:block; margin:13px 0; font-size:12px }
-    .form-field input { display:block; width:100%; margin-top:7px; padding:12px; border:1px solid var(--border); border-radius:9px; color:var(--text); background:#ffffff08 }
-    .submit-auth { width:100%; padding:12px; border:0; border-radius:9px; background:#a895ff; color:#171329; font-weight:bold }
-    .auth-note { text-align:center }
-    @media(max-width:760px) {
-      .app { grid-template-columns:1fr }
-      .sidebar { display:none }
-      .topbar { height:58px; padding:0 14px }
-      .content { padding:22px 15px }
-      .top-button,.model-select { padding:8px; font-size:11px }
-    }
-    @media(max-width:420px) {
-      .suggestions { grid-template-columns:1fr }
-      .hint { max-width:230px }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#11101b">
+<title>Gen DC Generator</title>
+
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #11101b;
+  --card: #1d1b2b;
+  --purple: #8b5cf6;
+  --text: #f5f3ff;
+  --muted: #aaa5c0;
+}
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 24px 16px;
+  background: radial-gradient(ellipse at top, #302052, var(--bg) 60%);
+  color: var(--text);
+  font-family: system-ui, Arial, sans-serif;
+  min-height: 100vh;
+}
+
+main { max-width: 480px; margin: auto; }
+
+header { text-align: center; margin: 16px 0 28px; }
+
+.logo {
+  display: inline-grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #a78bfa, #6d28d9);
+  font-size: 28px;
+  font-weight: 900;
+  box-shadow: 0 8px 30px #8b5cf655;
+}
+
+h1 { font-size: 28px; margin: 14px 0 6px; }
+.subtitle { color: var(--muted); font-size: 14px; }
+
+.card {
+  background: var(--card);
+  border: 1px solid #39334e;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+h2 { font-size: 18px; margin: 0 0 20px; }
+
+label {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin: 16px 0 8px;
+}
+
+.field {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: #12111c;
+  border: 1px solid #39334e;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.field span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: white;
+  background: #302a43;
+}
+
+button:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 3px;
+}
+
+.copy { padding: 9px; }
+
+.primary {
+  width: 100%;
+  margin-top: 22px;
+  padding: 14px;
+  font-weight: 750;
+  background: linear-gradient(100deg, #8b5cf6, #6d28d9);
+}
+
+.secondary {
+  width: 100%;
+  margin-top: 10px;
+  background: transparent;
+  border: 1px solid #49405f;
+}
+
+.notice {
+  color: #d6c9ff;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.history-item {
+  padding: 12px 0;
+  border-top: 1px solid #39334e;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
+.history-item small { color: var(--muted); }
+.history-item button { margin-top: 8px; margin-right: 5px; }
+
+#status {
+  min-height: 22px;
+  font-size: 13px;
+  color: #c4b5fd;
+  margin-top: 12px;
+}
+
+footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 10px;
+}
+</style>
 </head>
+
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="brand"><span class="brand-mark">✦</span>nova<span style="color:#a78bfa">.</span></div>
-    <button class="new-chat" id="newChat">＋ Nieuwe chat</button>
-    <div class="section-label">Werkruimte</div>
-    <button class="nav-link" id="homeButton">⌂　AI Chat</button>
-    <button class="nav-link" id="clearHistory">◷　Geschiedenis wissen</button>
-    <div class="section-label">Recente chats</div>
-    <div id="historyList"><button class="history-item">✦ Je chats verschijnen hier</button></div>
-    <div class="spacer"></div>
-    <div class="plan-card"><strong>Meer uit Nova halen</strong><p>Gebruik AI voor ideeën, code en projecten.</p><button class="signup-trigger">Account aanmaken</button></div>
-    <button class="profile-button login-trigger"><span class="avatar">N</span><span class="profile-copy"><strong>Gastgebruiker</strong><span>Inloggen of registreren</span></span></button>
-  </aside>
+<main>
+  <header>
+    <div class="logo">G</div>
+    <h1>Gen DC Generator</h1>
+    <div class="subtitle">Random testgegevens • Android friendly</div>
+  </header>
 
-  <main class="main">
-    <header class="topbar">
-      <button class="model-select">✦ Nova Assistant　⌄</button>
-      <div class="top-actions"><button class="top-button login-trigger">Inloggen</button><button class="top-button signup-trigger">Account aanmaken</button></div>
-    </header>
+  <section class="card">
+    <h2>⚡ Account generator</h2>
 
-    <section class="content">
-      <div class="welcome" id="welcome">
-        <div class="badge">✦ Jouw creatieve AI-werkruimte</div>
-        <h1>Waar kan ik je <span>mee helpen?</span></h1>
-        <p class="subtitle">Stel een vraag, schrijf code, werk ideeën uit of begin aan je volgende project.</p>
-      </div>
+    <label for="email">Test-e-mailadres</label>
+    <div class="field">
+      <span id="email">Klik op genereren</span>
+      <button class="copy" onclick="copyValue('email')"
+        aria-label="Kopieer e-mailadres">📋</button>
+    </div>
 
-      <div class="suggestions" id="suggestions">
-        <button class="suggestion" data-prompt="Schrijf een Discord-bot in JavaScript met een slash command."><strong>⌘ Maak een Discord-bot</strong><small>Begin met een bot en slash commands</small></button>
-        <button class="suggestion" data-prompt="Help me een FiveM resource te maken met Lua en fxmanifest."><strong>⌁ FiveM-project starten</strong><small>Lua, resources en configuratie</small></button>
-        <button class="suggestion" data-prompt="Leg dit onderwerp eenvoudig uit en geef een stappenplan."><strong>✧ Leg iets helder uit</strong><small>Van eerste idee tot stappenplan</small></button>
-        <button class="suggestion" data-prompt="Schrijf een professionele website voor mijn project."><strong>▣ Bouw een website</strong><small>Ideeën, HTML, CSS en JavaScript</small></button>
-      </div>
+    <label for="password">Willekeurig wachtwoord</label>
+    <div class="field">
+      <span id="password">••••••••••••••••</span>
+      <button class="copy" onclick="copyValue('password')"
+        aria-label="Kopieer wachtwoord">📋</button>
+    </div>
 
-      <div class="chat-area" id="chatArea" aria-live="polite"></div>
+    <button class="primary" onclick="generate()">
+      ✨ Genereer gegevens
+    </button>
 
-      <div class="composer-wrap">
-        <form class="composer" id="chatForm">
-          <textarea id="prompt" rows="1" placeholder="Vraag Nova iets…"></textarea>
-          <div class="composer-bottom"><span class="hint">Enter verstuurt · Shift + Enter voor nieuwe regel</span><button class="send-button" id="sendButton" aria-label="Versturen">↑</button></div>
-        </form>
-        <p class="disclaimer">AI kan fouten maken. Controleer belangrijke informatie altijd.</p>
-      </div>
-    </section>
-  </main>
-</div>
+    <button class="secondary" onclick="generateBatch()">
+      Genereer 5 sets
+    </button>
 
-<div class="modal-backdrop" id="authModal" role="dialog" aria-modal="true">
-  <div class="modal">
-    <div class="modal-head"><div><h2 id="modalTitle">Welkom bij Nova</h2><p id="modalSubtitle">Log in of maak een account aan.</p></div><button class="close-modal" id="closeModal">×</button></div>
-    <form id="authForm">
-      <label class="form-field">E-mailadres<input type="email" placeholder="jij@voorbeeld.nl" required></label>
-      <label class="form-field">Wachtwoord<input type="password" placeholder="Minimaal 8 tekens" minlength="8" required></label>
-      <button class="submit-auth" id="authSubmit">Account aanmaken</button>
-    </form>
-    <p class="auth-note">Je gegevens worden via de beveiligde backend verwerkt.</p>
-  </div>
-</div>
+    <div id="status" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="card">
+    <h2>🛡️ Veilig testen</h2>
+    <p class="notice">
+      E-mailadressen eindigen op example.com. Dit zijn
+      testadressen, geen echte mailboxen of geregistreerde accounts.
+      Gebruik geen echte persoonlijke gegevens.
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>🕘 Geschiedenis</h2>
+    <div id="history"></div>
+    <button class="secondary" onclick="clearHistory()">
+      Geschiedenis wissen
+    </button>
+  </section>
+
+  <footer>Gen DC Generator · Lokale testtool</footer>
+</main>
 
 <script>
-  const $ = id => document.getElementById(id);
-  const promptInput = $("prompt");
-  const chatArea = $("chatArea");
-  const historyList = $("historyList");
-  const modal = $("authModal");
-  let authMode = "signup";
-  let conversationId = null;
+const $ = id => document.getElementById(id);
+const alphabet =
+  "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const digits = "23456789";
+const symbols = "!@#$%*-_";
+const all = alphabet + digits + symbols;
 
-  function startChat() {
-    $("welcome").style.display = "none";
-    $("suggestions").style.display = "none";
-    chatArea.classList.add("active");
+let history = [];
+
+function randomInt(max) {
+  // Cryptografisch veilige random getallen zonder modulo-bias.
+  const range = 0x100000000;
+  const limit = range - (range % max);
+  const buffer = new Uint32Array(1);
+  do {
+    crypto.getRandomValues(buffer);
+  } while (buffer[0] >= limit);
+  return buffer[0] % max;
+}
+
+function pick(chars) {
+  return chars[randomInt(chars.length)];
+}
+
+function shuffle(chars) {
+  const a = [...chars];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = randomInt(i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a.join("");
+}
+
+function makePassword(length = 16) {
+  let p = [
+    pick(alphabet.toUpperCase()),
+    pick(alphabet.toLowerCase()),
+    pick(digits),
+    pick(symbols)
+  ];
+
+  while (p.length < length) p.push(pick(all));
+  return shuffle(p);
+}
+
+function makeEmail() {
+  const id = new Uint32Array(2);
+  crypto.getRandomValues(id);
+  return "test" + id[0].toString(36) +
+    id[1].toString(36) + "@example.com";
+}
+
+function generate() {
+  const entry = {
+    email: makeEmail(),
+    password: makePassword(),
+    time: new Date().toLocaleTimeString("nl-NL")
+  };
+
+  $("email").textContent = entry.email;
+  $("password").textContent = entry.password;
+  $("status").textContent = "Nieuwe testgegevens gegenereerd.";
+
+  history.unshift(entry);
+  history = history.slice(0, 20);
+  renderHistory();
+}
+
+function generateBatch() {
+  for (let i = 0; i < 5; i++) {
+    history.unshift({
+      email: makeEmail(),
+      password: makePassword(),
+      time: new Date().toLocaleTimeString("nl-NL")
+    });
   }
 
-  function addMessage(text, role) {
-    const row = document.createElement("div");
-    row.className = `message ${role}`;
-    const avatar = document.createElement("div");
-    avatar.className = "message-avatar";
-    avatar.textContent = role === "user" ? "J" : "✦";
-    const bubble = document.createElement("div");
-    bubble.className = "bubble";
-    bubble.textContent = text;
-    row.append(avatar, bubble);
-    chatArea.appendChild(row);
-    row.scrollIntoView({ behavior:"smooth", block:"end" });
-    return row;
+  history = history.slice(0, 20);
+  const latest = history[0];
+  $("email").textContent = latest.email;
+  $("password").textContent = latest.password;
+  $("status").textContent = "5 sets toegevoegd aan de geschiedenis.";
+  renderHistory();
+}
+
+async function copyValue(id) {
+  const value = $(id).textContent;
+
+  if (!value || value === "Klik op genereren" ||
+      value.includes("•")) {
+    $("status").textContent = "Genereer eerst gegevens.";
+    return;
   }
 
-  function openAuth(mode) {
-    authMode = mode;
-    const signup = mode === "signup";
-    $("modalTitle").textContent = signup ? "Maak je account aan" : "Welkom terug";
-    $("modalSubtitle").textContent = signup ? "Maak een account om Nova te gebruiken." : "Log in op je Nova-account.";
-    $("authSubmit").textContent = signup ? "Account aanmaken" : "Inloggen";
-    modal.classList.add("open");
+  try {
+    await navigator.clipboard.writeText(value);
+    $("status").textContent = "Gekopieerd!";
+  } catch {
+    const area = document.createElement("textarea");
+    area.value = value;
+    document.body.appendChild(area);
+    area.select();
+    const ok = document.execCommand("copy");
+    area.remove();
+    $("status").textContent =
+      ok ? "Gekopieerd!" : "Kopiëren mislukt.";
+  }
+}
+
+function renderHistory() {
+  const container = $("history");
+  container.replaceChildren();
+
+  if (history.length === 0) {
+    container.textContent = "Nog geen gegevens gegenereerd.";
+    return;
   }
 
-  async function sendMessage(text) {
-    const question = text.trim();
-    if (!question) return;
-
-    if (!localStorage.getItem("novaToken")) {
-      openAuth("login");
-      return;
-    }
-
-    startChat();
-    addMessage(question, "user");
-    promptInput.value = "";
-    $("sendButton").disabled = true;
-    const loading = addMessage("Nova denkt na…", "assistant");
-    loading.querySelector(".bubble").classList.add("typing");
-
-    try {
-      const response = await fetch("/api/chat", {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "Authorization":`Bearer ${localStorage.getItem("novaToken")}`
-        },
-        body:JSON.stringify({ message:question, conversationId })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Chat mislukt.");
-
-      conversationId = data.conversationId;
-      loading.querySelector(".bubble").classList.remove("typing");
-      loading.querySelector(".bubble").textContent = data.answer;
-      addHistoryItem(question, conversationId);
-    } catch (error) {
-      loading.querySelector(".bubble").classList.remove("typing");
-      loading.querySelector(".bubble").textContent = error.message;
-    } finally {
-      $("sendButton").disabled = false;
-      promptInput.focus();
-    }
-  }
-
-  function addHistoryItem(title, id) {
-    if (!historyList.querySelector("[data-chat]")) historyList.innerHTML = "";
-    if (historyList.querySelector(`[data-id="${id}"]`)) return;
-    const item = document.createElement("button");
+  history.forEach(entry => {
+    const item = document.createElement("div");
     item.className = "history-item";
-    item.dataset.chat = "true";
-    item.dataset.id = id;
-    item.textContent = "✦ " + (title.length > 34 ? title.slice(0,34) + "…" : title);
-    item.addEventListener("click", () => loadConversation(id));
-    historyList.prepend(item);
+
+    const email = document.createElement("div");
+    email.textContent = entry.email;
+
+    const password = document.createElement("div");
+    password.textContent = entry.password;
+
+    const time = document.createElement("small");
+    time.textContent = entry.time;
+
+    const copyEmail = document.createElement("button");
+    copyEmail.textContent = "Kopieer e-mail";
+    copyEmail.onclick = () => copyText(entry.email);
+
+    const copyPassword = document.createElement("button");
+    copyPassword.textContent = "Kopieer wachtwoord";
+    copyPassword.onclick = () => copyText(entry.password);
+
+    item.append(email, password, time,
+      document.createElement("br"), copyEmail, copyPassword);
+    container.appendChild(item);
+  });
+}
+
+async function copyText(value) {
+  try {
+    await navigator.clipboard.writeText(value);
+    $("status").textContent = "Gekopieerd!";
+  } catch {
+    $("status").textContent =
+      "Kopiëren niet beschikbaar. Selecteer de tekst handmatig.";
   }
+}
 
-  async function loadConversation(id) {
-    try {
-      const response = await fetch(`/api/conversations/${id}/messages`, {
-        headers:{ "Authorization":`Bearer ${localStorage.getItem("novaToken")}` }
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Chat laden mislukt.");
-      conversationId = id;
-      chatArea.innerHTML = "";
-      startChat();
-      data.messages.forEach(message => addMessage(message.content, message.role));
-    } catch (error) {
-      alert(error.message);
-    }
-  }
+function clearHistory() {
+  history = [];
+  renderHistory();
+  $("status").textContent = "Geschiedenis gewist.";
+}
 
-  async function loadHistory() {
-    const token = localStorage.getItem("novaToken");
-    if (!token) return;
-    try {
-      const response = await fetch("/api/conversations", {
-        headers:{ "Authorization":`Bearer ${token}` }
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      historyList.innerHTML = "";
-      if (!data.conversations.length) {
-        historyList.innerHTML = '<button class="history-item">✦ Nog geen chats</button>';
-        return;
-      }
-      data.conversations.forEach(chat => addHistoryItem(chat.title, chat.id));
-    } catch {}
-  }
-
-  $("chatForm").addEventListener("submit", event => {
-    event.preventDefault();
-    sendMessage(promptInput.value);
-  });
-
-  promptInput.addEventListener("keydown", event => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      $("chatForm").requestSubmit();
-    }
-  });
-
-  document.querySelectorAll(".suggestion").forEach(button => {
-    button.addEventListener("click", () => sendMessage(button.dataset.prompt));
-  });
-
-  function resetChat() {
-    conversationId = null;
-    chatArea.innerHTML = "";
-    chatArea.classList.remove("active");
-    $("welcome").style.display = "";
-    $("suggestions").style.display = "";
-    promptInput.value = "";
-    promptInput.focus();
-  }
-
-  $("newChat").addEventListener("click", resetChat);
-  $("homeButton").addEventListener("click", resetChat);
-
-  $("clearHistory").addEventListener("click", () => {
-    historyList.innerHTML = '<button class="history-item">✦ Geschiedenis wissen kan via de database.</button>';
-  });
-
-  document.querySelectorAll(".signup-trigger").forEach(button => button.addEventListener("click", () => openAuth("signup")));
-  document.querySelectorAll(".login-trigger").forEach(button => button.addEventListener("click", () => openAuth("login")));
-  $("closeModal").addEventListener("click", () => modal.classList.remove("open"));
-  modal.addEventListener("click", event => {
-    if (event.target === modal) modal.classList.remove("open");
-  });
-
-  $("authForm").addEventListener("submit", async event => {
-    event.preventDefault();
-    const inputs = event.currentTarget.querySelectorAll("input");
-    const endpoint = authMode === "signup" ? "/api/auth/register" : "/api/auth/login";
-
-    try {
-      const response = await fetch(endpoint, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({ email:inputs[0].value, password:inputs[1].value })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Authenticatie mislukt.");
-
-      localStorage.setItem("novaToken", data.token);
-      modal.classList.remove("open");
-      await loadHistory();
-      alert("Je bent ingelogd.");
-    } catch (error) {
-      alert(error.message);
-    }
-  });
-
-  loadHistory();
+renderHistory();
 </script>
 </body>
 </html>
