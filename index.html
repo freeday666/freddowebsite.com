@@ -1,119 +1,97 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#11101b">
-  <title>Inloggen met Discord</title>
+  <meta name="theme-color" content="#171522">
+  <title>Freddo Website — Discord-login</title>
 
   <style>
-    :root {
-      color-scheme: dark;
-      --bg: #11101b;
-      --card: #1d1b2b;
-      --text: #f5f3ff;
-      --muted: #aaa5c0;
-      --border: #39334e;
-    }
-
     * { box-sizing: border-box; }
 
     body {
       min-height: 100vh;
       margin: 0;
-      padding: 24px 16px;
+      padding: 24px;
       display: grid;
       place-items: center;
-      color: var(--text);
-      background: radial-gradient(ellipse at top, #302052, var(--bg) 60%);
-      font-family: system-ui, Arial, sans-serif;
+      background: #171522;
+      color: #f5f3ff;
+      font: 16px/1.5 system-ui, sans-serif;
     }
 
-    main { width: 100%; max-width: 440px; }
-
-    .card {
-      padding: 28px;
+    main {
+      width: min(100%, 440px);
+      padding: 32px;
       text-align: center;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
+      background: #242132;
+      border: 1px solid #3b3650;
+      border-radius: 18px;
       box-shadow: 0 18px 60px #0005;
     }
 
-    .logo {
-      display: inline-grid;
-      width: 64px;
-      height: 64px;
-      place-items: center;
-      border-radius: 20px;
-      background: linear-gradient(135deg, #a78bfa, #6d28d9);
-      font-size: 30px;
-      font-weight: 900;
-    }
+    h1 { margin: 0 0 10px; }
+    p { color: #c5c0d5; }
 
-    h1 { margin: 18px 0 8px; font-size: 25px; }
-    p { color: var(--muted); line-height: 1.6; }
-
-    .login {
+    .button {
       display: block;
       margin-top: 24px;
       padding: 14px 18px;
-      border-radius: 11px;
-      color: white;
+      border-radius: 10px;
       background: #5865f2;
-      text-decoration: none;
+      color: white;
       font-weight: 700;
+      text-decoration: none;
     }
 
-    .login:hover { background: #4752c4; }
-
-    .notice {
-      margin-top: 18px;
-      font-size: 12px;
-    }
-
-    #result {
-      overflow-wrap: anywhere;
-      margin-top: 18px;
-      color: #c4b5fd;
-      font-size: 14px;
-    }
+    .button:hover { background: #4752c4; }
+    .note { margin-top: 20px; font-size: 13px; }
+    #status { min-height: 24px; margin-top: 16px; color: #c4b5fd; }
   </style>
 </head>
 
 <body>
   <main>
-    <section class="card">
-      <div class="logo" aria-hidden="true">G</div>
-      <h1>Inloggen met Discord</h1>
-      <p>Log in met Discord om door te gaan naar Freddo Website.</p>
+    <h1>Inloggen met Discord</h1>
+    <p>Log in om verder te gaan naar Freddo Website.</p>
 
-      <a
-        class="login"
-        href="https://discord.com/oauth2/authorize?client_id=1546170500282064976&amp;response_type=code&amp;redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&amp;scope=identify%20guilds.join"
-      >
-        Inloggen met Discord
-      </a>
+    <a id="discord-login" class="button" href="#">
+      Inloggen met Discord
+    </a>
 
-      <p class="notice">
-        Na toestemming probeert Discord je terug te sturen naar de ingestelde
-        callback. De callback moet op een draaiende backend bestaan.
-      </p>
+    <p id="status" role="status" aria-live="polite"></p>
 
-      <div id="result" role="status" aria-live="polite"></div>
-    </section>
+    <p class="note">
+      Voor OAuth is een publieke backend-callback nodig. Een localhost-callback
+      werkt niet voor bezoekers van deze website.
+    </p>
   </main>
 
   <script>
-    // Toont een melding als Discord na OAuth terugstuurt naar deze GitHub Pages-pagina
-    // met bijvoorbeeld ?login=success of ?error=...
-    const params = new URLSearchParams(window.location.search);
-    const result = document.getElementById("result");
+    const SITE_URL = "https://freeday666.github.io/freddowebsite.com/";
 
-    if (params.get("login") === "success") {
-      result.textContent = "Discord-login gelukt.";
-    } else if (params.has("error")) {
-      result.textContent = "Discord-login niet voltooid: " + params.get("error");
+    // Vervang dit door je publieke backend-callback, bijvoorbeeld:
+    // https://jouw-backend.example.com/callback
+    const CALLBACK_URL = "https://VUL-HIER-JE-PUBLIEKE-BACKEND-URL-IN/callback";
+
+    const params = new URLSearchParams({
+      client_id: "1546170500282064976",
+      response_type: "code",
+      redirect_uri: CALLBACK_URL,
+      scope: "identify guilds.join"
+    });
+
+    document.getElementById("discord-login").href =
+      "https://discord.com/oauth2/authorize?" + params.toString();
+
+    const query = new URLSearchParams(location.search);
+    const status = document.getElementById("status");
+
+    if (query.get("login") === "success") {
+      status.textContent = "Je bent succesvol ingelogd.";
+      history.replaceState({}, document.title, SITE_URL);
+    } else if (query.has("error")) {
+      status.textContent = "Inloggen is niet gelukt: " + query.get("error");
     }
   </script>
 </body>
