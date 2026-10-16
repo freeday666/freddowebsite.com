@@ -3,42 +3,79 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mijn Discord-bot</title>
+  <meta name="theme-color" content="#5865f2">
+  <title>Bot toevoegen aan Discord</title>
   <style>
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
       display: grid;
       place-items: center;
-      background: #111827;
-      color: #f9fafb;
-      font: 16px system-ui, sans-serif;
+      padding: 24px;
+      color: #f4f5f7;
+      background: #111318;
+      font-family: system-ui, sans-serif;
     }
+
     main {
-      max-width: 520px;
-      padding: 2rem;
+      width: min(100%, 520px);
+      padding: 36px;
       text-align: center;
-      background: #1f2937;
-      border-radius: 16px;
+      background: #1b1d24;
+      border: 1px solid #30333d;
+      border-radius: 18px;
+      box-shadow: 0 18px 60px #0006;
     }
-    a {
+
+    .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    h1 { margin: 0 0 12px; }
+    p { color: #b9bbc6; line-height: 1.6; }
+
+    .button {
       display: inline-block;
-      margin-top: 1rem;
-      padding: .8rem 1.2rem;
+      margin-top: 18px;
+      padding: 14px 22px;
       color: white;
       background: #5865f2;
-      border-radius: 8px;
+      border-radius: 9px;
+      font-weight: 700;
       text-decoration: none;
+    }
+
+    .button:hover { background: #4752c4; }
+
+    .note {
+      margin-top: 22px;
+      font-size: 13px;
+      color: #9295a1;
     }
   </style>
 </head>
 <body>
   <main>
-    <h1>Welkom!</h1>
-    <p>Log veilig in met Discord om verder te gaan.</p>
-    <a href="https://discord.com/oauth2/authorize?client_id=CLIENT_ID&response_type=code&redirect_uri=JOUW_URL_ENCODED&scope=identify">
-      Inloggen met Discord
+    <div class="icon" aria-hidden="true">🤖</div>
+    <h1>Voeg de bot toe</h1>
+    <p>Klik hieronder om Discord te openen en de bot aan een server toe te voegen.</p>
+
+    <a
+      class="button"
+      href="https://discord.com/oauth2/authorize?client_id=1546170500282064976&amp;permissions=8&amp;integration_type=0&amp;scope=bot%20applications.commands"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Toevoegen aan Discord
     </a>
+
+    <p class="note">
+      Je moet de server beheren om een bot te kunnen toevoegen.
+      Deze uitnodiging vraagt om Administrator-rechten.
+    </p>
   </main>
 </body>
 </html>
