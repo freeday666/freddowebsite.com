@@ -1,99 +1,10 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GenMail Generator</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="{{ url_for('static', filename='script.js') }}" defer></script>
-</head>
+<head><meta charset="utf-8"><title>Discord-login</title></head>
 <body>
-  <main class="container">
-    <header>
-      <div class="logo">G</div>
-      <div>
-        <p class="eyebrow">GENMAIL TOOLKIT</p>
-        <h1>Testgegevens maken.</h1>
-      </div>
-    </header>
-
-    <p class="subtitle">
-      Genereer test-e-mailadressen en sterke wachtwoorden.
-    </p>
-
-    {% for category, message in get_flashed_messages(with_categories=true) %}
-      <p class="notice {{ category }}">{{ message }}</p>
-    {% endfor %}
-
-    <section class="panel">
-      <h2>E-mail & wachtwoord</h2>
-
-      <form action="{{ url_for('generate') }}" method="post">
-        <label for="count">Aantal sets</label>
-        <select name="count" id="count">
-          {% for n in range(1, 11) %}
-            <option value="{{ n }}" {% if n == 3 %}selected{% endif %}>
-              {{ n }}
-            </option>
-          {% endfor %}
-        </select>
-
-        <label for="length">Wachtwoordlengte</label>
-        <select name="length" id="length">
-          {% for n in [12, 16, 20, 24, 32, 48, 64] %}
-            <option value="{{ n }}" {% if n == 20 %}selected{% endif %}>
-              {{ n }} tekens
-            </option>
-          {% endfor %}
-        </select>
-
-        <button class="primary" type="submit">Genereer gegevens</button>
-      </form>
-
-      {% for item in results %}
-        <article class="result">
-          <label>Test-e-mailadres</label>
-          <div class="value">
-            <code>{{ item.email }}</code>
-            <button type="button" class="copy"
-              data-copy="{{ item.email }}">Kopieer</button>
-          </div>
-
-          <label>Wachtwoord</label>
-          <div class="value">
-            <code>{{ item.password }}</code>
-            <button type="button" class="copy"
-              data-copy="{{ item.password }}">Kopieer</button>
-          </div>
-        </article>
-      {% endfor %}
-
-      <p class="hint">
-        Testadressen op example.invalid zijn fictief en hebben geen inbox.
-      </p>
-    </section>
-
-    <section class="panel">
-      <h2>Discord-account</h2>
-
-      {% if session.get('discord_user') %}
-        <p>Ingelogd als
-          <strong>{{ session['discord_user']['username'] }}</strong>
-        </p>
-        <form action="{{ url_for('logout') }}" method="post">
-          <button class="secondary" type="submit">Uitloggen</button>
-        </form>
-      {% else %}
-        <p class="hint">
-          Log veilig in via Discord OAuth2. Je Discord-wachtwoord
-          wordt niet gevraagd of opgeslagen.
-        </p>
-        <a class="discord" href="{{ url_for('discord_login') }}">
-          Doorgaan met Discord
-        </a>
-      {% endif %}
-    </section>
-  </main>
+  <h1>Inloggen</h1>
+  <a href="https://discord.com/oauth2/authorize?client_id=1546170500282064976&amp;response_type=code&amp;redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&amp;scope=identify">
+    Inloggen met Discord
+  </a>
 </body>
 </html>
