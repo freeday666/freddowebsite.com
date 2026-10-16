@@ -1,20 +1,26 @@
 require("dotenv").config();
 
 const express = require("express");
+const path = require("path");
 const { GoogleGenAI } = require("@google/genai");
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 if (!process.env.GEMINI_API_KEY) {
-  console.error("GEMINI_API_KEY ontbreekt. Zet deze in je .env-bestand.");
+  console.error("GEMINI_API_KEY ontbreekt. Voeg deze toe aan .env.");
   process.exit(1);
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
 
 app.use(express.json({ limit: "20kb" }));
-app.use(express.static(__dirname));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
 app.post("/api/chat", async (req, res) => {
   const message = req.body?.message;
@@ -29,13 +35,13 @@ app.post("/api/chat", async (req, res) => {
       contents: message.trim(),
     });
 
-    res.json({ reply: result.text });
+    res.json({ reply: result.text || "Geen antwoord ontvangen." });
   } catch (error) {
-    console.error("Gemini API-fout:", error.message);
-    res.status(500).json({ error: "Er ging iets mis bij Gemini." });
+    console.error("Gemini API-fout:", error);
+    res.status(500).json({ error: "Gemini kon geen antwoord geven. Probeer het opnieuw." });
   }
 });
 
 app.listen(port, () => {
-  console.log(`NovaDev draait op http://localhost:${port}`);
+  console.log(`Server draait op http://localhost:${port}`);
 });
