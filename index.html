@@ -1,58 +1,504 @@
-<!doctype html>
-<html lang="nl">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Discord-bot dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bot Control Center</title>
   <style>
+    :root {
+      --bg: #f3f6fc;
+      --panel: rgba(255, 255, 255, .88);
+      --text: #182238;
+      --muted: #8792a8;
+      --blue: #3478f6;
+      --border: #e8edf5;
+      --shadow: 0 18px 55px rgba(36, 58, 105, .10);
+    }
+
+    * { box-sizing: border-box; }
+
     body {
-      margin: 0; min-height: 100vh; display: grid; place-items: center;
-      background: #10121a; color: #f5f5f7;
-      font: 16px system-ui, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      padding: 32px;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 80% 10%, #e5edff 0, transparent 30%),
+        radial-gradient(circle at 10% 90%, #e8f4ff 0, transparent 28%),
+        var(--bg);
     }
-    main {
-      width: min(440px, calc(100% - 40px)); padding: 28px;
-      border: 1px solid #303443; border-radius: 16px; background: #191c27;
+
+    button { font: inherit; }
+
+    .app {
+      width: min(1120px, 100%);
+      min-height: 660px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      animation: appear .7s ease both;
     }
-    h1 { margin-top: 0; }
-    #status { color: #b7bdcc; }
-    .online { color: #55d68b !important; }
-    .offline { color: #ff7777 !important; }
-    button {
-      padding: 10px 14px; border: 0; border-radius: 9px;
-      background: #5865f2; color: white; font: inherit; cursor: pointer;
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(16px) scale(.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .sidebar {
+      padding: 28px 18px;
+      border-right: 1px solid var(--border);
+      background: rgba(255,255,255,.55);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px 34px;
+      font-weight: 750;
+      letter-spacing: -.4px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      color: white;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #397cff, #684de8);
+      box-shadow: 0 8px 18px rgba(67, 105, 233, .26);
+    }
+
+    .brand-mark svg { width: 21px; height: 21px; }
+
+    .nav-label {
+      margin: 0 10px 10px;
+      color: #a2aabb;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+    }
+
+    .nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav button {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 12px;
+      color: #778197;
+      text-align: left;
+      border: 0;
+      border-radius: 11px;
+      background: transparent;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .nav button:hover, .nav button.active {
+      color: #356fe5;
+      background: #eef3ff;
+    }
+
+    .nav svg { width: 18px; height: 18px; }
+
+    .sidebar-bottom {
+      margin-top: 190px;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: white;
+    }
+
+    .sidebar-bottom small { color: var(--muted); }
+    .sidebar-bottom strong { display: block; margin-top: 6px; font-size: 13px; }
+
+    main { padding: 30px 34px 34px; }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 23px;
+      letter-spacing: -.8px;
+    }
+
+    .subtitle { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+
+    .online-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      color: #348b66;
+      border: 1px solid #d9f0e5;
+      border-radius: 999px;
+      background: #f0fbf6;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #39c98a;
+      box-shadow: 0 0 0 4px rgba(57,201,138,.12);
+    }
+
+    .online-pill.stopped { color: #8992a4; background: #f5f6f9; border-color: #e7eaf0; }
+    .online-pill.stopped .dot { background: #aab2c0; box-shadow: none; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .action {
+      position: relative;
+      min-height: 142px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 21px;
+      overflow: hidden;
+      color: white;
+      text-align: left;
+      border: 0;
+      border-radius: 17px;
+      cursor: pointer;
+      box-shadow: 0 12px 25px rgba(51, 99, 205, .16);
+      transition: transform .22s, box-shadow .22s, filter .22s;
+    }
+
+    .action::after {
+      content: "";
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      right: -32px;
+      bottom: -72px;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 50%;
+      box-shadow: 0 0 0 18px rgba(255,255,255,.045), 0 0 0 38px rgba(255,255,255,.035);
+    }
+
+    .action:hover { transform: translateY(-4px); filter: saturate(1.12); box-shadow: 0 18px 32px rgba(51, 99, 205, .23); }
+    .action:active { transform: translateY(-1px) scale(.99); }
+    .action.start { background: linear-gradient(135deg, #3985ff, #2861e8); }
+    .action.stop { background: linear-gradient(135deg, #536cf0, #4455d8); }
+    .action.restart { background: linear-gradient(135deg, #8d4df4, #6737dd); }
+
+    .action-top { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .action-top svg { width: 19px; height: 19px; }
+    .action-label { font-size: 19px; font-weight: 750; letter-spacing: -.3px; }
+    .action-hint { color: rgba(255,255,255,.78); font-size: 11px; }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1.55fr .9fr;
+      gap: 16px;
+    }
+
+    .card {
+      min-height: 220px;
+      padding: 19px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: white;
+      box-shadow: 0 8px 22px rgba(34, 55, 96, .035);
+      animation: appear .65s ease both;
+    }
+
+    .card:nth-child(2) { animation-delay: .08s; }
+    .card:nth-child(3) { animation-delay: .16s; }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .card-title svg { width: 16px; height: 16px; color: #9aa5b8; }
+
+    .service-list { display: grid; gap: 14px; }
+
+    .service {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #68748a;
+      font-size: 12px;
+    }
+
+    .service-name { display: flex; align-items: center; gap: 9px; }
+    .service-dot { width: 7px; height: 7px; border-radius: 50%; background: #42c995; }
+    .service-dot.off { background: #c2c9d4; }
+
+    .mini-chart {
+      width: 100%;
+      height: 130px;
+      overflow: visible;
+    }
+
+    .chart-grid { stroke: #edf0f6; stroke-width: 1; }
+    .chart-line {
+      fill: none;
+      stroke: #4d7cf3;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 430;
+      stroke-dashoffset: 430;
+      animation: draw 1.4s .25s ease forwards;
+    }
+
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+
+    .chart-area { fill: url(#area); opacity: .75; }
+    .chart-caption { display: flex; justify-content: space-between; color: #a1aabc; font-size: 10px; }
+
+    .stats-stack { display: grid; gap: 12px; }
+    .stat-card { min-height: 104px; padding: 16px; }
+    .stat-label { color: var(--muted); font-size: 11px; }
+    .stat-value { margin-top: 10px; font-size: 22px; font-weight: 750; letter-spacing: -.6px; }
+    .stat-change { margin-left: 5px; color: #34b982; font-size: 10px; font-weight: 650; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 25px;
+      padding: 12px 18px;
+      color: white;
+      border-radius: 12px;
+      background: #202b42;
+      box-shadow: 0 10px 30px rgba(20,30,55,.2);
+      opacity: 0;
+      transform: translate(-50%, 12px);
+      pointer-events: none;
+      transition: .25s ease;
+      font-size: 13px;
+    }
+
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 850px) {
+      body { padding: 16px; }
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      main { padding: 24px; }
+      .content-grid { grid-template-columns: 1fr 1fr; }
+      .chart-card { grid-column: 1 / -1; grid-row: 1; }
+    }
+
+    @media (max-width: 560px) {
+      main { padding: 20px 16px; }
+      .actions { grid-template-columns: 1fr; gap: 10px; }
+      .action { min-height: 105px; }
+      .content-grid { grid-template-columns: 1fr; }
+      .chart-card { grid-column: auto; }
+      .topbar { align-items: flex-start; gap: 12px; }
+      h1 { font-size: 20px; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Discord bot</h1>
-    <p id="status">Status ophalen…</p>
-    <button id="refresh">Vernieuwen</button>
-  </main>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3v3m-5 2h10a3 3 0 0 1 3 3v7H4v-7a3 3 0 0 1 3-3Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/>
+            <path d="M8 18v2m8-2v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        BotPilot
+      </div>
+
+      <p class="nav-label">Workspace</p>
+      <nav class="nav">
+        <button class="active" type="button">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="3" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.7"/><rect x="3" y="14" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="14" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.7"/></svg>
+          Overview
+        </button>
+        <button type="button">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5m0 14h17M7 15l4-4 3 2 6-7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Analytics
+        </button>
+        <button type="button">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18m9-9H3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Integrations
+        </button>
+        <button type="button">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 2m5-2a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Activity
+        </button>
+        <button type="button">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.7"/><path d="m19.4 15 .1.1a1.8 1.8 0 1 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3 .9v.2a1.8 1.8 0 1 1-3.6 0v-.2a1.8 1.8 0 0 0-3-.9l-.1.1a1.8 1.8 0 1 1-2.5-2.5l.1-.1a1.8 1.8 0 0 0-.9-3H3.7a1.8 1.8 0 1 1 0-3.6h.2a1.8 1.8 0 0 0 .9-3l-.1-.1a1.8 1.8 0 1 1 2.5-2.5l.1.1a1.8 1.8 0 0 0 3-.9v-.2a1.8 1.8 0 1 1 3.6 0v.2a1.8 1.8 0 0 0 3 .9l.1-.1a1.8 1.8 0 1 1 2.5 2.5l-.1.1a1.8 1.8 0 0 0 .9 3h.2a1.8 1.8 0 1 1 0 3.6h-.2a1.8 1.8 0 0 0-.9 3Z" stroke="currentColor" stroke-width="1.4"/></svg>
+          Settings
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <small>Current workspace</small>
+        <strong>My Automation Bot</strong>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <h1>Bot Control Center</h1>
+          <p class="subtitle">Manage your bot and monitor its performance.</p>
+        </div>
+        <div class="online-pill" id="statusPill"><span class="dot"></span><span id="statusText">Online</span></div>
+      </header>
+
+      <section class="actions" aria-label="Bot controls">
+        <button class="action start" type="button" onclick="setBotState('started')">
+          <span class="action-top">
+            <svg viewBox="0 0 24 24" fill="none"><path d="m8 5 11 7-11 7V5Z" fill="currentColor"/></svg>
+            Control
+          </span>
+          <span class="action-label">Start</span>
+          <span class="action-hint">Launch your bot</span>
+        </button>
+
+        <button class="action stop" type="button" onclick="setBotState('stopped')">
+          <span class="action-top">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>
+            Control
+          </span>
+          <span class="action-label">Stop</span>
+          <span class="action-hint">Pause bot activity</span>
+        </button>
+
+        <button class="action restart" type="button" onclick="restartBot()">
+          <span class="action-top">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M20 7v5h-5M4 17v-5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.6 9a7 7 0 0 1 11.8-2L20 12M4 12l2.6 5a7 7 0 0 0 11.8-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Control
+          </span>
+          <span class="action-label">Restart</span>
+          <span class="action-hint">Restart all services</span>
+        </button>
+      </section>
+
+      <section class="content-grid">
+        <article class="card">
+          <div class="card-title">
+            Services
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </div>
+          <div class="service-list">
+            <div class="service"><span class="service-name"><i class="service-dot"></i>API Gateway</span><span class="service-state">Running</span></div>
+            <div class="service"><span class="service-name"><i class="service-dot"></i>Worker</span><span class="service-state">Running</span></div>
+            <div class="service"><span class="service-name"><i class="service-dot"></i>Database</span><span class="service-state">Running</span></div>
+            <div class="service"><span class="service-name"><i class="service-dot"></i>Scheduler</span><span class="service-state">Running</span></div>
+          </div>
+        </article>
+
+        <article class="card chart-card">
+          <div class="card-title">
+            Activity overview
+            <span style="color:#9aa5b8;font-size:11px;font-weight:500">Last 7 days⌄</span>
+          </div>
+          <svg class="mini-chart" viewBox="0 0 500 145" preserveAspectRatio="none" aria-label="Activity chart">
+            <defs>
+              <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#648df8" stop-opacity=".28"/>
+                <stop offset="100%" stop-color="#648df8" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path class="chart-grid" d="M0 25H500M0 60H500M0 95H500M0 130H500"/>
+            <path class="chart-area" d="M8 116 C55 110 70 88 115 94 S180 45 230 62 S290 90 340 67 S420 35 492 20 L492 135 L8 135Z"/>
+            <path class="chart-line" d="M8 116 C55 110 70 88 115 94 S180 45 230 62 S290 90 340 67 S420 35 492 20"/>
+            <circle cx="492" cy="20" r="4" fill="#4d7cf3"/>
+          </svg>
+          <div class="chart-caption"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+        </article>
+
+        <div class="stats-stack">
+          <article class="card stat-card">
+            <div class="card-title">Total requests <span style="color:#9aa5b8">•••</span></div>
+            <div class="stat-value">24,892 <span class="stat-change">↗ 12.8%</span></div>
+          </article>
+          <article class="card stat-card">
+            <div class="card-title">Average uptime <span style="color:#9aa5b8">•••</span></div>
+            <div class="stat-value">99.8% <span class="stat-change">↗ 0.4%</span></div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
 
   <script>
-    const status = document.querySelector("#status");
+    let toastTimer;
 
-    async function updateStatus() {
-      try {
-        const response = await fetch("/api/status");
-        if (!response.ok) throw new Error("Status ophalen mislukt");
-        const data = await response.json();
-
-        status.textContent = data.online
-          ? `Online als ${data.username}`
-          : "Offline";
-        status.className = data.online ? "online" : "offline";
-      } catch {
-        status.textContent = "Kan de server niet bereiken.";
-        status.className = "offline";
-      }
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
     }
 
-    document.querySelector("#refresh").addEventListener("click", updateStatus);
-    updateStatus();
-    setInterval(updateStatus, 15000);
+    function setBotState(state) {
+      const pill = document.getElementById("statusPill");
+      const text = document.getElementById("statusText");
+      const stopped = state === "stopped";
+
+      pill.classList.toggle("stopped", stopped);
+      text.textContent = stopped ? "Offline" : "Online";
+
+      document.querySelectorAll(".service-dot").forEach(dot => {
+        dot.classList.toggle("off", stopped);
+      });
+      document.querySelectorAll(".service-state").forEach(label => {
+        label.textContent = stopped ? "Stopped" : "Running";
+      });
+
+      showToast(stopped ? "Bot stopped (demo)" : "Bot started (demo)");
+    }
+
+    function restartBot() {
+      setBotState("stopped");
+      showToast("Restarting bot…");
+      setTimeout(() => setBotState("started"), 900);
+    }
+
+    document.querySelectorAll(".nav button").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelector(".nav button.active")?.classList.remove("active");
+        button.classList.add("active");
+      });
+    });
   </script>
 </body>
 </html>
