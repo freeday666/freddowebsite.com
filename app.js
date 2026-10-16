@@ -5,16 +5,7 @@ const path = require("path");
 const { GoogleGenAI } = require("@google/genai");
 
 const app = express();
-const port = process.env.PORT || 3000;
-
-if (!process.env.GEMINI_API_KEY) {
-  console.error("GEMINI_API_KEY ontbreekt. Voeg deze toe aan .env.");
-  process.exit(1);
-}
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: "20kb" }));
 
@@ -29,19 +20,29 @@ app.post("/api/chat", async (req, res) => {
     return res.status(400).json({ error: "Vul eerst een bericht in." });
   }
 
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(500).json({ error: "GEMINI_API_KEY ontbreekt in je .env-bestand." });
+  }
+
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const result = await ai.models.generateContent({
       model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
       contents: message.trim(),
     });
 
-    res.json({ reply: result.text || "Geen antwoord ontvangen." });
+    return res.json({ reply: result.text || "Geen antwoord ontvangen." });
   } catch (error) {
     console.error("Gemini API-fout:", error);
-    res.status(500).json({ error: "Gemini kon geen antwoord geven. Probeer het opnieuw." });
+    return res.status(500).json({ error: "Gemini-aanvraag mislukt. Controleer je API-sleutel." });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server draait op http://localhost:${port}`);
+// JSON-foutmelding in plaats van een HTML-foutpagina
+app.use((req, res) => {
+  res.status(404).json({ error: "Route niet gevonden." });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server draait op http://localhost:${PORT}`);
 });
