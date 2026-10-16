@@ -1,82 +1,146 @@
-require("dotenv").config();
+"use strict";
 
 const express = require("express");
-const { Resend } = require("resend");
+const session = require("express-session");
 const crypto = require("node:crypto");
 
 const app = express();
-const resend = new Resend(process.env.RESEND_API_KEY);
-const codes = new Map();
 
-app.use(express.json());
-app.use(express.static("public"));
+const {
+  CLIENT_ID,
+  CLIENT_SECRET,
+  SESSION_SECRET,
+  BASE_URL,
+  PORT = 3000
+} = process.env;
 
-const normalizeEmail = value =>
-  typeof value === "string" ? value.trim().toLowerCase() : "";
+if (!CLIENT_ID || !CLIENT_SECRET || !SESSION_SECRET || !BASE_URL) {
+  throw new Error(
+    "Stel CLIENT_ID, CLIENT_SECRET, SESSION_SECRET en BASE_URL in."
+  );
+}
 
-app.post("/api/send-code", async (req, res) => {
-  const email = normalizeEmail(req.body.email);
+const REDIRECT_URI = `${BASE_URL.replace(/\/$/, "")}/callback`;
+const SITE_URL = "https://freeday666.github.io/freddowebsite.com/";
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return res.status(400).json({ error: "Vul een geldig e-mailadres in." });
-  }
+app.set("trust proxy", 1);
 
-  const code = crypto.randomInt(100000, 1000000).toString();
-  const codeHash = crypto.createHash("sha256").update(code).digest("hex");
+app.use(
+  session({
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: true, // Vereist HTTPS; gebruik lokaal NODE_ENV=development en pas dit aan.
+      sameSite: "lax",
+      maxAge: 10 * 60 * 1000
+    }
+  })
+);
 
-  codes.set(email, {
-    codeHash,
-    expiresAt: Date.now() + 10 * 60 * 1000,
-    attempts: 0
+app.get("/login", (req, res) => {
+  const state = crypto.randomBytes(24).toString("hex");
+  req.session.oauthState = state;
+
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID,
+    response_type: "code",
+    redirect_uri: REDIRECT_URI,
+    scope: "identify guilds.join",
+    state
   });
 
+  res.redirect(`https://discord.com/oauth2/authorize?${params}`);
+});
+
+app.get("/callback", async (req, res) => {
+  const { code, state, error } = req.query;
+
+  if (error) {
+    return res.status(400).send(`Discord login error: ${String(error)}`);
+  }
+
+  if (
+    typeof code !== "string" ||
+    typeof state !== "string" ||
+    !req.session.oauthState ||
+    state !== req.session.oauthState
+  ) {
+    return res.status(400).send("Ongeldige of verlopen login-aanvraag.");
+  }
+
+  delete req.session.oauthState;
+
   try {
-    await resend.emails.send({
-      from: process.env.MAIL_FROM,
-      to: email,
-      subject: "Je verificatiecode",
-      text: `Je verificatiecode is ${code}. Deze code is 10 minuten geldig.`
+    const tokenResponse = await fetch("https://discord.com/api/v10/oauth2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: REDIRECT_URI
+      })
     });
 
-    res.json({ message: "Verificatiecode verstuurd." });
-  } catch (error) {
-    codes.delete(email);
-    console.error("Mail versturen mislukt:", error);
-    res.status(502).json({ error: "De verificatiemail kon niet worden verstuurd." });
+    const tokenData = await tokenResponse.json();
+
+    if (!tokenResponse.ok || !tokenData.access_token) {
+      console.error("Discord token exchange failed:", tokenData);
+      return res.status(502).send("Discord-login kon niet worden afgerond.");
+    }
+
+    const userResponse = await fetch("https://discord.com/api/v10/users/@me", {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+
+    const user = await userResponse.json();
+
+    if (!userResponse.ok) {
+      console.error("Discord user request failed:", user);
+      return res.status(502).send("Kon Discord-gebruiker niet ophalen.");
+    }
+
+    // Bewaar alleen noodzakelijke gebruikersinformatie in de sessie.
+    req.session.user = {
+      id: user.id,
+      username: user.username,
+      global_name: user.global_name ?? null,
+      avatar: user.avatar ?? null
+    };
+
+    req.session.save((err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Sessie opslaan is mislukt.");
+      }
+
+      res.redirect(`${SITE_URL}?login=success`);
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Er ging iets mis tijdens het inloggen.");
   }
 });
 
-app.post("/api/verify-code", (req, res) => {
-  const email = normalizeEmail(req.body.email);
-  const code = typeof req.body.code === "string" ? req.body.code.trim() : "";
-  const record = codes.get(email);
-
-  if (!record || Date.now() > record.expiresAt) {
-    codes.delete(email);
-    return res.status(400).json({ error: "Code verlopen of niet aangevraagd." });
+app.get("/me", (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: "Niet ingelogd" });
   }
 
-  record.attempts++;
-
-  if (record.attempts > 5) {
-    codes.delete(email);
-    return res.status(429).json({ error: "Te veel pogingen. Vraag een nieuwe code aan." });
-  }
-
-  const submittedHash = crypto.createHash("sha256").update(code).digest("hex");
-
-  if (!/^\d{6}$/.test(code) ||
-      !crypto.timingSafeEqual(
-        Buffer.from(submittedHash, "hex"),
-        Buffer.from(record.codeHash, "hex")
-      )) {
-    return res.status(400).json({ error: "Onjuiste verificatiecode." });
-  }
-
-  codes.delete(email);
-  res.json({ verified: true, message: "E-mailadres geverifieerd." });
+  res.json(req.session.user);
 });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log(`Server actief op http://localhost:${process.env.PORT || 3000}`);
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.clearCookie("connect.sid");
+    res.status(204).end();
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server draait op poort ${PORT}`);
+  console.log(`Discord callback: ${REDIRECT_URI}`);
 });
