@@ -61,11 +61,7 @@
       color: white;
     }
 
-    .assistant {
-      background: #1e293b;
-      color: #e2e8f0;
-    }
-
+    .assistant { background: #1e293b; }
     .error { color: #fecaca; }
 
     form {
@@ -115,13 +111,7 @@
     </section>
 
     <form id="chat-form">
-      <input
-        id="message-input"
-        type="text"
-        placeholder="Typ je bericht..."
-        autocomplete="off"
-        required
-      >
+      <input id="message-input" type="text" placeholder="Typ je bericht..." autocomplete="off" required>
       <button id="send-button" type="submit">Verstuur</button>
     </form>
   </main>
@@ -161,17 +151,27 @@
           body: JSON.stringify({ message }),
         });
 
-        const data = await response.json();
-        waiting.remove();
+        const text = await response.text();
+        let data;
 
-        if (!response.ok) {
-          throw new Error(data.error || "Er ging iets mis.");
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error(
+            `Server gaf geen JSON terug (HTTP ${response.status}). ` +
+            "Open de pagina via http://localhost:3000."
+          );
         }
 
-        addMessage(data.reply, "assistant");
+        if (!response.ok) {
+          throw new Error(data.error || `Serverfout (${response.status}).`);
+        }
+
+        waiting.remove();
+        addMessage(data.reply || "Geen antwoord ontvangen.", "assistant");
       } catch (error) {
         waiting.remove();
-        addMessage(error.message || "Kan geen verbinding maken met de server.", "assistant", true);
+        addMessage(error.message || "Verbinding met de server mislukt.", "assistant", true);
       } finally {
         input.disabled = false;
         button.disabled = false;
