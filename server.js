@@ -1,79 +1,51 @@
-"use strict";
-
 const express = require("express");
 const session = require("express-session");
-const crypto = require("node:crypto");
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-const {
-  CLIENT_ID,
-  CLIENT_SECRET,
-  SESSION_SECRET,
-  BASE_URL,
-  PORT = 3000
-} = process.env;
+const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+const REDIRECT_URI =
+  process.env.DISCORD_REDIRECT_URI || `http://localhost:${PORT}/callback`;
 
-if (!CLIENT_ID || !CLIENT_SECRET || !SESSION_SECRET || !BASE_URL) {
-  throw new Error(
-    "Stel CLIENT_ID, CLIENT_SECRET, SESSION_SECRET en BASE_URL in."
-  );
+if (!CLIENT_ID || !CLIENT_SECRET) {
+  throw new Error("Stel DISCORD_CLIENT_ID en DISCORD_CLIENT_SECRET in.");
 }
 
-const REDIRECT_URI = `${BASE_URL.replace(/\/$/, "")}/callback`;
-const SITE_URL = "https://freeday666.github.io/freddowebsite.com/";
+app.use(session({
+  secret: process.env.SESSION_SECRET || "vervang-dit-door-een-lange-willekeurige-string",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 24 * 60 * 60 * 1000
+  }
+}));
 
-app.set("trust proxy", 1);
-
-app.use(
-  session({
-    secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: true, // Vereist HTTPS; gebruik lokaal NODE_ENV=development en pas dit aan.
-      sameSite: "lax",
-      maxAge: 10 * 60 * 1000
-    }
-  })
-);
+app.use(express.static("public"));
 
 app.get("/login", (req, res) => {
-  const state = crypto.randomBytes(24).toString("hex");
-  req.session.oauthState = state;
-
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
-    response_type: "code",
     redirect_uri: REDIRECT_URI,
-    scope: "identify guilds.join",
-    state
+    response_type: "code",
+    scope: "identify"
   });
 
   res.redirect(`https://discord.com/oauth2/authorize?${params}`);
 });
 
 app.get("/callback", async (req, res) => {
-  const { code, state, error } = req.query;
-
-  if (error) {
-    return res.status(400).send(`Discord login error: ${String(error)}`);
+  const code = req.query.code;
+  if (typeof code !== "string") {
+    return res.status(400).send("Discord heeft geen autorisatiecode teruggestuurd.");
   }
-
-  if (
-    typeof code !== "string" ||
-    typeof state !== "string" ||
-    !req.session.oauthState ||
-    state !== req.session.oauthState
-  ) {
-    return res.status(400).send("Ongeldige of verlopen login-aanvraag.");
-  }
-
-  delete req.session.oauthState;
 
   try {
-    const tokenResponse = await fetch("https://discord.com/api/v10/oauth2/token", {
+    const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
@@ -85,42 +57,31 @@ app.get("/callback", async (req, res) => {
       })
     });
 
-    const tokenData = await tokenResponse.json();
-
-    if (!tokenResponse.ok || !tokenData.access_token) {
-      console.error("Discord token exchange failed:", tokenData);
-      return res.status(502).send("Discord-login kon niet worden afgerond.");
+    const tokens = await tokenResponse.json();
+    if (!tokenResponse.ok) {
+      console.error("Tokenfout:", tokens);
+      return res.status(400).send("Discord-login is mislukt. Controleer je instellingen.");
     }
 
-    const userResponse = await fetch("https://discord.com/api/v10/users/@me", {
-      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    const userResponse = await fetch("https://discord.com/api/users/@me", {
+      headers: { Authorization: `Bearer ${tokens.access_token}` }
     });
 
     const user = await userResponse.json();
-
     if (!userResponse.ok) {
-      console.error("Discord user request failed:", user);
-      return res.status(502).send("Kon Discord-gebruiker niet ophalen.");
+      console.error("Gebruikersfout:", user);
+      return res.status(400).send("Discord-gebruikersgegevens ophalen is mislukt.");
     }
 
-    // Bewaar alleen noodzakelijke gebruikersinformatie in de sessie.
     req.session.user = {
       id: user.id,
       username: user.username,
-      global_name: user.global_name ?? null,
-      avatar: user.avatar ?? null
+      global_name: user.global_name
     };
 
-    req.session.save((err) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).send("Sessie opslaan is mislukt.");
-      }
-
-      res.redirect(`${SITE_URL}?login=success`);
-    });
-  } catch (err) {
-    console.error(err);
+    res.redirect("/");
+  } catch (error) {
+    console.error(error);
     res.status(500).send("Er ging iets mis tijdens het inloggen.");
   }
 });
@@ -129,18 +90,13 @@ app.get("/me", (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ error: "Niet ingelogd" });
   }
-
   res.json(req.session.user);
 });
 
 app.post("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.clearCookie("connect.sid");
-    res.status(204).end();
-  });
+  req.session.destroy(() => res.sendStatus(204));
 });
 
 app.listen(PORT, () => {
-  console.log(`Server draait op poort ${PORT}`);
-  console.log(`Discord callback: ${REDIRECT_URI}`);
+  console.log(`Server draait op http://localhost:${PORT}`);
 });
