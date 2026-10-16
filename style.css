@@ -1,0 +1,141 @@
+
+:root {
+  color-scheme: dark;
+  --bg: #0b0d12;
+  --panel: #151923;
+  --border: #2b3140;
+  --text: #f5f7fb;
+  --muted: #a0a8b8;
+  --green: #a3e635;
+  --blue: #5865f2;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+}
+
+.container {
+  width: min(700px, calc(100% - 30px));
+  margin: 35px auto;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+  background: var(--green);
+  color: #151923;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+h1 { font-size: clamp(27px, 6vw, 40px); margin: 0; }
+h2 { font-size: 21px; }
+.subtitle, .hint { color: var(--muted); line-height: 1.6; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 22px;
+  margin: 18px 0;
+}
+
+label {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin: 15px 0 7px;
+}
+
+select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+
+button, .discord {
+  border: 0;
+  border-radius: 9px;
+  padding: 12px 15px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.primary {
+  width: 100%;
+  margin-top: 18px;
+  background: var(--green);
+  color: #151923;
+}
+
+.secondary, .copy {
+  background: #2a3040;
+  color: var(--text);
+}
+
+.discord {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  background: var(--blue);
+  color: white;
+}
+
+.result {
+  margin-top: 18px;
+  padding: 15px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.value {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.value code {
+  overflow-wrap: anywhere;
+  flex: 1;
+  font-size: 12px;
+}
+
+.copy { font-size: 11px; }
+
+.notice {
+  padding: 12px;
+  border-radius: 9px;
+  background: #252b3b;
+}
+
+@media (max-width: 480px) {
+  .container { margin: 22px auto; }
+  .panel { padding: 16px; }
+  .value { align-items: flex-start; }
+  .value code { padding-top: 8px; }
+}
