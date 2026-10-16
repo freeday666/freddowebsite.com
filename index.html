@@ -1,10 +1,457 @@
 <!doctype html>
 <html lang="nl">
-<head><meta charset="utf-8"><title>Discord-login</title></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0b12">
+  <title>Nova — Welkom</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0b12;
+      --panel: rgba(20, 20, 31, .78);
+      --text: #f4f3fa;
+      --muted: #a09eaf;
+      --purple: #a78bfa;
+      --pink: #f0abfc;
+      --line: rgba(255,255,255,.09);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(124, 58, 237, .18), transparent 42%),
+        var(--bg);
+      font-family: "DM Sans", sans-serif;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      opacity: .18;
+      pointer-events: none;
+      background-image: radial-gradient(rgba(255,255,255,.35) .7px, transparent .7px);
+      background-size: 26px 26px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+    }
+
+    .topbar {
+      width: min(1120px, calc(100% - 40px));
+      height: 78px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--text);
+      text-decoration: none;
+      font: 700 19px "Space Grotesk", sans-serif;
+      letter-spacing: -.5px;
+    }
+
+    .brand-icon {
+      width: 35px;
+      height: 35px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 11px;
+      background: linear-gradient(145deg, #a78bfa, #7041cf);
+      box-shadow: 0 5px 24px rgba(139,92,246,.28);
+    }
+
+    .nav-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color .2s;
+    }
+
+    .nav-link:hover { color: white; }
+
+    main {
+      width: min(1120px, calc(100% - 40px));
+      min-height: calc(100vh - 79px);
+      margin: auto;
+      display: grid;
+      grid-template-columns: 1fr .88fr;
+      align-items: center;
+      gap: 65px;
+      padding: 70px 0 90px;
+    }
+
+    .copy { animation: rise .7s ease both; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 12px;
+      border: 1px solid rgba(167,139,250,.22);
+      border-radius: 999px;
+      color: #d4c5ff;
+      background: rgba(139,92,246,.08);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #a78bfa;
+      box-shadow: 0 0 12px #a78bfa;
+      animation: pulse 2s infinite;
+    }
+
+    h1 {
+      max-width: 620px;
+      margin: 25px 0 18px;
+      font: 700 clamp(44px, 6vw, 76px)/1.04 "Space Grotesk", sans-serif;
+      letter-spacing: -4px;
+    }
+
+    h1 span {
+      color: transparent;
+      background: linear-gradient(100deg, #c4b5fd, #e9a8f7 60%, #fbcfe8);
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+
+    .description {
+      max-width: 490px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 13px;
+      margin-top: 31px;
+    }
+
+    .button {
+      min-height: 49px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 19px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      color: white;
+      font: 600 14px "DM Sans", sans-serif;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s, background .2s, border-color .2s;
+    }
+
+    .button:hover { transform: translateY(-2px); }
+
+    .button-primary {
+      background: linear-gradient(110deg, #8b5cf6, #a855f7);
+      box-shadow: 0 8px 28px rgba(139,92,246,.24);
+    }
+
+    .button-primary:hover {
+      box-shadow: 0 12px 34px rgba(168,85,247,.38);
+    }
+
+    .button-secondary {
+      border-color: var(--line);
+      background: rgba(255,255,255,.035);
+    }
+
+    .button-secondary:hover {
+      border-color: rgba(255,255,255,.2);
+      background: rgba(255,255,255,.07);
+    }
+
+    .fine-print {
+      margin-top: 17px;
+      color: #777586;
+      font-size: 12px;
+    }
+
+    .fine-print a { color: #aaa2c6; }
+
+    .preview-wrap {
+      position: relative;
+      animation: rise .85s .12s ease both;
+    }
+
+    .glow {
+      position: absolute;
+      inset: 12% 8%;
+      z-index: -1;
+      border-radius: 50%;
+      background: rgba(139,92,246,.26);
+      filter: blur(75px);
+    }
+
+    .preview {
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      background: var(--panel);
+      box-shadow: 0 30px 100px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.06);
+      backdrop-filter: blur(18px);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .preview-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .window-dots { display: flex; gap: 6px; }
+    .window-dots i { width: 8px; height: 8px; border-radius: 50%; background: #555363; }
+    .window-dots i:first-child { background: #f28b82; }
+    .window-dots i:nth-child(2) { background: #fdd663; }
+    .window-dots i:nth-child(3) { background: #81c995; }
+
+    .preview-label {
+      color: #9996a8;
+      font-size: 12px;
+    }
+
+    .profile {
+      padding: 27px 25px 23px;
+      text-align: center;
+    }
+
+    .avatar {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 14px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 24px;
+      background: linear-gradient(145deg, #c4b5fd, #7c3aed);
+      box-shadow: 0 10px 35px rgba(139,92,246,.3);
+      font: 700 28px "Space Grotesk", sans-serif;
+    }
+
+    .profile h2 {
+      margin: 0;
+      font: 600 20px "Space Grotesk", sans-serif;
+    }
+
+    .profile p {
+      margin: 6px 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .connected {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border: 1px solid rgba(74,222,128,.17);
+      border-radius: 8px;
+      color: #9de9b4;
+      background: rgba(34,197,94,.07);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .connected span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+    }
+
+    .preview-bottom {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 0 18px 19px;
+    }
+
+    .mini-card {
+      padding: 13px 8px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,255,255,.025);
+      text-align: center;
+    }
+
+    .mini-card strong {
+      display: block;
+      font: 600 16px "Space Grotesk", sans-serif;
+    }
+
+    .mini-card small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .note {
+      position: absolute;
+      right: -18px;
+      bottom: 35px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 15px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #171622;
+      box-shadow: 0 12px 35px rgba(0,0,0,.3);
+      animation: float 5s 1s ease-in-out infinite;
+    }
+
+    .note-icon {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: rgba(139,92,246,.17);
+    }
+
+    .note strong { display: block; font-size: 12px; }
+    .note small { color: var(--muted); font-size: 10px; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    @keyframes pulse {
+      50% { opacity: .45; box-shadow: 0 0 4px #a78bfa; }
+    }
+
+    @media (max-width: 800px) {
+      main {
+        grid-template-columns: 1fr;
+        gap: 48px;
+        padding-top: 58px;
+      }
+      .copy { text-align: center; }
+      .description { margin-inline: auto; }
+      .actions { justify-content: center; }
+      h1 { letter-spacing: -2.5px; }
+      .preview-wrap { width: min(100%, 470px); margin: auto; }
+      .note { right: -8px; }
+    }
+
+    @media (max-width: 480px) {
+      .topbar, main { width: min(100% - 30px, 1120px); }
+      .nav-link { font-size: 12px; }
+      .actions { flex-direction: column; align-items: stretch; }
+      .button { width: 100%; }
+      .note { right: 4px; bottom: -20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+
 <body>
-  <h1>Inloggen</h1>
-  <a href="https://discord.com/oauth2/authorize?client_id=1546170500282064976&amp;response_type=code&amp;redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&amp;scope=identify">
-    Inloggen met Discord
-  </a>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Nova home">
+      <span class="brand-icon">✦</span>
+      <span>nova</span>
+    </a>
+    <a class="nav-link" href="#over">Over Nova <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main>
+    <section class="copy" id="over">
+      <div class="eyebrow"><span class="status-dot"></span> Jouw community, één plek</div>
+      <h1>Een betere plek om <span>samen te komen.</span></h1>
+      <p class="description">
+        Verbind je Discord-account en ontdek een overzichtelijke, persoonlijke ervaring.
+        Veilig aanmelden gaat via Discord — je wachtwoord wordt nooit met deze site gedeeld.
+      </p>
+
+      <div class="actions">
+        <a class="button button-primary"
+           href="https://discord.com/oauth2/authorize?client_id=1546170500282064976&amp;response_type=code&amp;redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&amp;scope=identify">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M19.7 5.3a18.8 18.8 0 0 0-4.6-1.4l-.6 1.2a17.4 17.4 0 0 0-5 0l-.6-1.2a18.8 18.8 0 0 0-4.6 1.4C1.4 9.6.6 13.8 1 18a18.5 18.5 0 0 0 5.7 2.9l1.2-2a12 12 0 0 1-1.9-.9l.5-.4a13.4 13.4 0 0 0 11 0l.5.4a12 12 0 0 1-1.9.9l1.2 2A18.5 18.5 0 0 0 23 18c.5-4.9-.8-9.1-3.3-12.7ZM8.6 15.4c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2 2 1 2 2.2-.9 2.2-2 2.2Zm6.8 0c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2 2 1 2 2.2-.9 2.2-2 2.2Z"/>
+          </svg>
+          Doorgaan met Discord
+          <span aria-hidden="true">→</span>
+        </a>
+        <a class="button button-secondary" href="#over">Meer informatie</a>
+      </div>
+
+      <p class="fine-print">Door verder te gaan, verbind je veilig via Discord OAuth.</p>
+    </section>
+
+    <section class="preview-wrap" aria-label="Voorbeeld van je profiel">
+      <div class="glow"></div>
+      <div class="preview">
+        <div class="preview-head">
+          <div class="window-dots"><i></i><i></i><i></i></div>
+          <span class="preview-label">Jouw persoonlijke ruimte</span>
+          <span aria-hidden="true">⋯</span>
+        </div>
+
+        <div class="profile">
+          <div class="avatar">N</div>
+          <h2>Welkom bij Nova</h2>
+          <p>Fijn dat je er bent</p>
+          <span class="connected"><span></span> Discord-verbinding beveiligd</span>
+        </div>
+
+        <div class="preview-bottom">
+          <div class="mini-card"><strong>01</strong><small>Account</small></div>
+          <div class="mini-card"><strong>∞</strong><small>Mogelijkheden</small></div>
+          <div class="mini-card"><strong>✓</strong><small>Veilig</small></div>
+        </div>
+      </div>
+
+      <div class="note">
+        <span class="note-icon">✦</span>
+        <span><strong>Alles geregeld</strong><small>Je bent bijna binnen</small></span>
+      </div>
+    </section>
+  </main>
 </body>
 </html>
