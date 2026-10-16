@@ -3,56 +3,387 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nova — Discord-login</title>
+  <meta name="theme-color" content="#090a12">
+  <title>Nova — Jouw community begint hier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090a12;
+      --panel: rgba(20, 21, 35, .76);
+      --text: #f5f5fb;
+      --muted: #a4a5b8;
+      --purple: #8b7cff;
+      --cyan: #76e4f7;
+    }
+
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
-      min-height: 100vh; margin: 0; padding: 24px;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 15% 12%, rgba(105, 77, 255, .18), transparent 38%),
+        radial-gradient(ellipse at 88% 75%, rgba(39, 191, 219, .12), transparent 35%),
+        var(--bg);
+      font-family: "DM Sans", sans-serif;
+    }
+
+    body::before {
+      position: fixed;
+      z-index: -1;
+      inset: 0;
+      content: "";
+      opacity: .18;
+      pointer-events: none;
+      background-image: radial-gradient(rgba(255,255,255,.35) .7px, transparent .7px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(to bottom, black, transparent 85%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(1120px, calc(100% - 40px)); margin-inline: auto; }
+
+    nav {
+      height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      font: 700 20px "Space Grotesk", sans-serif;
+      letter-spacing: -.5px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 11px;
+      background: linear-gradient(135deg, #a18bff, #5a48dc);
+      box-shadow: 0 0 25px rgba(139,124,255,.35);
+    }
+
+    .nav-note { color: var(--muted); font-size: 13px; }
+
+    .hero {
+      min-height: 620px;
+      padding: 92px 0 74px;
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      align-items: center;
+      gap: 56px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 999px;
+      background: rgba(255,255,255,.035);
+      color: #d1ccff;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #7ef0c2;
+      box-shadow: 0 0 12px #7ef0c2;
+    }
+
+    h1 {
+      max-width: 680px;
+      margin: 22px 0 18px;
+      font: 700 clamp(48px, 7vw, 78px)/1.02 "Space Grotesk", sans-serif;
+      letter-spacing: -.065em;
+    }
+
+    .gradient {
+      color: transparent;
+      background: linear-gradient(100deg, #c2b7ff 5%, #8c7bff 50%, #78e5f4 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+
+    .intro {
+      max-width: 510px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 15px;
+      margin-top: 32px;
+    }
+
+    .discord-button {
+      min-height: 54px;
+      padding: 0 21px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 14px;
+      background: #5865f2;
+      box-shadow: 0 10px 35px rgba(88,101,242,.25);
+      color: white;
+      font-weight: 700;
+      transition: transform .2s, box-shadow .2s, background .2s;
+    }
+
+    .discord-button:hover {
+      transform: translateY(-3px);
+      background: #6975ff;
+      box-shadow: 0 15px 42px rgba(88,101,242,.4);
+    }
+
+    .discord-button:focus-visible, .learn:focus-visible {
+      outline: 3px solid var(--cyan);
+      outline-offset: 4px;
+    }
+
+    .learn { color: #d0cfdd; font-size: 14px; }
+    .learn:hover { color: white; }
+
+    .fine-print {
+      margin-top: 15px;
+      color: #77798e;
+      font-size: 12px;
+    }
+
+    .visual {
+      position: relative;
+      min-height: 390px;
+      display: grid;
+      place-items: center;
+    }
+
+    .orb {
+      position: absolute;
+      width: 300px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(139,124,255,.3), rgba(64,210,230,.1));
+      filter: blur(2px);
+      animation: float 7s ease-in-out infinite;
+    }
+
+    .orb::before, .orb::after {
+      position: absolute;
+      content: "";
+      inset: -28px;
+      border: 1px solid rgba(181,171,255,.18);
+      border-radius: 50%;
+      transform: rotate(-25deg) scaleY(.38);
+    }
+
+    .orb::after {
+      transform: rotate(55deg) scaleY(.38);
+      border-color: rgba(103,224,244,.18);
+    }
+
+    .glass-card {
+      position: relative;
+      width: min(100%, 350px);
+      padding: 25px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 22px;
+      background: linear-gradient(145deg, rgba(31,31,51,.84), rgba(16,17,29,.8));
+      box-shadow: 0 25px 90px rgba(0,0,0,.4), inset 0 1px rgba(255,255,255,.08);
+      backdrop-filter: blur(18px);
+      animation: card-in .8s .15s both, float 6s 1s ease-in-out infinite;
+    }
+
+    .card-top { display: flex; align-items: center; gap: 13px; }
+    .avatar {
+      width: 45px; height: 45px;
       display: grid; place-items: center;
-      background: #0b0b12; color: #f5f3ff;
-      font: 16px system-ui, sans-serif;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #9c8aff, #4e43bc);
+      font-size: 20px;
     }
-    main {
-      width: min(100%, 440px); padding: 40px 30px;
-      text-align: center; border: 1px solid #302b43;
-      border-radius: 22px; background: #151420;
+    .card-title { font-weight: 700; }
+    .card-sub { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .online {
+      width: 8px; height: 8px; margin-left: auto;
+      border-radius: 50%; background: #65e6a7;
+      box-shadow: 0 0 12px #65e6a7;
     }
-    h1 { margin: 0 0 10px; }
-    p { color: #b8b4c8; line-height: 1.5; }
-    a {
-      display: block; margin-top: 24px; padding: 14px;
-      border-radius: 12px; background: #5865f2;
-      color: white; font-weight: 700; text-decoration: none;
+    .divider { height: 1px; margin: 22px 0; background: rgba(255,255,255,.09); }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { margin-top: 7px; font: 600 28px "Space Grotesk", sans-serif; }
+    .bars { height: 66px; margin-top: 18px; display: flex; align-items: end; gap: 7px; }
+    .bars i {
+      flex: 1; height: var(--h); border-radius: 5px 5px 2px 2px;
+      background: linear-gradient(to top, rgba(119,99,255,.35), #9a8bff);
+      transform-origin: bottom;
+      animation: bar 1.2s ease-in-out infinite alternate;
+      animation-delay: var(--d);
     }
-    a:hover { background: #4752c4; }
-    #status { min-height: 24px; }
+
+    .features {
+      padding: 26px 0 90px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .feature {
+      padding: 23px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 17px;
+      background: rgba(255,255,255,.025);
+      transition: transform .2s, border-color .2s, background .2s;
+    }
+    .feature:hover {
+      transform: translateY(-5px);
+      border-color: rgba(160,145,255,.35);
+      background: rgba(255,255,255,.045);
+    }
+    .feature-icon { font-size: 20px; }
+    .feature h2 { margin: 15px 0 7px; font: 600 17px "Space Grotesk", sans-serif; }
+    .feature p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+    footer {
+      padding: 22px 0 30px;
+      border-top: 1px solid rgba(255,255,255,.07);
+      color: #77798e;
+      font-size: 12px;
+    }
+
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    @keyframes card-in { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; } }
+    @keyframes bar { to { transform: scaleY(.72); opacity: .72; } }
+
+    @media (max-width: 760px) {
+      .hero { min-height: auto; padding: 70px 0 45px; grid-template-columns: 1fr; gap: 28px; }
+      .visual { min-height: 340px; }
+      .features { grid-template-columns: 1fr; padding-bottom: 55px; }
+      .nav-note { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Nova</h1>
-    <p id="status">Verbind je Discord-account om verder te gaan.</p>
-    <a id="login" href="https://jouw-api.example.com/login">
-      Doorgaan met Discord
-    </a>
-  </main>
+  <div class="wrap">
+    <nav aria-label="Hoofdnavigatie">
+      <a class="brand" href="#" aria-label="Nova homepage">
+        <span class="brand-mark">✦</span> nova
+      </a>
+      <span class="nav-note">Een plek om samen te komen.</span>
+    </nav>
+
+    <main>
+      <section class="hero">
+        <div>
+          <span class="eyebrow"><span class="dot"></span> Jouw community, verbonden</span>
+          <h1>Meer dan een server.<br><span class="gradient">Een community.</span></h1>
+          <p class="intro">
+            Sluit je aan, ontmoet nieuwe mensen en ontdek wat er gebeurt wanneer
+            iedereen op één plek samenkomt.
+          </p>
+          <div class="actions">
+            <a class="discord-button"
+               href="https://discord.com/oauth2/authorize?client_id=1546170500282064976&amp;response_type=code&amp;redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&amp;scope=identify%20guilds.join">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19.73 5.05A19.8 19.8 0 0 0 14.87 3.5l-.6 1.22a18.3 18.3 0 0 0-4.54 0L9.13 3.5a19.7 19.7 0 0 0-4.87 1.55C1.18 9.6.35 14.05.77 18.44a19.9 19.9 0 0 0 5.97 3.02l1.29-2.1a12.9 12.9 0 0 1-2.03-.98l.5-.39a14.1 14.1 0 0 0 10.98 0l.5.39c-.65.39-1.33.72-2.04.98l1.3 2.1a19.8 19.8 0 0 0 5.97-3.02c.5-5.1-.85-9.5-3.48-13.39ZM8.73 14.72c-1.07 0-1.95-.99-1.95-2.2s.86-2.2 1.95-2.2c1.1 0 1.97 1 1.95 2.2 0 1.21-.86 2.2-1.95 2.2Zm6.54 0c-1.07 0-1.95-.99-1.95-2.2s.86-2.2 1.95-2.2c1.1 0 1.97 1 1.95 2.2 0 1.21-.85 2.2-1.95 2.2Z"/>
+              </svg>
+              Sign in met Discord
+            </a>
+            <a class="learn" href="#over">Ontdek meer <span aria-hidden="true">↓</span></a>
+          </div>
+          <p class="fine-print">Je logt veilig in via Discord. We vragen nooit om je Discord-wachtwoord.</p>
+        </div>
+
+        <div class="visual" aria-hidden="true">
+          <div class="orb"></div>
+          <div class="glass-card">
+            <div class="card-top">
+              <div class="avatar">✦</div>
+              <div>
+                <div class="card-title">Community hub</div>
+                <div class="card-sub">Samen online</div>
+              </div>
+              <span class="online"></span>
+            </div>
+            <div class="divider"></div>
+            <div class="stat-label">De community groeit samen</div>
+            <div class="stat-value">Jouw plek wacht.</div>
+            <div class="bars">
+              <i style="--h:38%;--d:.0s"></i><i style="--h:59%;--d:.1s"></i>
+              <i style="--h:46%;--d:.2s"></i><i style="--h:80%;--d:.3s"></i>
+              <i style="--h:62%;--d:.4s"></i><i style="--h:96%;--d:.5s"></i>
+              <i style="--h:72%;--d:.6s"></i><i style="--h:88%;--d:.7s"></i>
+              <i style="--h:55%;--d:.8s"></i><i style="--h:76%;--d:.9s"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="features" id="over" aria-label="Voordelen">
+        <article class="feature">
+          <span class="feature-icon">✧</span>
+          <h2>Snel verbonden</h2>
+          <p>Gebruik Discord om veilig in te loggen en meteen verder te gaan.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon">◈</span>
+          <h2>Gebouwd voor mensen</h2>
+          <p>Een overzichtelijke plek waar community en gesprekken samenkomen.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon">⌁</span>
+          <h2>Jij houdt controle</h2>
+          <p>Je Discord-wachtwoord wordt nooit aan deze website doorgegeven.</p>
+        </article>
+      </section>
+    </main>
+
+    <footer>© 2026 Nova. Onafhankelijk community-project, niet verbonden aan Discord Inc.</footer>
+  </div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const status = document.getElementById("status");
-    const login = document.getElementById("login");
-
+    const params = new URLSearchParams(location.search);
     if (params.get("login") === "success") {
-      const username = params.get("username");
-      status.textContent = username
-        ? `Ingelogd als ${username}.`
-        : "Je Discord-account is verbonden.";
-      login.hidden = true;
-
-      // Verwijder loginstatus uit de adresbalk.
-      history.replaceState({}, document.title, window.location.pathname);
-    } else if (params.get("login") === "error") {
-      status.textContent = "Inloggen is niet gelukt. Probeer het opnieuw.";
+      const name = params.get("username");
+      const button = document.querySelector(".discord-button");
+      button.textContent = name ? `Welkom, ${name}!` : "Discord-account verbonden";
+      button.removeAttribute("href");
+      button.setAttribute("aria-disabled", "true");
+      button.style.cursor = "default";
+      button.style.background = "#238b68";
+      history.replaceState({}, document.title, location.pathname);
     }
   </script>
 </body>
