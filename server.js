@@ -1,110 +1,41 @@
-// server.js
-// Node.js 18+
-// npm install express dotenv
-
 require("dotenv").config();
 
 const express = require("express");
+const { GoogleGenAI } = require("@google/genai");
+
 const app = express();
+const port = process.env.PORT || 3000;
 
-const PORT = process.env.PORT || 3000;
-const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
-const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI;
-
-if (!CLIENT_ID || !CLIENT_SECRET || !REDIRECT_URI) {
-  console.error(
-    "Vul DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET en DISCORD_REDIRECT_URI in."
-  );
+if (!process.env.GEMINI_API_KEY) {
+  console.error("GEMINI_API_KEY ontbreekt. Zet deze in je .env-bestand.");
   process.exit(1);
 }
 
-app.get("/login", (req, res) => {
-  const params = new URLSearchParams({
-    client_id: CLIENT_ID,
-    response_type: "code",
-    redirect_uri: REDIRECT_URI,
-    scope: "identify guilds.join",
-  });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-  res.redirect(`https://discord.com/oauth2/authorize?${params}`);
-});
+app.use(express.json({ limit: "20kb" }));
+app.use(express.static(__dirname));
 
-app.get("/callback", async (req, res) => {
-  const { code, error } = req.query;
+app.post("/api/chat", async (req, res) => {
+  const message = req.body?.message;
 
-  if (error) {
-    return res.status(400).send("Discord-aanmelding geannuleerd of mislukt.");
-  }
-
-  if (!code) {
-    return res.status(400).send("Geen OAuth-code ontvangen.");
+  if (typeof message !== "string" || !message.trim()) {
+    return res.status(400).json({ error: "Vul eerst een bericht in." });
   }
 
   try {
-    const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        grant_type: "authorization_code",
-        code: String(code),
-        redirect_uri: REDIRECT_URI,
-      }),
+    const result = await ai.models.generateContent({
+      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+      contents: message.trim(),
     });
 
-    const tokenData = await tokenResponse.json();
-
-    if (!tokenResponse.ok) {
-      console.error("Discord tokenfout:", tokenData);
-      return res.status(502).send("Discord-aanmelding kon niet worden afgerond.");
-    }
-
-    // Haal alleen de gebruikersinformatie op die nodig is.
-    const userResponse = await fetch("https://discord.com/api/users/@me", {
-      headers: { Authorization: `Bearer ${tokenData.access_token}` },
-    });
-
-    const user = await userResponse.json();
-
-    if (!userResponse.ok) {
-      console.error("Discord gebruikersfout:", user);
-      return res.status(502).send("Discord-gebruikersgegevens ophalen mislukt.");
-    }
-
-    // Voeg hier eventueel server-side sessiebeheer toe.
-    // Stuur access tokens nooit naar de browser of naar publieke GitHub-code.
-    res
-      .status(200)
-      .type("html")
-      .send(`<!doctype html>
-<html lang="nl">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<title>Welkom bij Nova</title>
-<style>
-body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0b12;color:#f4f3fa;font:16px system-ui,sans-serif}
-main{text-align:center;padding:40px;border:1px solid #292638;border-radius:20px;background:#151420}
-h1{margin-bottom:8px}p{color:#aaa}
-</style></head>
-<body><main><h1>Welkom bij Nova, ${escapeHtml(user.username)}!</h1>
-<p>Je Discord-account is verbonden.</p></main></body></html>`);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Er ging iets mis tijdens het aanmelden.");
+    res.json({ reply: result.text });
+  } catch (error) {
+    console.error("Gemini API-fout:", error.message);
+    res.status(500).json({ error: "Er ging iets mis bij Gemini." });
   }
 });
 
-function escapeHtml(value = "") {
-  return String(value).replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-  })[char]);
-}
-
-app.listen(PORT, () => {
-  console.log(`Nova OAuth-server draait op poort ${PORT}`);
+app.listen(port, () => {
+  console.log(`NovaDev draait op http://localhost:${port}`);
 });
