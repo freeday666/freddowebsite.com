@@ -3,165 +3,56 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nova AI — Chat</title>
+  <title>Discord-bot dashboard</title>
   <style>
-    * { box-sizing: border-box; }
-
     body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 20px;
-      background: #0b0d14;
-      color: #f4f5fa;
-      font: 15px/1.5 system-ui, sans-serif;
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      background: #10121a; color: #f5f5f7;
+      font: 16px system-ui, sans-serif;
     }
-
-    .chat {
-      width: min(760px, 100%);
-      height: min(760px, 90vh);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      border: 1px solid #252938;
-      border-radius: 18px;
-      background: #11141e;
-      box-shadow: 0 20px 80px #0007;
+    main {
+      width: min(440px, calc(100% - 40px)); padding: 28px;
+      border: 1px solid #303443; border-radius: 16px; background: #191c27;
     }
-
-    header {
-      padding: 18px 22px;
-      border-bottom: 1px solid #252938;
-      font-weight: 700;
-    }
-
-    header span { color: #a78bfa; }
-
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 22px;
-    }
-
-    .message {
-      width: fit-content;
-      max-width: 85%;
-      margin: 0 0 14px;
-      padding: 11px 14px;
-      border: 1px solid #292d3b;
-      border-radius: 4px 14px 14px;
-      background: #191d29;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
-
-    .message.user {
-      margin-left: auto;
-      border-color: #5141a0;
-      border-radius: 14px 4px 14px 14px;
-      background: #30265d;
-    }
-
-    form {
-      display: flex;
-      gap: 10px;
-      padding: 14px;
-      border-top: 1px solid #252938;
-    }
-
-    textarea {
-      flex: 1;
-      min-height: 44px;
-      max-height: 130px;
-      resize: vertical;
-      padding: 12px;
-      border: 1px solid #303548;
-      border-radius: 12px;
-      outline: none;
-      background: #0d1018;
-      color: white;
-      font: inherit;
-    }
-
-    textarea:focus { border-color: #8b5cf6; }
-
+    h1 { margin-top: 0; }
+    #status { color: #b7bdcc; }
+    .online { color: #55d68b !important; }
+    .offline { color: #ff7777 !important; }
     button {
-      align-self: flex-end;
-      min-height: 44px;
-      padding: 0 17px;
-      border: 0;
-      border-radius: 12px;
-      background: #7655e8;
-      color: white;
-      font: inherit;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    button:hover { background: #896cf0; }
-
-    .note {
-      padding: 0 16px 12px;
-      color: #9299aa;
-      text-align: center;
-      font-size: 12px;
+      padding: 10px 14px; border: 0; border-radius: 9px;
+      background: #5865f2; color: white; font: inherit; cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <main class="chat">
-    <header>✦ <span>Nova</span> Chat</header>
-
-    <section id="messages" aria-live="polite">
-      <div class="message">
-        Hoi! Dit is een demo-chat zonder AI-verbinding. Voor echte, vrije antwoorden is een AI-model nodig.
-      </div>
-    </section>
-
-    <form id="form">
-      <textarea id="input" placeholder="Typ je bericht..." aria-label="Je bericht" required></textarea>
-      <button type="submit">Verstuur</button>
-    </form>
-
-    <div class="note">Demo zonder API of AI-model — antwoorden zijn niet gegenereerd door AI.</div>
+  <main>
+    <h1>Discord bot</h1>
+    <p id="status">Status ophalen…</p>
+    <button id="refresh">Vernieuwen</button>
   </main>
 
   <script>
-    const form = document.querySelector("#form");
-    const input = document.querySelector("#input");
-    const messages = document.querySelector("#messages");
+    const status = document.querySelector("#status");
 
-    function addMessage(text, sender) {
-      const bubble = document.createElement("div");
-      bubble.className = "message" + (sender === "user" ? " user" : "");
-      bubble.textContent = text;
-      messages.appendChild(bubble);
-      messages.scrollTop = messages.scrollHeight;
+    async function updateStatus() {
+      try {
+        const response = await fetch("/api/status");
+        if (!response.ok) throw new Error("Status ophalen mislukt");
+        const data = await response.json();
+
+        status.textContent = data.online
+          ? `Online als ${data.username}`
+          : "Offline";
+        status.className = data.online ? "online" : "offline";
+      } catch {
+        status.textContent = "Kan de server niet bereiken.";
+        status.className = "offline";
+      }
     }
 
-    form.addEventListener("submit", event => {
-      event.preventDefault();
-      const text = input.value.trim();
-      if (!text) return;
-
-      addMessage(text, "user");
-      input.value = "";
-
-      setTimeout(() => {
-        addMessage(
-          "Deze demo heeft geen AI-model en kan daarom geen inhoudelijk antwoord genereren. Koppel een AI-model via een backend om echte antwoorden te krijgen.",
-          "assistant"
-        );
-      }, 400);
-    });
-
-    input.addEventListener("keydown", event => {
-      if (event.key === "Enter" && !event.shiftKey) {
-        event.preventDefault();
-        form.requestSubmit();
-      }
-    });
+    document.querySelector("#refresh").addEventListener("click", updateStatus);
+    updateStatus();
+    setInterval(updateStatus, 15000);
   </script>
 </body>
 </html>
