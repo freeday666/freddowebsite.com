@@ -1,51 +1,20 @@
 const express = require("express");
-const session = require("express-session");
-
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+const CLIENT_ID = "1546170500282064976";
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const REDIRECT_URI =
-  process.env.DISCORD_REDIRECT_URI || `http://localhost:${PORT}/callback`;
-
-if (!CLIENT_ID || !CLIENT_SECRET) {
-  throw new Error("Stel DISCORD_CLIENT_ID en DISCORD_CLIENT_SECRET in.");
-}
-
-app.use(session({
-  secret: process.env.SESSION_SECRET || "vervang-dit-door-een-lange-willekeurige-string",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 24 * 60 * 60 * 1000
-  }
-}));
+const REDIRECT_URI = "http://localhost:3000/callback";
 
 app.use(express.static("public"));
 
-app.get("/login", (req, res) => {
-  const params = new URLSearchParams({
-    client_id: CLIENT_ID,
-    redirect_uri: REDIRECT_URI,
-    response_type: "code",
-    scope: "identify"
-  });
-
-  res.redirect(`https://discord.com/oauth2/authorize?${params}`);
-});
-
 app.get("/callback", async (req, res) => {
+  if (!CLIENT_SECRET) return res.status(500).send("DISCORD_CLIENT_SECRET ontbreekt.");
+
   const code = req.query.code;
-  if (typeof code !== "string") {
-    return res.status(400).send("Discord heeft geen autorisatiecode teruggestuurd.");
-  }
+  if (typeof code !== "string") return res.status(400).send("Discord-code ontbreekt.");
 
   try {
-    const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
+    const response = await fetch("https://discord.com/api/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
@@ -57,46 +26,34 @@ app.get("/callback", async (req, res) => {
       })
     });
 
-    const tokens = await tokenResponse.json();
-    if (!tokenResponse.ok) {
-      console.error("Tokenfout:", tokens);
-      return res.status(400).send("Discord-login is mislukt. Controleer je instellingen.");
+    const data = await response.json();
+    if (!response.ok) {
+      console.error(data);
+      return res.status(400).send("Discord-login mislukt. Controleer OAuth-instellingen.");
     }
 
     const userResponse = await fetch("https://discord.com/api/users/@me", {
-      headers: { Authorization: `Bearer ${tokens.access_token}` }
+      headers: { Authorization: `Bearer ${data.access_token}` }
     });
-
     const user = await userResponse.json();
-    if (!userResponse.ok) {
-      console.error("Gebruikersfout:", user);
-      return res.status(400).send("Discord-gebruikersgegevens ophalen is mislukt.");
-    }
 
-    req.session.user = {
-      id: user.id,
-      username: user.username,
-      global_name: user.global_name
-    };
+    if (!userResponse.ok) return res.status(400).send("Profiel ophalen mislukt.");
 
-    res.redirect("/");
+    res.send(`<!doctype html>
+      <html lang="nl"><meta charset="utf-8">
+      <title>Ingelogd</title>
+      <h1>Ingelogd als ${escapeHtml(user.global_name || user.username)}</h1>
+      <p>Je Discord-login is gelukt.</p></html>`);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Er ging iets mis tijdens het inloggen.");
+    res.status(500).send("Serverfout tijdens inloggen.");
   }
 });
 
-app.get("/me", (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).json({ error: "Niet ingelogd" });
-  }
-  res.json(req.session.user);
-});
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[c]);
+}
 
-app.post("/logout", (req, res) => {
-  req.session.destroy(() => res.sendStatus(204));
-});
-
-app.listen(PORT, () => {
-  console.log(`Server draait op http://localhost:${PORT}`);
-});
+app.listen(3000, () => console.log("Open http://localhost:3000"));
