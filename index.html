@@ -1,368 +1,120 @@
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#11101b">
-<title>Gen DC Generator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11101b">
+  <title>Inloggen met Discord</title>
 
-<style>
-:root {
-  color-scheme: dark;
-  --bg: #11101b;
-  --card: #1d1b2b;
-  --purple: #8b5cf6;
-  --text: #f5f3ff;
-  --muted: #aaa5c0;
-}
-* { box-sizing: border-box; }
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #11101b;
+      --card: #1d1b2b;
+      --text: #f5f3ff;
+      --muted: #aaa5c0;
+      --border: #39334e;
+    }
 
-body {
-  margin: 0;
-  padding: 24px 16px;
-  background: radial-gradient(ellipse at top, #302052, var(--bg) 60%);
-  color: var(--text);
-  font-family: system-ui, Arial, sans-serif;
-  min-height: 100vh;
-}
+    * { box-sizing: border-box; }
 
-main { max-width: 480px; margin: auto; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px 16px;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      background: radial-gradient(ellipse at top, #302052, var(--bg) 60%);
+      font-family: system-ui, Arial, sans-serif;
+    }
 
-header { text-align: center; margin: 16px 0 28px; }
+    main { width: 100%; max-width: 440px; }
 
-.logo {
-  display: inline-grid;
-  place-items: center;
-  width: 62px;
-  height: 62px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #a78bfa, #6d28d9);
-  font-size: 28px;
-  font-weight: 900;
-  box-shadow: 0 8px 30px #8b5cf655;
-}
+    .card {
+      padding: 28px;
+      text-align: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 18px 60px #0005;
+    }
 
-h1 { font-size: 28px; margin: 14px 0 6px; }
-.subtitle { color: var(--muted); font-size: 14px; }
+    .logo {
+      display: inline-grid;
+      width: 64px;
+      height: 64px;
+      place-items: center;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #a78bfa, #6d28d9);
+      font-size: 30px;
+      font-weight: 900;
+    }
 
-.card {
-  background: var(--card);
-  border: 1px solid #39334e;
-  border-radius: 18px;
-  padding: 20px;
-  margin-bottom: 16px;
-}
+    h1 { margin: 18px 0 8px; font-size: 25px; }
+    p { color: var(--muted); line-height: 1.6; }
 
-h2 { font-size: 18px; margin: 0 0 20px; }
+    .login {
+      display: block;
+      margin-top: 24px;
+      padding: 14px 18px;
+      border-radius: 11px;
+      color: white;
+      background: #5865f2;
+      text-decoration: none;
+      font-weight: 700;
+    }
 
-label {
-  display: block;
-  color: var(--muted);
-  font-size: 13px;
-  margin: 16px 0 8px;
-}
+    .login:hover { background: #4752c4; }
 
-.field {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  background: #12111c;
-  border: 1px solid #39334e;
-  border-radius: 10px;
-  padding: 10px;
-}
+    .notice {
+      margin-top: 18px;
+      font-size: 12px;
+    }
 
-.field span {
-  flex: 1;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-size: 14px;
-}
-
-button {
-  font: inherit;
-  cursor: pointer;
-  border: 0;
-  border-radius: 10px;
-  padding: 11px 14px;
-  color: white;
-  background: #302a43;
-}
-
-button:focus-visible {
-  outline: 2px solid #c4b5fd;
-  outline-offset: 3px;
-}
-
-.copy { padding: 9px; }
-
-.primary {
-  width: 100%;
-  margin-top: 22px;
-  padding: 14px;
-  font-weight: 750;
-  background: linear-gradient(100deg, #8b5cf6, #6d28d9);
-}
-
-.secondary {
-  width: 100%;
-  margin-top: 10px;
-  background: transparent;
-  border: 1px solid #49405f;
-}
-
-.notice {
-  color: #d6c9ff;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.history-item {
-  padding: 12px 0;
-  border-top: 1px solid #39334e;
-  overflow-wrap: anywhere;
-  font-size: 13px;
-}
-
-.history-item small { color: var(--muted); }
-.history-item button { margin-top: 8px; margin-right: 5px; }
-
-#status {
-  min-height: 22px;
-  font-size: 13px;
-  color: #c4b5fd;
-  margin-top: 12px;
-}
-
-footer {
-  text-align: center;
-  font-size: 12px;
-  color: var(--muted);
-  padding: 10px;
-}
-</style>
+    #result {
+      overflow-wrap: anywhere;
+      margin-top: 18px;
+      color: #c4b5fd;
+      font-size: 14px;
+    }
+  </style>
 </head>
 
 <body>
-<main>
-  <header>
-    <div class="logo">G</div>
-    <h1>Gen DC Generator</h1>
-    <div class="subtitle">Random testgegevens • Android friendly</div>
-  </header>
+  <main>
+    <section class="card">
+      <div class="logo" aria-hidden="true">G</div>
+      <h1>Inloggen met Discord</h1>
+      <p>Log in met Discord om door te gaan naar Freddo Website.</p>
 
-  <section class="card">
-    <h2>⚡ Account generator</h2>
+      <a
+        class="login"
+        href="https://discord.com/oauth2/authorize?client_id=1546170500282064976&amp;response_type=code&amp;redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&amp;scope=identify%20guilds.join"
+      >
+        Inloggen met Discord
+      </a>
 
-    <label for="email">Test-e-mailadres</label>
-    <div class="field">
-      <span id="email">Klik op genereren</span>
-      <button class="copy" onclick="copyValue('email')"
-        aria-label="Kopieer e-mailadres">📋</button>
-    </div>
+      <p class="notice">
+        Na toestemming probeert Discord je terug te sturen naar de ingestelde
+        callback. De callback moet op een draaiende backend bestaan.
+      </p>
 
-    <label for="password">Willekeurig wachtwoord</label>
-    <div class="field">
-      <span id="password">••••••••••••••••</span>
-      <button class="copy" onclick="copyValue('password')"
-        aria-label="Kopieer wachtwoord">📋</button>
-    </div>
+      <div id="result" role="status" aria-live="polite"></div>
+    </section>
+  </main>
 
-    <button class="primary" onclick="generate()">
-      ✨ Genereer gegevens
-    </button>
+  <script>
+    // Toont een melding als Discord na OAuth terugstuurt naar deze GitHub Pages-pagina
+    // met bijvoorbeeld ?login=success of ?error=...
+    const params = new URLSearchParams(window.location.search);
+    const result = document.getElementById("result");
 
-    <button class="secondary" onclick="generateBatch()">
-      Genereer 5 sets
-    </button>
-
-    <div id="status" role="status" aria-live="polite"></div>
-  </section>
-
-  <section class="card">
-    <h2>🛡️ Veilig testen</h2>
-    <p class="notice">
-      E-mailadressen eindigen op example.com. Dit zijn
-      testadressen, geen echte mailboxen of geregistreerde accounts.
-      Gebruik geen echte persoonlijke gegevens.
-    </p>
-  </section>
-
-  <section class="card">
-    <h2>🕘 Geschiedenis</h2>
-    <div id="history"></div>
-    <button class="secondary" onclick="clearHistory()">
-      Geschiedenis wissen
-    </button>
-  </section>
-
-  <footer>Gen DC Generator · Lokale testtool</footer>
-</main>
-
-<script>
-const $ = id => document.getElementById(id);
-const alphabet =
-  "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-const digits = "23456789";
-const symbols = "!@#$%*-_";
-const all = alphabet + digits + symbols;
-
-let history = [];
-
-function randomInt(max) {
-  // Cryptografisch veilige random getallen zonder modulo-bias.
-  const range = 0x100000000;
-  const limit = range - (range % max);
-  const buffer = new Uint32Array(1);
-  do {
-    crypto.getRandomValues(buffer);
-  } while (buffer[0] >= limit);
-  return buffer[0] % max;
-}
-
-function pick(chars) {
-  return chars[randomInt(chars.length)];
-}
-
-function shuffle(chars) {
-  const a = [...chars];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = randomInt(i + 1);
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a.join("");
-}
-
-function makePassword(length = 16) {
-  let p = [
-    pick(alphabet.toUpperCase()),
-    pick(alphabet.toLowerCase()),
-    pick(digits),
-    pick(symbols)
-  ];
-
-  while (p.length < length) p.push(pick(all));
-  return shuffle(p);
-}
-
-function makeEmail() {
-  const id = new Uint32Array(2);
-  crypto.getRandomValues(id);
-  return "test" + id[0].toString(36) +
-    id[1].toString(36) + "@example.com";
-}
-
-function generate() {
-  const entry = {
-    email: makeEmail(),
-    password: makePassword(),
-    time: new Date().toLocaleTimeString("nl-NL")
-  };
-
-  $("email").textContent = entry.email;
-  $("password").textContent = entry.password;
-  $("status").textContent = "Nieuwe testgegevens gegenereerd.";
-
-  history.unshift(entry);
-  history = history.slice(0, 20);
-  renderHistory();
-}
-
-function generateBatch() {
-  for (let i = 0; i < 5; i++) {
-    history.unshift({
-      email: makeEmail(),
-      password: makePassword(),
-      time: new Date().toLocaleTimeString("nl-NL")
-    });
-  }
-
-  history = history.slice(0, 20);
-  const latest = history[0];
-  $("email").textContent = latest.email;
-  $("password").textContent = latest.password;
-  $("status").textContent = "5 sets toegevoegd aan de geschiedenis.";
-  renderHistory();
-}
-
-async function copyValue(id) {
-  const value = $(id).textContent;
-
-  if (!value || value === "Klik op genereren" ||
-      value.includes("•")) {
-    $("status").textContent = "Genereer eerst gegevens.";
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(value);
-    $("status").textContent = "Gekopieerd!";
-  } catch {
-    const area = document.createElement("textarea");
-    area.value = value;
-    document.body.appendChild(area);
-    area.select();
-    const ok = document.execCommand("copy");
-    area.remove();
-    $("status").textContent =
-      ok ? "Gekopieerd!" : "Kopiëren mislukt.";
-  }
-}
-
-function renderHistory() {
-  const container = $("history");
-  container.replaceChildren();
-
-  if (history.length === 0) {
-    container.textContent = "Nog geen gegevens gegenereerd.";
-    return;
-  }
-
-  history.forEach(entry => {
-    const item = document.createElement("div");
-    item.className = "history-item";
-
-    const email = document.createElement("div");
-    email.textContent = entry.email;
-
-    const password = document.createElement("div");
-    password.textContent = entry.password;
-
-    const time = document.createElement("small");
-    time.textContent = entry.time;
-
-    const copyEmail = document.createElement("button");
-    copyEmail.textContent = "Kopieer e-mail";
-    copyEmail.onclick = () => copyText(entry.email);
-
-    const copyPassword = document.createElement("button");
-    copyPassword.textContent = "Kopieer wachtwoord";
-    copyPassword.onclick = () => copyText(entry.password);
-
-    item.append(email, password, time,
-      document.createElement("br"), copyEmail, copyPassword);
-    container.appendChild(item);
-  });
-}
-
-async function copyText(value) {
-  try {
-    await navigator.clipboard.writeText(value);
-    $("status").textContent = "Gekopieerd!";
-  } catch {
-    $("status").textContent =
-      "Kopiëren niet beschikbaar. Selecteer de tekst handmatig.";
-  }
-}
-
-function clearHistory() {
-  history = [];
-  renderHistory();
-  $("status").textContent = "Geschiedenis gewist.";
-}
-
-renderHistory();
-</script>
+    if (params.get("login") === "success") {
+      result.textContent = "Discord-login gelukt.";
+    } else if (params.has("error")) {
+      result.textContent = "Discord-login niet voltooid: " + params.get("error");
+    }
+  </script>
 </body>
 </html>
