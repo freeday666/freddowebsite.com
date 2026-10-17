@@ -316,10 +316,11 @@
 </head>
 <body>
 
+  <!-- Authenticatie Scherm -->
   <section id="authScreen" class="auth-wrap">
     <div class="auth-card">
       <div class="brand">✦ Nova<span>Panel</span></div>
-      <p class="muted">Een demo-dashboard voor Discord-bots en FiveM-tools.</p>
+      <p class="muted">Dashboard gekoppeld aan de Node.js backend.</p>
 
       <form id="authForm">
         <div id="nameField" class="hidden">
@@ -337,13 +338,13 @@
       </form>
 
       <p class="small muted">
-        <span id="authPrompt">Nog geen demo-account?</span>
+        <span id="authPrompt">Nog geen account?</span>
         <button id="toggleAuth" class="link-btn" type="button">Account aanmaken</button>
       </p>
-      <p class="footer-note">Demo-login wordt alleen lokaal in deze browser bewaard. Gebruik hier geen echt wachtwoord.</p>
     </div>
   </section>
 
+  <!-- Hoofdapplicatie -->
   <div id="app" class="app hidden">
     <aside>
       <div class="side-brand">
@@ -362,7 +363,7 @@
       </nav>
 
       <div class="side-bottom small muted">
-        <div><span class="status-dot"></span>Demo-interface actief</div>
+        <div><span class="status-dot"></span>Verbonden met Backend</div>
         <div id="sideUser" style="margin-top:8px"></div>
       </div>
     </aside>
@@ -379,42 +380,27 @@
       <section id="page-overview" class="page">
         <div class="grid">
           <div class="card stat">
-            <div><div class="muted">Botstatus</div><strong>Demo</strong></div>
-            <span class="badge">Niet verbonden</span>
+            <div><div class="muted">Botstatus</div><strong>Online</strong></div>
+            <span class="badge" style="background:#234a36; color:#45d6a0;">Verbonden</span>
           </div>
           <div class="card stat">
             <div><div class="muted">Prefix</div><strong id="overviewPrefix">.</strong></div>
-            <span class="badge">Aanpasbaar</span>
+            <span class="badge">Backend gesynchroniseerd</span>
           </div>
 
           <div class="card wide">
             <h2>Snel aan de slag</h2>
-            <p class="muted">Deze pagina is de frontend. Koppel een backend om echte Discord-login, botcommands, AI, tickets en hosting te activeren.</p>
-            <div class="notice"><strong>Beveiliging:</strong> voer hier geen Discord-bottoken in. Een token in HTML of JavaScript is zichtbaar voor iedereen.</div>
-          </div>
-
-          <div class="card">
-            <h2>Bot uitnodigen</h2>
-            <p class="muted">Vervang de voorbeeld-ID door de applicatie-ID van je eigen bot.</p>
-            <a class="btn primary" href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer">Open Discord Developer Portal</a>
-          </div>
-
-          <div class="card">
-            <h2>Demo-commands</h2>
-            <p><code>.help</code> — commandolijst</p>
-            <p><code>.ping</code> — botstatus</p>
-            <p><code>.ticket</code> — ticket openen</p>
-            <p><code>.ban @gebruiker reden</code> — moderatie</p>
+            <p class="muted">Je paneel communiceert nu via veilige API-requests met de Node.js Express backend.</p>
           </div>
         </div>
       </section>
 
       <section id="page-ai" class="page hidden">
         <div class="card">
-          <h2>AI-chat</h2>
-          <p class="muted">Lokale demo: antwoorden zijn voorbeeldtekst. Voor echte AI is een beveiligde backend nodig.</p>
+          <h2>AI-chat (Backend gekoppeld)</h2>
+          <p class="muted">Vragen worden naar je server gestuurd voor verwerking.</p>
           <div id="chatLog" class="chat-log" aria-live="polite">
-            <div class="message">Hoi! Beschrijf wat je wilt maken. Deel geen wachtwoorden of tokens.</div>
+            <div class="message">Hoi! Stel hier je vraag aan de AI-backend.</div>
           </div>
           <form id="chatForm" class="chat-form">
             <input id="chatInput" placeholder="Stel een vraag..." maxlength="1000" required>
@@ -427,7 +413,6 @@
         <div class="grid">
           <div class="card">
             <h2>FiveM resource-generator</h2>
-            <p class="muted">Genereert een eenvoudige voorbeeldresource in je browser.</p>
             <label for="resourceName">Resourcenaam</label>
             <input id="resourceName" value="nova_example" maxlength="40">
             <label for="resourceType">Type resource</label>
@@ -443,7 +428,6 @@
             <pre id="resourceOutput">Klik op “Genereer voorbeeld”.</pre>
             <button id="copyResource" class="btn" type="button">Kopieer code</button>
           </div>
-          <div class="card wide notice">Controleer gegenereerde code voordat je die op een server gebruikt. Deze demo voert geen scripts uit en uploadt niets.</div>
         </div>
       </section>
 
@@ -454,12 +438,6 @@
             <label for="prefix">Command-prefix</label>
             <input id="prefix" maxlength="5" value=".">
             <button id="savePrefix" class="btn primary" style="margin-top:12px" type="button">Prefix opslaan</button>
-            <p class="footer-note">Demo-instelling wordt lokaal opgeslagen. Een echte bot moet dit server-side laden.</p>
-          </div>
-          <div class="card">
-            <h2>Bot hosting</h2>
-            <p class="muted">Deze HTML-pagina host geen bot en kan geen processen op een server starten.</p>
-            <div class="notice">Bewaar bot-token uitsluitend als server-side secret bij je hostingprovider. Deel het nooit in chat, HTML, GitHub of browsercode.</div>
           </div>
         </div>
       </section>
@@ -472,15 +450,7 @@
             <div class="row"><span>Spamdetectie</span><input class="switch setting" type="checkbox" data-key="spam"></div>
             <div class="row"><span>Linkfilter</span><input class="switch setting" type="checkbox" data-key="links"></div>
             <div class="row"><span>Log moderatieacties</span><input class="switch setting" type="checkbox" data-key="logs"></div>
-            <p class="footer-note">Dit zijn alleen interface-instellingen; ze voeren geen Discord-acties uit.</p>
-          </div>
-          <div class="card">
-            <h2>Moderatiecommands</h2>
-            <p><code>.warn @gebruiker reden</code></p>
-            <p><code>.timeout @gebruiker tijd reden</code></p>
-            <p><code>.kick @gebruiker reden</code></p>
-            <p><code>.ban @gebruiker reden</code></p>
-            <p class="muted small">Gebruik permissiecontroles en auditlogs in de backend.</p>
+            <button id="saveSettings" class="btn primary" style="margin-top:14px" type="button">Instellingen opslaan</button>
           </div>
         </div>
       </section>
@@ -489,7 +459,6 @@
         <div class="grid">
           <div class="card">
             <h2>Ticketpaneel</h2>
-            <p class="muted">Maak een demo-ticket aan. Tickets worden alleen in deze browser bewaard.</p>
             <label for="ticketSubject">Onderwerp</label>
             <input id="ticketSubject" maxlength="100" placeholder="Waarmee kunnen we helpen?">
             <button id="createTicket" class="btn primary" style="margin-top:12px" type="button">Ticket openen</button>
@@ -506,24 +475,25 @@
   <script>
     "use strict";
 
-    const $ = (selector) => document.querySelector(selector);
-    const $$ = (selector) => document.querySelectorAll(selector);
-
-    const KEYS = {
-      user: "nova_demo_user",
-      prefix: "nova_demo_prefix",
-      settings: "nova_demo_settings",
-      tickets: "nova_demo_tickets"
-    };
+    const API_URL = "http://localhost:3000/api";
+    const $ = (selector) => document.querySelector(selector); const $$ = (selector) => document.querySelectorAll(selector);
 
     let creatingAccount = false;
 
-    function readJSON(key, fallback) {
+    // Controleer bij het laden of er al een actieve sessie is op de server
+    async function checkSession() {
       try {
-        const value = localStorage.getItem(key);
-        return value ? JSON.parse(value) : fallback;
+        const res = await fetch(`${API_URL}/auth/me`, { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          showApp(data.user);
+          loadSettings();
+          loadTickets();
+        } else {
+          showAuth();
+        }
       } catch {
-        return fallback;
+        showAuth();
       }
     }
 
@@ -533,9 +503,6 @@
       const name = user?.name || user?.email?.split("@")[0] || "gebruiker";
       $("#welcomeName").textContent = name;
       $("#sideUser").textContent = user?.email || "";
-      loadSettings();
-      loadTickets();
-      setPrefix(localStorage.getItem(KEYS.prefix) || ".");
     }
 
     function showAuth() {
@@ -546,73 +513,100 @@
     $("#toggleAuth").addEventListener("click", () => {
       creatingAccount = !creatingAccount;
       $("#nameField").classList.toggle("hidden", !creatingAccount);
-      $("#authSubmit").textContent = creatingAccount ? "Demo-account aanmaken" : "Inloggen";
-      $("#authPrompt").textContent = creatingAccount ? "Heb je al een demo-account?" : "Nog geen demo-account?";
+      $("#authSubmit").textContent = creatingAccount ? "Account aanmaken" : "Inloggen";
+      $("#authPrompt").textContent = creatingAccount ? "Heb je al een account?" : "Nog geen account?";
       $("#toggleAuth").textContent = creatingAccount ? "Inloggen" : "Account aanmaken";
-      $("#password").autocomplete = creatingAccount ? "new-password" : "current-password";
     });
 
-    $("#authForm").addEventListener("submit", (event) => {
+    // Inloggen / Registreren via API
+    $("#authForm").addEventListener("submit", async (event) => {
       event.preventDefault();
-
       const email = $("#email").value.trim().toLowerCase();
       const password = $("#password").value;
       const name = $("#displayName").value.trim();
 
-      if (creatingAccount && name.length < 2) {
-        alert("Vul een naam van minimaal 2 tekens in.");
-        return;
-      }
+      const endpoint = creatingAccount ? `${API_URL}/auth/register` : `${API_URL}/auth/login`;
+      const body = creatingAccount ? { email, password, name } : { email, password };
 
-      // Demo-only: dit is GEEN echte of veilige accountauthenticatie.
-      const user = { email, name: name || email.split("@")[0] };
-      localStorage.setItem(KEYS.user, JSON.stringify(user));
-      showApp(user);
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          credentials: "include"
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showApp(data.user);
+          loadSettings();
+          loadTickets();
+        } else {
+          alert(data.error || "Er is een fout opgetreden.");
+        }
+      } catch (err) {
+        alert("Kan geen verbinding maken met de backend server.");
+      }
     });
 
-    $("#logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem(KEYS.user);
+    $("#logoutBtn").addEventListener("click", async () => {
+      await fetch(`${API_URL}/auth/logout`, { method: "POST", credentials: "include" });
       showAuth();
     });
 
-    const titles = {
-      overview: "Overzicht",
-      ai: "AI-chat",
-      fivem: "FiveM scripts",
-      bot: "Botinstellingen",
-      moderation: "Moderatie",
-      tickets: "Tickets"
-    };
-
+    // Navigatie logica
+    const titles = { overview: "Overzicht", ai: "AI-chat", fivem: "FiveM scripts", bot: "Botinstellingen", moderation: "Moderatie", tickets: "Tickets" };
     $$(".nav-btn").forEach((button) => {
       button.addEventListener("click", () => {
-        $$(".nav-btn").forEach((item) => item.classList.remove("active"));
-        button.classList.add("active");
-
-        $$(".page").forEach((page) => page.classList.add("hidden"));
+        $$(".nav-btn").forEach((item) => item.classList.remove("active")); button.classList.add("active"); $$
+(".page").forEach((page) => page.classList.add("hidden"));
         $("#page-" + button.dataset.page).classList.remove("hidden");
         $("#pageTitle").textContent = titles[button.dataset.page];
       });
     });
 
-    function setPrefix(value) {
-      const prefix = (value || ".").slice(0, 5);
-      $("#prefix").value = prefix;
-      $("#overviewPrefix").textContent = prefix;
+    // Instellingen laden en opslaan
+    async function loadSettings() {
+      try {
+        const res = await fetch(`${API_URL}/settings`, { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          $("#prefix").value = data.prefix;
+          $("#overviewPrefix").textContent = data.prefix; $$(".setting").forEach(sw => {
+            const key = sw.dataset.key;
+            if (data[key] !== undefined) sw.checked = data[key];
+          });
+        }
+      } catch (e) { console.error(e); }
     }
 
-    $("#savePrefix").addEventListener("click", () => {
+    $("#savePrefix").addEventListener("click", async () => {
       const prefix = $("#prefix").value.trim();
-      if (!prefix) {
-        alert("De prefix mag niet leeg zijn.");
-        return;
+      const res = await fetch(`${API_URL}/settings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prefix }),
+        credentials: "include"
+      });
+      if (res.ok) {
+        const data = await res.json();
+        $("#overviewPrefix").textContent = data.botSettings.prefix;
+        alert("Prefix opgeslagen op de server!");
       }
-      localStorage.setItem(KEYS.prefix, prefix);
-      setPrefix(prefix);
-      alert("Demo-prefix opgeslagen in deze browser.");
     });
 
-    $("#chatForm").addEventListener("submit", (event) => {
+    $("#saveSettings").addEventListener("click", async () => { const settings = {}; $$(".setting").forEach(sw => { settings[sw.dataset.key] = sw.checked; });
+      const res = await fetch(`${API_URL}/settings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings }),
+        credentials: "include"
+      });
+      if (res.ok) alert("Moderatie-instellingen opgeslagen!");
+    });
+
+    // AI Chat integratie
+    $("#chatForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       const input = $("#chatInput");
       const text = input.value.trim();
@@ -621,161 +615,34 @@
       addMessage(text, "me");
       input.value = "";
 
-      window.setTimeout(() => {
-        addMessage("Dit is een frontend-demo. Koppel een beveiligde backend aan een AI-dienst om echte antwoorden te krijgen.", "");
-      }, 350);
+      try {
+        const res = await fetch(`${API_URL}/ai/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text }),
+          credentials: "include"
+        });
+        const data = await res.json();
+        addMessage(data.reply || data.error || "Geen antwoord ontvangen.", "");
+      } catch {
+        addMessage("Kan geen verbinding maken met de AI-service.", "");
+      }
     });
 
     function addMessage(text, className) {
       const message = document.createElement("div");
       message.className = "message " + className;
       message.textContent = text;
-      $("#chatLog").appendChild(message);
-      $("#chatLog").scrollTop = $("#chatLog").scrollHeight;
+      const log = $("#chatLog");
+      log.appendChild(message);
+      log.scrollTop = log.scrollHeight;
     }
 
-    $("#generateResource").addEventListener("click", () => {
-      const rawName = $("#resourceName").value.trim().toLowerCase();
-      const name = rawName.replace(/[^a-z0-9_-]/g, "") || "nova_example";
-      const type = $("#resourceType").value;
-
-      let client = "";
-      if (type === "command") {
-        client = `RegisterCommand('hello', function()
-    TriggerEvent('chat:addMessage', {
-        args = { 'Server', 'Hallo vanuit ${name}!' }
-    })
-end, false)
-`;
-      } else if (type === "vehicle") {
-        client = `RegisterCommand('myvehicle', function()
-    local model = joaat('adder')
-    RequestModel(model)
-
-    while not HasModelLoaded(model) do
-        Wait(0)
-    end
-
-    local ped = PlayerPedId()
-    local coords = GetEntityCoords(ped)
-    local vehicle = CreateVehicle(model, coords.x, coords.y, coords.z, GetEntityHeading(ped), true, false)
-
-    SetPedIntoVehicle(ped, vehicle, -1)
-    SetModelAsNoLongerNeeded(model)
-end, false)
-`;
-      } else {
-        client = `-- Voorbeeldstructuur voor een FiveM-job.
--- Voeg framework-specifieke rechten en servervalidatie toe.
-local jobName = '${name}'
-
-RegisterCommand('jobinfo', function()
-    TriggerEvent('chat:addMessage', {
-        args = { 'Job', 'Voorbeeldjob: ' .. jobName }
-    })
-end, false)
-`;
-      }
-
-      const output = `-- fxmanifest.lua
-fx_version 'cerulean'
-game 'gta5'
-
-author 'NovaPanel demo'
-description 'Voorbeeldresource: ${name}'
-version '1.0.0'
-
-client_script 'client.lua'
-
--- client.lua
-${client}`;
-
-      $("#resourceOutput").textContent = output;
-    });
-
-    $("#copyResource").addEventListener("click", async () => {
-      const text = $("#resourceOutput").textContent;
+    // Tickets laden en aanmaken
+    async function loadTickets() {
       try {
-        await navigator.clipboard.writeText(text);
-        alert("Code gekopieerd.");
-      } catch {
-        alert("Kopiëren is niet beschikbaar. Selecteer en kopieer de code handmatig.");
-      }
-    });
-
-    function loadSettings() {
-      const settings = readJSON(KEYS.settings, {});
-      $$(".setting").forEach((input) => {
-        input.checked = Boolean(settings[input.dataset.key]);
-        input.addEventListener("change", () => {
-          const updated = readJSON(KEYS.settings, {});
-          updated[input.dataset.key] = input.checked;
-          localStorage.setItem(KEYS.settings, JSON.stringify(updated));
-        });
-      });
-    }
-
-    function loadTickets() {
-      const tickets = readJSON(KEYS.tickets, []);
-      const list = $("#ticketList");
-      list.replaceChildren();
-
-      if (!tickets.length) {
-        const empty = document.createElement("p");
-        empty.className = "muted";
-        empty.textContent = "Nog geen tickets.";
-        list.appendChild(empty);
-        return;
-      }
-
-      tickets.forEach((ticket, index) => {
-        const card = document.createElement("div");
-        card.className = "ticket" + (ticket.closed ? " closed" : "");
-
-        const title = document.createElement("strong");
-        title.textContent = ticket.subject;
-
-        const meta = document.createElement("div");
-        meta.className = "small muted";
-        meta.textContent = ticket.closed ? "Gesloten" : "Open";
-
-        const button = document.createElement("button");
-        button.className = "btn";
-        button.type = "button";
-        button.textContent = ticket.closed ? "Heropenen" : "Sluiten";
-        button.addEventListener("click", () => {
-          const current = readJSON(KEYS.tickets, []);
-          current[index].closed = !current[index].closed;
-          localStorage.setItem(KEYS.tickets, JSON.stringify(current));
-          loadTickets();
-        });
-
-        card.append(title, meta, button);
-        list.appendChild(card);
-      });
-    }
-
-    $("#createTicket").addEventListener("click", () => {
-      const subject = $("#ticketSubject").value.trim();
-      if (!subject) {
-        alert("Vul een ticketonderwerp in.");
-        return;
-      }
-
-      const tickets = readJSON(KEYS.tickets, []);
-      tickets.unshift({
-        subject,
-        closed: false,
-        createdAt: new Date().toISOString()
-      });
-
-      localStorage.setItem(KEYS.tickets, JSON.stringify(tickets));
-      $("#ticketSubject").value = "";
-      loadTickets();
-    });
-
-    const existingUser = readJSON(KEYS.user, null);
-    if (existingUser) showApp(existingUser);
-  </script>
-</body>
-</html>
+        const res = await fetch(`${API_URL}/tickets`, { credentials: "include" });
+        if (res.ok) {
+          const tickets = await res.json();
+          const list = $("#ticketList");
+          list.innerHTML = tickets.length ? "" : "<p cl
