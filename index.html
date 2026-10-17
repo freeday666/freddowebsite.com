@@ -1,599 +1,777 @@
-<!doctype html>
-<html lang="nl">
+html
+<!DOCTYPE html>
+<html lang="nl" class="scroll-smooth dark">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#10121a">
-  <title>Nova Panel — Bot & FiveM</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #10121a;
-      --panel: #191c27;
-      --panel2: #202431;
-      --border: #303546;
-      --text: #f3f4f8;
-      --muted: #a1a8ba;
-      --accent: #5865F2; /* Discord Blauw/Paars */
-      --green: #45d6a0;
-      --red: #ff7185;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOVA Community - De Toekomst van Online Gaming & Socials</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        nova: {
+                            bg: '#080a11',
+                            card: '#111526',
+                            border: 'rgba(139, 92, 246, 0.15)',
+                            cyan: '#00f2fe',
+                            purple: '#7928ca',
+                            pink: '#ff0080',
+                            accent: '#4f46e5'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif']
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 3s ease-in-out infinite alternate',
+                        'spin-slow': 'spin 12s linear infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-15px)' }
+                        },
+                        glow: {
+                            '0%': { opacity: '0.5', filter: 'drop-shadow(0 0 15px rgba(0,242,254,0.4))' },
+                            '100%': { opacity: '1', filter: 'drop-shadow(0 0 30px rgba(121,40,202,0.8))' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
-    * { box-sizing: border-box; }
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: var(--bg);
-      color: var(--text);
-      font: 15px/1.5 system-ui, -apple-system, Segoe UI, sans-serif;
-    }
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080a11;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e2640;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7928ca;
+        }
 
-    button, input, select, textarea { font: inherit; }
-    button { cursor: pointer; }
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(17, 21, 38, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-card {
+            background: rgba(20, 26, 48, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glass-card:hover {
+            border-color: rgba(0, 242, 254, 0.4);
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.15), inset 0 0 15px rgba(121, 40, 202, 0.1);
+            transform: translateY(-4px);
+        }
 
-    .hidden { display: none !important; }
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 25%, #7928ca 70%, #ff0080 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: textShimmer 5s ease infinite alternate;
+        }
 
-    .auth-wrap {
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      background:
-        radial-gradient(ellipse at 15% 20%, #5865F222, transparent 45%),
-        radial-gradient(ellipse at 90% 80%, #176c6a22, transparent 40%),
-        var(--bg);
-    }
+        @keyframes textShimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
 
-    .auth-card, .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-    }
+        /* Interactive Mouse Glow Spotlight */
+        #cursor-glow {
+            pointer-events: none;
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(121, 40, 202, 0.12) 0%, rgba(0, 242, 254, 0.06) 40%, rgba(0,0,0,0) 70%);
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            transition: opacity 0.3s ease;
+        }
 
-    .auth-card {
-      width: min(100%, 420px);
-      padding: 30px;
-      box-shadow: 0 24px 80px #0005;
-      text-align: center;
-    }
+        /* Custom Neon Button */
+        .btn-neon {
+            position: relative;
+            background: linear-gradient(135deg, #7928ca, #00f2fe);
+            border-radius: 9999px;
+            padding: 2px;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
 
-    .brand { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-    .brand span { color: var(--accent); }
-    .muted { color: var(--muted); }
-    .small { font-size: 13px; }
+        .btn-neon-inner {
+            background: #080a11;
+            border-radius: 9999px;
+            padding: 12px 28px;
+            transition: all 0.3s ease;
+        }
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 12px 18px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      background: var(--panel2);
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 600;
-    }
+        .btn-neon:hover {
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.6);
+            transform: scale(1.02);
+        }
 
-    .btn:hover { filter: brightness(1.12); }
-    .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
-    .btn.full { width: 100%; margin-top: 20px; }
+        .btn-neon:hover .btn-neon-inner {
+            background: transparent;
+        }
 
-    .app {
-      min-height: 100vh;
-      display: grid;
-      grid-template-columns: 245px minmax(0, 1fr);
-    }
+        /* Neon Glow Outline Button */
+        .btn-glow-solid {
+            background: linear-gradient(135deg, #00f2fe, #7928ca);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.35);
+            transition: all 0.3s ease;
+        }
 
-    aside {
-      padding: 22px 14px;
-      border-right: 1px solid var(--border);
-      background: #141720;
-    }
+        .btn-glow-solid:hover {
+            box-shadow: 0 0 35px rgba(0, 242, 254, 0.7);
+            transform: translateY(-2px);
+        }
 
-    .side-brand { padding: 0 10px 24px; }
-    .nav-label {
-      padding: 14px 10px 6px;
-      color: #7f879b;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-
-    .nav-btn {
-      display: flex;
-      width: 100%;
-      gap: 10px;
-      align-items: center;
-      padding: 10px;
-      margin: 3px 0;
-      border: 0;
-      border-radius: 8px;
-      background: transparent;
-      color: var(--muted);
-      text-align: left;
-    }
-
-    .nav-btn:hover, .nav-btn.active {
-      background: #272b3a;
-      color: white;
-    }
-
-    .side-bottom {
-      margin: 25px 8px 0;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-    }
-
-    main { min-width: 0; padding: 28px; }
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    h1 { margin: 0; font-size: 26px; }
-    h2 { margin: 0 0 12px; font-size: 18px; }
-    p { margin-top: 8px; }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .card { padding: 20px; }
-    .wide { grid-column: 1 / -1; }
-
-    .stat {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 105px;
-    }
-
-    .stat strong { font-size: 26px; }
-    .badge {
-      display: inline-block;
-      padding: 4px 9px;
-      border-radius: 99px;
-      background: #234a36;
-      color: var(--green);
-      font-size: 12px;
-    }
-
-    .status-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      margin-right: 6px;
-      border-radius: 50%;
-      background: var(--green);
-    }
-
-    label {
-      display: block;
-      margin: 15px 0 6px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 11px 12px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      outline: none;
-      background: #11141c;
-      color: var(--text);
-    }
-
-    input:focus, select:focus { border-color: var(--accent); }
-
-    .row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .row:last-child { border-bottom: 0; }
-
-    .switch {
-      width: 42px;
-      height: 24px;
-      appearance: none;
-      border: 0;
-      border-radius: 99px;
-      background: #454b5c;
-      position: relative;
-      cursor: pointer;
-    }
-    .switch::after {
-      content: "";
-      position: absolute;
-      top: 3px; left: 3px;
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      background: white;
-      transition: .18s;
-    }
-    .switch:checked { background: var(--accent); }
-    .switch:checked::after { left: 21px; }
-
-    .chat-log {
-      height: 300px;
-      overflow: auto;
-      padding: 12px;
-      margin: 12px 0;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: #11141c;
-    }
-
-    .message {
-      max-width: 90%;
-      padding: 10px 12px;
-      margin: 8px 0;
-      border-radius: 10px;
-      background: #252a39;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
-    .message.me { margin-left: auto; background: #403a78; }
-    .chat-form { display: flex; gap: 8px; }
-    .chat-form input { flex: 1; }
-
-    pre {
-      max-height: 380px;
-      overflow: auto;
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      background: #0d1016;
-      color: #d5d8e3;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
-
-    .tickets { display: grid; gap: 10px; }
-    .ticket {
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: #151822;
-    }
-
-    @media (max-width: 800px) {
-      .app { grid-template-columns: 1fr; }
-      aside { border-right: 0; border-bottom: 1px solid var(--border); }
-      .nav-list { display: flex; overflow-x: auto; }
-      .nav-label, .side-bottom { display: none; }
-      .nav-btn { width: auto; flex: 0 0 auto; }
-      main { padding: 20px 14px; }
-    }
-  </style>
+        /* Scanline effect overlay */
+        .scanline-bg {
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-nova-bg text-gray-100 font-sans antialiased selection:bg-cyan-500 selection:text-black min-h-screen relative overflow-x-hidden">
 
-  <!-- Inlogscherm (Geen gevoelige data blootgesteld; communiceert veilig via server OAuth) -->
-  <section id="authScreen" class="auth-wrap">
-    <div class="auth-card">
-      <div class="brand">✦ Nova<span>Panel</span></div>
-      <p class="muted">Beheer je Discord-bot en FiveM omgeving veilig.</p>
+    <!-- Mouse Tracking Glow Effect -->
+    <div id="cursor-glow"></div>
 
-      <!-- Verwijst naar de veilige backend route -->
-      <a href="http://localhost:3000/auth/discord" class="btn primary full">
-        Inloggen met Discord
-      </a>
-      
-      <p class="small muted" style="margin-top: 20px;">Je client ID en secret blijven veilig afgeschermd op de server.</p>
-    </div>
-  </section>
+    <!-- Particle Background Canvas -->
+    <canvas id="particle-canvas" class="fixed inset-0 pointer-events-none z-0 opacity-60"></canvas>
 
-  <!-- Hoofd dashboard app -->
-  <div id="app" class="app hidden">
-    <aside>
-      <div class="side-brand">
-        <div class="brand">✦ Nova<span>Panel</span></div>
-        <div class="small muted">Bot & FiveM dashboard</div>
-      </div>
+    <!-- Header / Navigation Bar -->
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="main-header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20 glass-panel rounded-b-2xl sm:rounded-2xl mt-0 sm:mt-3 px-6 shadow-2xl">
+                
+                <!-- Logo -->
+                <a href="#" class="flex items-center space-x-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 via-indigo-600 to-purple-600 p-[2px] shadow-lg shadow-cyan-500/20 group-hover:shadow-purple-500/40 transition duration-300">
+                        <div class="w-full h-full bg-nova-bg rounded-[10px] flex items-center justify-center">
+                            <i data-lucide="zap" class="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform"></i>
+                        </div>
+                    </div>
+                    <span class="font-display font-bold text-2xl tracking-wider text-white">NOVA<span class="text-cyan-400">.</span></span>
+                </a>
 
-      <div class="nav-label">Dashboard</div>
-      <nav class="nav-list">
-        <button class="nav-btn active" data-page="overview">⌂ Overzicht</button>
-        <button class="nav-btn" data-page="ai">✧ AI-chat</button>
-        <button class="nav-btn" data-page="fivem">⌘ FiveM scripts</button>
-        <button class="nav-btn" data-page="bot">◈ Botinstellingen</button>
-        <button class="nav-btn" data-page="moderation">⚑ Moderatie</button>
-        <button class="nav-btn" data-page="tickets">▤ Tickets</button>
-      </nav>
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-300">
+                    <a href="#about" class="hover:text-cyan-400 transition-colors py-1 relative group">
+                        Over Ons
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#features" class="hover:text-cyan-400 transition-colors py-1 relative group">
+                        Perks
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#stats" class="hover:text-cyan-400 transition-colors py-1 relative group">
+                        Community
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#channels" class="hover:text-cyan-400 transition-colors py-1 relative group">
+                        Kanalen
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="#rules" class="hover:text-cyan-400 transition-colors py-1 relative group">
+                        Regels
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                </nav>
 
-      <div class="side-bottom small muted">
-        <div><span class="status-dot"></span>Verbonden met Server</div>
-        <div id="sideUser" style="margin-top:8px"></div>
-      </div>
-    </aside>
+                <!-- Actions -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <button onclick="copyInvite()" class="text-xs px-3 py-2 glass-panel rounded-lg hover:border-cyan-400 text-gray-300 hover:text-white transition flex items-center gap-1.5" title="Kopieer Invite Link">
+                        <i data-lucide="copy" class="w-3.5 h-3.5 text-cyan-400"></i>
+                        <span id="copy-btn-text">Code: bcfK7huT3C</span>
+                    </button>
+                    
+                    <a href="https://discord.gg/bcfK7huT3C" target="_blank" rel="noopener noreferrer" class="btn-glow-solid text-slate-900 font-bold text-sm px-5 py-2.5 rounded-xl flex items-center space-x-2">
+                        <i data-lucide="disc" class="w-4 h-4"></i>
+                        <span>Join Discord</span>
+                    </a>
+                </div>
 
-    <main>
-      <header class="topbar">
-        <div>
-          <h1 id="pageTitle">Overzicht</h1>
-          <div class="muted">Welkom terug, <span id="welcomeName">gebruiker</span></div>
+                <!-- Mobile Hamburger Button -->
+                <div class="md:hidden flex items-center space-x-2">
+                    <button id="mobile-menu-btn" class="p-2 rounded-xl glass-panel text-gray-300 hover:text-white">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        <button id="logoutBtn" class="btn" type="button">Uitloggen</button>
-      </header>
 
-      <section id="page-overview" class="page">
-        <div class="grid">
-          <div class="card stat">
-            <div><div class="muted">Botstatus</div><strong>Online</strong></div>
-            <span class="badge">Actief</span>
-          </div>
-          <div class="card stat">
-            <div><div class="muted">Prefix</div><strong id="overviewPrefix">.</strong></div>
-            <span class="badge">Live</span>
-          </div>
+        <!-- Mobile Menu Modal -->
+        <div id="mobile-menu" class="hidden md:hidden glass-panel mx-4 mt-2 rounded-2xl p-6 border border-purple-500/20 shadow-2xl transition-all">
+            <div class="flex flex-col space-y-4">
+                <a href="#about" class="mobile-link text-gray-300 hover:text-cyan-400 text-lg font-medium py-1">Over Ons</a>
+                <a href="#features" class="mobile-link text-gray-300 hover:text-cyan-400 text-lg font-medium py-1">Perks</a>
+                <a href="#stats" class="mobile-link text-gray-300 hover:text-cyan-400 text-lg font-medium py-1">Community Stats</a>
+                <a href="#channels" class="mobile-link text-gray-300 hover:text-cyan-400 text-lg font-medium py-1">Kanalen Showcase</a>
+                <a href="#rules" class="mobile-link text-gray-300 hover:text-cyan-400 text-lg font-medium py-1">Regels & FAQ</a>
+                <hr class="border-gray-800 my-2">
+                <button onclick="copyInvite()" class="w-full py-2.5 glass-panel rounded-xl text-gray-200 flex items-center justify-center gap-2">
+                    <i data-lucide="copy" class="w-4 h-4 text-cyan-400"></i>
+                    <span id="copy-btn-text-mobile">Kopieer Invite Code</span>
+                </button>
+                <a href="https://discord.gg/bcfK7huT3C" target="_blank" rel="noopener noreferrer" class="w-full btn-glow-solid text-slate-900 font-bold py-3 rounded-xl flex items-center justify-center space-x-2">
+                    <i data-lucide="disc" class="w-5 h-5"></i>
+                    <span>Join Nova Discord</span>
+                </a>
+            </div>
         </div>
-      </section>
+    </header>
 
-      <section id="page-ai" class="page hidden">
-        <div class="card">
-          <h2>AI-chat</h2>
-          <div id="chatLog" class="chat-log">
-            <div class="message">Hoi! Stel hier je vraag aan de AI-backend.</div>
-          </div>
-          <form id="chatForm" class="chat-form">
-            <input id="chatInput" placeholder="Stel een vraag..." required>
-            <button class="btn primary" type="submit">Verstuur</button>
-          </form>
-        </div>
-      </section>
+    <!-- Main Content Container -->
+    <main class="relative z-10 pt-32 pb-16">
 
-      <section id="page-fivem" class="page hidden">
-        <div class="grid">
-          <div class="card">
-            <h2>FiveM Generator</h2>
-            <label for="resourceName">Resourcenaam</label>
-            <input id="resourceName" value="nova_example" maxlength="40">
-            <label for="resourceType">Type resource</label>
-            <select id="resourceType">
-              <option value="command">Chatcommand</option>
-              <option value="vehicle">Voertuigvoorbeeld</option>
-              <option value="job">Jobvoorbeeld</option>
-            </select>
-            <button id="generateResource" class="btn primary" style="margin-top:14px" type="button">Genereer voorbeeld</button>
-          </div>
-          <div class="card">
-            <h2>Code</h2>
-            <pre id="resourceOutput">Klik op “Genereer voorbeeld”.</pre>
-            <button id="copyResource" class="btn" type="button">Kopieer code</button>
-          </div>
-        </div>
-      </section>
+        <!-- HERO SECTION -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20 text-center relative">
+            
+            <!-- Floating Background Glow Orbs -->
+            <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-purple-600/30 via-cyan-500/20 to-pink-500/20 blur-[120px] rounded-full pointer-events-none -z-10"></div>
 
-      <section id="page-bot" class="page hidden">
-        <div class="grid">
-          <div class="card">
-            <h2>Botinstellingen</h2>
-            <label for="prefix">Command-prefix</label>
-            <input id="prefix" maxlength="5" value=".">
-            <button id="savePrefix" class="btn primary" style="margin-top:12px" type="button">Prefix opslaan</button>
-          </div>
-        </div>
-      </section>
+            <!-- Live Member Pill -->
+            <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full glass-panel border border-cyan-500/30 mb-8 animate-float">
+                <span class="relative flex h-2.5 w-2.5">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <span class="text-xs font-semibold tracking-wider text-gray-200 uppercase">
+                    <span class="text-cyan-400 font-bold" id="live-online-count">1,482</span> Leden Nu Online
+                </span>
+                <span class="text-gray-600">|</span>
+                <span class="text-xs text-purple-300 font-medium flex items-center gap-1">
+                    <i data-lucide="sparkles" class="w-3 h-3 text-yellow-400"></i> Season 4 Actief
+                </span>
+            </div>
 
-      <section id="page-moderation" class="page hidden">
-        <div class="grid">
-          <div class="card">
-            <h2>Moderatie-instellingen</h2>
-            <div class="row"><span>Welkomstbericht</span><input class="switch setting" type="checkbox" data-key="welcome"></div>
-            <div class="row"><span>Spamdetectie</span><input class="switch setting" type="checkbox" data-key="spam"></div>
-            <div class="row"><span>Linkfilter</span><input class="switch setting" type="checkbox" data-key="links"></div>
-            <div class="row"><span>Log moderatieacties</span><input class="switch setting" type="checkbox" data-key="logs"></div>
-            <button id="saveSettings" class="btn primary" style="margin-top:14px" type="button">Instellingen opslaan</button>
-          </div>
-        </div>
-      </section>
+            <!-- Main Heading -->
+            <h1 class="text-5xl sm:text-7xl lg:text-8xl font-display font-extrabold tracking-tight text-white mb-6 leading-tight">
+                WELKOM BIJ <br>
+                <span class="gradient-text">NOVA COMMUNITY</span>
+            </h1>
 
-      <section id="page-tickets" class="page hidden">
-        <div class="grid">
-          <div class="card">
-            <h2>Ticketpaneel</h2>
-            <label for="ticketSubject">Onderwerp</label>
-            <input id="ticketSubject" maxlength="100" placeholder="Waarmee kunnen we helpen?">
-            <button id="createTicket" class="btn primary" style="margin-top:12px" type="button">Ticket openen</button>
-          </div>
-          <div class="card">
-            <h2>Open Tickets</h2>
-            <div id="ticketList" class="tickets"></div>
-          </div>
-        </div>
-      </section>
+            <!-- Subtitle -->
+            <p class="max-w-3xl mx-auto text-lg sm:text-xl text-gray-400 mb-10 font-normal leading-relaxed">
+                De ultieme hub voor gamers, tech-enthousiastelingen, creators en vrienden. Ervaar dagelijkse voice-chats, exclusieve giveaways, top-tier gaming events en een hechte sfeer.
+            </p>
+
+            <!-- Hero CTA Buttons -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-5 mb-16">
+                <a href="https://discord.gg/bcfK7huT3C" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto btn-glow-solid text-slate-950 font-extrabold text-lg px-8 py-4 rounded-2xl flex items-center justify-center space-x-3 group">
+                    <i data-lucide="disc" class="w-6 h-6 group-hover:rotate-12 transition-transform"></i>
+                    <span>JOIN ONZE DISCORD</span>
+                    <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                </a>
+
+                <a href="#features" class="w-full sm:w-auto glass-panel hover:bg-nova-card text-gray-200 hover:text-cyan-400 font-semibold text-lg px-8 py-4 rounded-2xl border border-gray-700/60 hover:border-cyan-500/50 transition flex items-center justify-center space-x-2">
+                    <i data-lucide="compass" class="w-5 h-5 text-purple-400"></i>
+                    <span>Ontdek Perks</span>
+                </a>
+            </div>
+
+            <!-- Floating Server Highlights Widget -->
+            <div class="max-w-4xl mx-auto glass-panel p-6 sm:p-8 rounded-3xl border border-purple-500/20 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl"></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                    <div class="p-3">
+                        <div class="text-3xl font-display font-bold text-white mb-1 flex items-center justify-center gap-1">
+                            <span class="counter" data-target="5200">0</span>+
+                        </div>
+                        <div class="text-xs uppercase tracking-wider text-cyan-400 font-medium">Community Leden</div>
+                    </div>
+                    <div class="p-3">
+                        <div class="text-3xl font-display font-bold text-white mb-1 flex items-center justify-center gap-1">
+                            <span class="counter" data-target="850">0</span>+
+                        </div>
+                        <div class="text-xs uppercase tracking-wider text-purple-400 font-medium">Dagelijkse Chatters</div>
+                    </div>
+                    <div class="p-3">
+                        <div class="text-3xl font-display font-bold text-white mb-1 flex items-center justify-center gap-1">
+                            <span class="counter" data-target="45">0</span>+
+                        </div>
+                        <div class="text-xs uppercase tracking-wider text-pink-400 font-medium">Voice Channels</div>
+                    </div>
+                    <div class="p-3">
+                        <div class="text-3xl font-display font-bold text-white mb-1 flex items-center justify-center gap-1">
+                            <span class="counter" data-target="99">0</span>.9%
+                        </div>
+                        <div class="text-xs uppercase tracking-wider text-emerald-400 font-medium">Uptime & Safe Space</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT / FEATURES SECTION -->
+        <section id="features" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative">
+            <div class="text-center mb-16">
+                <h2 class="text-xs font-bold text-cyan-400 tracking-widest uppercase mb-3">Waarom Nova?</h2>
+                <p class="text-3xl sm:text-5xl font-display font-bold text-white">Alles Wat Je Zoekt In Een Server</p>
+                <p class="text-gray-400 mt-4 max-w-2xl mx-auto">Ontworpen voor de beste gebruikerservaring. Ontdek hoe wij gaming, sociale interactie en veiligheid combineren.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Feature 1 -->
+                <div class="glass-card p-8 rounded-3xl relative group">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center mb-6 shadow-lg shadow-cyan-500/20 group-hover:scale-110 transition-transform">
+                        <i data-lucide="gamepad-2" class="w-7 h-7 text-black"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Gaming & Roleplay Hub</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Vind direct teammates voor Valorant, GTA RP, Minecraft, League, Fortnite en meer. Automatische LFG rollen.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="glass-card p-8 rounded-3xl relative group">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform">
+                        <i data-lucide="gift" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Giveaways & Rewards</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Wekelijkse Nitro giveaways, Discord XP level-up beloningen, custom roles en fysieke gaming gadgets winacties.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="glass-card p-8 rounded-3xl relative group">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center mb-6 shadow-lg shadow-pink-500/20 group-hover:scale-110 transition-transform">
+                        <i data-lucide="shield-check" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">24/7 Moderatie</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Een gezellige, toxic-vrije omgeving. Ons toegewijde staff-team en geavanceerde bots bewaken de veiligheid dag en nacht.
+                    </p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="glass-card p-8 rounded-3xl relative group">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center mb-6 shadow-lg shadow-amber-500/20 group-hover:scale-110 transition-transform">
+                        <i data-lucide="mic" class="w-7 h-7 text-black"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Custom Voice Rooms</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Maaak je eigen voicekanaal aan met 1-klik. Pas spraakkwaliteit, limieten en naamen direct naar wens aan.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SERVER ROLES & KANALEN SHOWCASE SECTION -->
+        <section id="channels" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div class="glass-panel p-8 sm:p-12 rounded-3xl border border-purple-500/20 shadow-2xl relative overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    
+                    <!-- Left info -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <span class="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold uppercase tracking-wider">
+                            Interactive Showcase
+                        </span>
+                        <h2 class="text-3xl sm:text-4xl font-display font-bold text-white">Verken de Structuur van Nova</h2>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            Onze Discord is strak georganiseerd. Geen overbodige spam, overzichtelijke categorieën en op maat gemaakte notificaties via ons rollen-systeem.
+                        </p>
+
+                        <!-- Role Badges Pills -->
+                        <div class="pt-2">
+                            <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Populaire Server Rollen</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1.5 rounded-xl bg-purple-900/40 border border-purple-500/40 text-purple-300 text-xs font-medium flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-purple-400"></span> Owner / Admin
+                                </span>
+                                <span class="px-3 py-1.5 rounded-xl bg-cyan-900/40 border border-cyan-500/40 text-cyan-300 text-xs font-medium flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-cyan-400"></span> Event Host
+                                </span>
+                                <span class="px-3 py-1.5 rounded-xl bg-pink-900/40 border border-pink-500/40 text-pink-300 text-xs font-medium flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-pink-400"></span> Server Booster
+                                </span>
+                                <span class="px-3 py-1.5 rounded-xl bg-emerald-900/40 border border-emerald-500/40 text-emerald-300 text-xs font-medium flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span> VIP Member
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right mockup preview -->
+                    <div class="lg:col-span-7 bg-nova-bg/80 rounded-2xl p-4 sm:p-6 border border-gray-800 shadow-inner">
+                        <!-- Mockup Header -->
+                        <div class="flex items-center justify-between border-b border-gray-800 pb-4 mb-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+                                <span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
+                                <span class="w-3 h-3 rounded-full bg-green-500/80"></span>
+                                <span class="text-xs text-gray-400 font-mono ml-2">nova-discord-preview</span>
+                            </div>
+                            <span class="text-xs text-emerald-400 flex items-center gap-1">
+                                <i data-lucide="wifi" class="w-3 h-3"></i> Connected
+                            </span>
+                        </div>
+
+                        <!-- Channel List Simulation -->
+                        <div class="space-y-2 font-mono text-sm">
+                            <div class="text-gray-500 text-xs uppercase font-bold tracking-wider pt-1">📢 ANNOUNCEMENTS</div>
+                            <div class="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-200 flex items-center justify-between">
+                                <span class="flex items-center gap-2"><i data-lucide="hash" class="w-4 h-4 text-purple-400"></i> mededelingen</span>
+                                <span class="text-[10px] bg-purple-500/20 px-2 py-0.5 rounded text-purple-300">NEW</span>
+                            </div>
+                            <div class="p-2 rounded-lg hover:bg-gray-800/50 text-gray-400 flex items-center gap-2 transition">
+                                <i data-lucide="hash" class="w-4 h-4"></i> regels-en-info
+                            </div>
+
+                            <div class="text-gray-500 text-xs uppercase font-bold tracking-wider pt-3">💬 SOCIAL CHATS</div>
+                            <div class="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-200 flex items-center justify-between">
+                                <span class="flex items-center gap-2"><i data-lucide="hash" class="w-4 h-4 text-cyan-400"></i> algemeen-chat</span>
+                                <span class="text-xs text-gray-400 font-sans italic">452 berichten vandaag</span>
+                            </div>
+                            <div class="p-2 rounded-lg hover:bg-gray-800/50 text-gray-400 flex items-center gap-2 transition">
+                                <i data-lucide="hash" class="w-4 h-4"></i> memes-en-media
+                            </div>
+
+                            <div class="text-gray-500 text-xs uppercase font-bold tracking-wider pt-3">🔊 VOICE LOUNGES</div>
+                            <div class="p-2 rounded-lg hover:bg-gray-800/50 text-gray-300 flex items-center justify-between">
+                                <span class="flex items-center gap-2"><i data-lucide="volume-2" class="w-4 h-4 text-emerald-400"></i> Lounge #1 (Gezellig)</span>
+                                <div class="flex -space-x-1">
+                                    <span class="w-5 h-5 rounded-full bg-purple-500 border border-nova-bg text-[9px] flex items-center justify-center font-bold">JD</span>
+                                    <span class="w-5 h-5 rounded-full bg-cyan-500 border border-nova-bg text-[9px] flex items-center justify-center font-bold">NV</span>
+                                    <span class="w-5 h-5 rounded-full bg-pink-500 border border-nova-bg text-[9px] flex items-center justify-center font-bold">+4</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RULES & FAQ ACCORDION SECTION -->
+        <section id="rules" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div class="text-center mb-12">
+                <h2 class="text-xs font-bold text-cyan-400 tracking-widest uppercase mb-3">Transparantie & Afspraken</h2>
+                <p class="text-3xl sm:text-4xl font-display font-bold text-white">Veelgestelde Vragen & Regels</p>
+            </div>
+
+            <div class="space-y-4">
+                
+                <!-- FAQ Item 1 -->
+                <div class="glass-panel rounded-2xl border border-gray-800 overflow-hidden transition">
+                    <button onclick="toggleFaq(1)" class="w-full p-6 text-left flex justify-between items-center focus:outline-none">
+                        <span class="font-bold text-lg text-white flex items-center gap-3">
+                            <i data-lucide="shield" class="w-5 h-5 text-cyan-400"></i>
+                            Wat zijn de basisregels van Nova Community?
+                        </span>
+                        <i id="faq-icon-1" data-lucide="chevron-down" class="w-5 h-5 text-gray-400 transition-transform duration-300"></i>
+                    </button>
+                    <div id="faq-content-1" class="hidden px-6 pb-6 text-gray-400 text-sm leading-relaxed border-t border-gray-800/50 pt-4">
+                        Wij hanteren een respectvolle omgeving. Discriminatie, haatzaaien, ongewenste spam, zelfpromotie zonder toestemming en toxic gedrag worden niet getolereerd. Bekijk ons <i>#regels</i> kanaal voor de volledige lijst.
+                    </div>
+                </div>
+
+                <!-- FAQ Item 2 -->
+                <div class="glass-panel rounded-2xl border border-gray-800 overflow-hidden transition">
+                    <button onclick="toggleFaq(2)" class="w-full p-6 text-left flex justify-between items-center focus:outline-none">
+                        <span class="font-bold text-lg text-white flex items-center gap-3">
+                            <i data-lucide="trophy" class="w-5 h-5 text-purple-400"></i>
+                            Hoe kan ik meedoen aan Tournaments & Giveaways?
+                        </span>
+                        <i id="faq-icon-2" data-lucide="chevron-down" class="w-5 h-5 text-gray-400 transition-transform duration-300"></i>
+                    </button>
+                    <div id="faq-content-2" class="hidden px-6 pb-6 text-gray-400 text-sm leading-relaxed border-t border-gray-800/50 pt-4">
+                        Zodra je de server binnenkomt, kun je in het rollen-kanaal de "Event-Alerts" rol aanklikken. Je krijgt dan automatisch notificaties wanneer er een nieuwe Nitro giveaway of game-toernooi start!
+                    </div>
+                </div>
+
+                <!-- FAQ Item 3 -->
+                <div class="glass-panel rounded-2xl border border-gray-800 overflow-hidden transition">
+                    <button onclick="toggleFaq(3)" class="w-full p-6 text-left flex justify-between items-center focus:outline-none">
+                        <span class="font-bold text-lg text-white flex items-center gap-3">
+                            <i data-lucide="users" class="w-5 h-5 text-pink-400"></i>
+                            Kan ik solliciteren voor Staff of Moderator?
+                        </span>
+                        <i id="faq-icon-3" data-lucide="chevron-down" class="w-5 h-5 text-gray-400 transition-transform duration-300"></i>
+                    </button>
+                    <div id="faq-content-3" class="hidden px-6 pb-6 text-gray-400 text-sm leading-relaxed border-t border-gray-800/50 pt-4">
+                        Ja! Wij openen regelmatig sollicitaties voor actieve en behulpzame communityleden. Houd het kanaal <i>#sollicitaties</i> in de gaten zodra je een tijdje actief bent op de server.
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CTA BANNER SECTION -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="relative rounded-3xl overflow-hidden p-10 sm:p-16 border border-cyan-500/30 text-center glass-panel shadow-2xl">
+                <!-- Background Glowing accents -->
+                <div class="absolute -top-24 -left-24 w-96 h-96 bg-purple-600/30 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="relative z-10 max-w-3xl mx-auto space-y-6">
+                    <h2 class="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight">
+                        Klaar Om De Space In Te Duiken?
+                    </h2>
+                    <p class="text-gray-300 text-base sm:text-lg">
+                        Sluit je vandaag nog aan bij duizenden enthousiaste leden. Klik op de onderstaande knop en ontvang direct je welkomstrol!
+                    </p>
+                    <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <a href="https://discord.gg/bcfK7huT3C" target="_blank" rel="noopener noreferrer" class="btn-glow-solid text-slate-950 font-extrabold text-lg px-10 py-4 rounded-2xl flex items-center space-x-3 w-full sm:w-auto justify-center">
+                            <i data-lucide="disc" class="w-6 h-6"></i>
+                            <span>JOIN NOVA DISCORD NOW</span>
+                        </a>
+                    </div>
+                    <p class="text-xs text-gray-500 pt-2 font-mono">Directe Invite URL: https://discord.gg/bcfK7huT3C</p>
+                </div>
+            </div>
+        </section>
+
     </main>
-  </div>
 
-  <script>
-    "use strict";
+    <!-- FOOTER -->
+    <footer class="border-t border-gray-800/80 bg-nova-bg/90 relative z-10 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            
+            <!-- Logo & Copyright -->
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-cyan-500 flex items-center justify-center text-black font-bold">N</div>
+                <span class="text-gray-400 text-sm">© 2026 <strong class="text-white">NOVA Community</strong>. Alle rechten voorbehouden.</span>
+            </div>
 
-    const API_URL = "http://localhost:3000/api";
-    const $ = (selector) => document.querySelector(selector); const $$ = (selector) => document.querySelectorAll(selector);
+            <!-- Quick Links -->
+            <div class="flex items-center space-x-6 text-sm text-gray-400">
+                <a href="https://discord.gg/bcfK7huT3C" target="_blank" class="hover:text-cyan-400 transition flex items-center gap-1">
+                    <i data-lucide="disc" class="w-4 h-4"></i> Discord
+                </a>
+                <a href="#about" class="hover:text-cyan-400 transition">Over Ons</a>
+                <a href="#rules" class="hover:text-cyan-400 transition">Regels</a>
+            </div>
 
-    // Controleer of de gebruiker is ingelogd via de backend sessie
-    async function checkSession() {
-      try {
-        const res = await fetch(`${API_URL}/auth/me`, { credentials: "include" });
-        if (res.ok) {
-          const data = await res.json();
-          showApp(data.user);
-          loadSettings();
-          loadTickets();
-        } else {
-          showAuth();
-        }
-      } catch {
-        showAuth();
-      }
-    }
+            <!-- Status Indicator -->
+            <div class="flex items-center space-x-2 text-xs text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-3 py-1.5 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Discord Systems Operational</span>
+            </div>
+        </div>
+    </footer>
 
-    function showApp(user) {
-      $("#authScreen").classList.add("hidden");
-      $("#app").classList.remove("hidden");
-      $("#welcomeName").textContent = user.name || "Gebruiker";
-      $("#sideUser").textContent = user.email || user.name;
-    }
+    <!-- Toast Notification Popup -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 glass-panel border border-cyan-500/50 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 translate-y-20 opacity-0 transition-all duration-300">
+        <i data-lucide="check-circle" class="w-5 h-5 text-cyan-400"></i>
+        <span id="toast-msg" class="text-sm font-medium">Invite code gekopieerd naar klembord!</span>
+    </div>
 
-    function showAuth() {
-      $("#app").classList.add("hidden");
-      $("#authScreen").classList.remove("hidden");
-    }
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
 
-    $("#logoutBtn").addEventListener("click", async () => {
-      await fetch(`http://localhost:3000/api/auth/logout`, { method: "POST", credentials: "include" });
-      showAuth();
-    });
-
-    const titles = { overview: "Overzicht", ai: "AI-chat", fivem: "FiveM scripts", bot: "Botinstellingen", moderation: "Moderatie", tickets: "Tickets" };
-    $$(".nav-btn").forEach((button) => {
-      button.addEventListener("click", () => {
-        $$(".nav-btn").forEach((item) => item.classList.remove("active")); button.classList.add("active"); $$
-(".page").forEach((page) => page.classList.add("hidden"));
-        $("#page-" + button.dataset.page).classList.remove("hidden");
-        $("#pageTitle").textContent = titles[button.dataset.page];
-      });
-    });
-
-    async function loadSettings() {
-      try {
-        const res = await fetch(`${API_URL}/settings`, { credentials: "include" });
-        if (res.ok) {
-          const data = await res.json();
-          $("#prefix").value = data.prefix;
-          $("#overviewPrefix").textContent = data.prefix; $$(".setting").forEach(sw => {
-            const key = sw.dataset.key;
-            if (data[key] !== undefined) sw.checked = data[key];
-          });
-        }
-      } catch (e) { console.error(e); }
-    }
-
-    $("#savePrefix").addEventListener("click", async () => {
-      const prefix = $("#prefix").value.trim();
-      const res = await fetch(`${API_URL}/settings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prefix }),
-        credentials: "include"
-      });
-      if (res.ok) {
-        const data = await res.json();
-        $("#overviewPrefix").textContent = data.botSettings.prefix;
-        alert("Prefix opgeslagen op de server!");
-      }
-    });
-
-    $("#saveSettings").addEventListener("click", async () => { const settings = {}; $$(".setting").forEach(sw => { settings[sw.dataset.key] = sw.checked; });
-      const res = await fetch(`${API_URL}/settings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ settings }),
-        credentials: "include"
-      });
-      if (res.ok) alert("Moderatie-instellingen opgeslagen!");
-    });
-
-    $("#chatForm").addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const input = $("#chatInput");
-      const text = input.value.trim();
-      if (!text) return;
-
-      addMessage(text, "me");
-      input.value = "";
-
-      try {
-        const res = await fetch(`${API_URL}/ai/chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: text }),
-          credentials: "include"
+        // Mouse Cursor Spotlight Glow Tracker
+        const cursorGlow = document.getElementById('cursor-glow');
+        document.addEventListener('mousemove', (e) => {
+            cursorGlow.style.left = e.clientX + 'px';
+            cursorGlow.style.top = e.clientY + 'px';
         });
-        const data = await res.json();
-        addMessage(data.reply || "Geen antwoord.", "");
-      } catch {
-        addMessage("Fout bij verbinden met de AI-backend.", "");
-      }
-    });
 
-    function addMessage(text, className) {
-      const message = document.createElement("div");
-      message.className = "message " + className;
-      message.textContent = text;
-      const log = $("#chatLog");
-      log.appendChild(message);
-      log.scrollTop = log.scrollHeight;
-    }
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
 
-    async function loadTickets() {
-      try {
-        const res = await fetch(`${API_URL}/tickets`, { credentials: "include" });
-        if (res.ok) {
-          const tickets = await res.json();
-          const list = $("#ticketList");
-          list.innerHTML = tickets.length ? "" : "<p class='muted'>Geen openstaande tickets.</p>";
-          tickets.forEach(t => {
-            const div = document.createElement("div");
-            div.className = "ticket";
-            div.innerHTML = `<strong>${t.id}</strong>: ${t.subject} <span class="badge" style="float:right">${t.status}</span>`;
-            list.appendChild(div);
-          });
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // Copy Discord Invite Code Function
+        function copyInvite() {
+            const inviteUrl = "https://discord.gg/bcfK7huT3C";
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = inviteUrl;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+
+            showToast("Discord invite geplakt! (bcfK7huT3C)");
         }
-      } catch (e) { console.error(e); }
-    }
 
-    $("#createTicket").addEventListener("click", async () => {
-      const subject = $("#ticketSubject").value.trim();
-      if (!subject) return alert("Vul een onderwerp in.");
-      
-      const res = await fetch(`${API_URL}/tickets`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject }),
-        credentials: "include"
-      });
-      if (res.ok) {
-        $("#ticketSubject").value = "";
-        loadTickets();
-      }
-    });
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            toastMsg.textContent = message;
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
 
-    $("#generateResource").addEventListener("click", () => {
-      const name = $("#resourceName").value.trim() || "nova_example";
-      const type = $("#resourceType").value;
-      let code = `-- Resource: ${name}\n\n`;
-      if (type === "command") {
-        code += `RegisterCommand('${name}', function(source, args, rawCommand)\n    TriggerClientEvent('chat:addMessage', source, {\n        args = { '${name}', 'Hallo vanuit ${name}!' }\n    })\nend, false)`;
-      } else if (type === "vehicle") {
-        code += `RegisterCommand('spawncar', function(source, args, rawCommand)\n    local xPlayer = ESX.GetPlayerFromId(source)\n    -- Voertuig spawn logica\nend, false)`;
-      } else {
-        code += `ESX = exports['es_extended']:getSharedObject()`;
-      }
-      $("#resourceOutput").textContent = code;
-    });
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
 
-    $("#copyResource").addEventListener("click", () => {
-      navigator.clipboard.writeText($("#resourceOutput").textContent);
-      alert("Code gekopieerd naar klembord!");
-    });
+        // Toggle Accordion FAQs
+        function toggleFaq(id) {
+            const content = document.getElementById(`faq-content-${id}`);
+            const icon = document.getElementById(`faq-icon-${id}`);
 
-    // Start de sessiecontrole bij openen van de pagina
-    checkSession();
-  </script>
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Counter Animation
+        const counters = document.querySelectorAll('.counter');
+        let animated = false;
+
+        function runCounters() {
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                const duration = 2000;
+                const step = target / (duration / 16);
+                let current = 0;
+
+                const updateCounter = () => {
+                    current += step;
+                    if (current < target) {
+                        counter.innerText = Math.ceil(current);
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.innerText = target;
+                    }
+                };
+                updateCounter();
+            });
+        }
+
+        window.addEventListener('scroll', () => {
+            const statsSection = document.getElementById('stats') || document.querySelector('.counter');
+            if (statsSection && !animated) {
+                const rect = statsSection.getBoundingClientRect();
+                if (rect.top < window.innerHeight) {
+                    runCounters();
+                    animated = true;
+                }
+            }
+        });
+
+        // Dynamic Member Counter Pulse Simulation
+        setInterval(() => {
+            const countElem = document.getElementById('live-online-count');
+            if (countElem) {
+                let current = parseInt(countElem.textContent.replace(',', ''));
+                let variation = Math.floor(Math.random() * 5) - 2;
+                let newCount = current + variation;
+                countElem.textContent = newCount.toLocaleString();
+            }
+        }, 4000);
+
+        // CANVAS PARTICLE BACKGROUND SIMULATION
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const particles = [];
+        const particleCount = 45;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = Math.random() * 2 + 0.5;
+                this.color = Math.random() > 0.5 ? '#00f2fe' : '#7928ca';
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.alpha = Math.random() * 0.6 + 0.2;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
+            }
+        }
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.onload = function() {
+            animateParticles();
+            runCounters();
+        };
+    </script>
 </body>
 </html>
