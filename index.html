@@ -14,7 +14,7 @@
       --border: #303546;
       --text: #f3f4f8;
       --muted: #a1a8ba;
-      --accent: #8b7cff;
+      --accent: #5865F2; /* Discord Blauw/Paars */
       --green: #45d6a0;
       --red: #ff7185;
     }
@@ -40,7 +40,7 @@
       place-items: center;
       padding: 24px;
       background:
-        radial-gradient(ellipse at 15% 20%, #5145a833, transparent 45%),
+        radial-gradient(ellipse at 15% 20%, #5865F222, transparent 45%),
         radial-gradient(ellipse at 90% 80%, #176c6a22, transparent 40%),
         var(--bg);
     }
@@ -55,58 +55,31 @@
       width: min(100%, 420px);
       padding: 30px;
       box-shadow: 0 24px 80px #0005;
+      text-align: center;
     }
 
-    .brand { font-size: 22px; font-weight: 800; }
+    .brand { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
     .brand span { color: var(--accent); }
     .muted { color: var(--muted); }
     .small { font-size: 13px; }
-
-    label {
-      display: block;
-      margin: 15px 0 6px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 11px 12px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      outline: none;
-      background: #11141c;
-      color: var(--text);
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-    }
 
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 10px 14px;
+      padding: 12px 18px;
       border: 1px solid var(--border);
       border-radius: 9px;
       background: var(--panel2);
       color: var(--text);
       text-decoration: none;
+      font-weight: 600;
     }
 
     .btn:hover { filter: brightness(1.12); }
     .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
     .btn.full { width: 100%; margin-top: 20px; }
-
-    .link-btn {
-      padding: 0;
-      border: 0;
-      background: none;
-      color: #b6adff;
-      text-decoration: underline;
-    }
 
     .app {
       min-height: 100vh;
@@ -174,7 +147,7 @@
       gap: 16px;
     }
 
-    .card { padding: 20px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; }
+    .card { padding: 20px; }
     .wide { grid-column: 1 / -1; }
 
     .stat {
@@ -190,7 +163,7 @@
       padding: 4px 9px;
       border-radius: 99px;
       background: #234a36;
-      color: #45d6a0;
+      color: var(--green);
       font-size: 12px;
     }
 
@@ -203,6 +176,25 @@
       background: var(--green);
     }
 
+    label {
+      display: block;
+      margin: 15px 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      outline: none;
+      background: #11141c;
+      color: var(--text);
+    }
+
+    input:focus, select:focus { border-color: var(--accent); }
+
     .row {
       display: flex;
       align-items: center;
@@ -211,7 +203,6 @@
       padding: 12px 0;
       border-bottom: 1px solid var(--border);
     }
-
     .row:last-child { border-bottom: 0; }
 
     .switch {
@@ -224,19 +215,15 @@
       position: relative;
       cursor: pointer;
     }
-
     .switch::after {
       content: "";
       position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
+      top: 3px; left: 3px;
+      width: 18px; height: 18px;
       border-radius: 50%;
       background: white;
       transition: .18s;
     }
-
     .switch:checked { background: var(--accent); }
     .switch:checked::after { left: 21px; }
 
@@ -259,7 +246,6 @@
       white-space: pre-wrap;
       overflow-wrap: anywhere;
     }
-
     .message.me { margin-left: auto; background: #403a78; }
     .chat-form { display: flex; gap: 8px; }
     .chat-form input { flex: 1; }
@@ -283,39 +269,35 @@
       border-radius: 10px;
       background: #151822;
     }
+
+    @media (max-width: 800px) {
+      .app { grid-template-columns: 1fr; }
+      aside { border-right: 0; border-bottom: 1px solid var(--border); }
+      .nav-list { display: flex; overflow-x: auto; }
+      .nav-label, .side-bottom { display: none; }
+      .nav-btn { width: auto; flex: 0 0 auto; }
+      main { padding: 20px 14px; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Inlogscherm -->
+  <!-- Inlogscherm (Geen gevoelige data blootgesteld; communiceert veilig via server OAuth) -->
   <section id="authScreen" class="auth-wrap">
     <div class="auth-card">
       <div class="brand">✦ Nova<span>Panel</span></div>
-      <p class="muted">Log in op je Node.js backend.</p>
+      <p class="muted">Beheer je Discord-bot en FiveM omgeving veilig.</p>
 
-      <form id="authForm">
-        <div id="nameField" class="hidden">
-          <label for="displayName">Naam</label>
-          <input id="displayName" autocomplete="name" maxlength="40">
-        </div>
-
-        <label for="email">E-mailadres</label>
-        <input id="email" type="email" autocomplete="email" required maxlength="120">
-
-        <label for="password">Wachtwoord</label>
-        <input id="password" type="password" autocomplete="current-password" required minlength="6">
-
-        <button id="authSubmit" class="btn primary full" type="submit">Inloggen</button>
-      </form>
-
-      <p class="small muted" style="margin-top:15px;">
-        <span id="authPrompt">Nog geen account?</span>
-        <button id="toggleAuth" class="link-btn" type="button">Account aanmaken</button>
-      </p>
+      <!-- Verwijst naar de veilige backend route -->
+      <a href="http://localhost:3000/auth/discord" class="btn primary full">
+        Inloggen met Discord
+      </a>
+      
+      <p class="small muted" style="margin-top: 20px;">Je client ID en secret blijven veilig afgeschermd op de server.</p>
     </div>
   </section>
 
-  <!-- Dashboard App -->
+  <!-- Hoofd dashboard app -->
   <div id="app" class="app hidden">
     <aside>
       <div class="side-brand">
@@ -334,7 +316,7 @@
       </nav>
 
       <div class="side-bottom small muted">
-        <div><span class="status-dot"></span>Verbonden</div>
+        <div><span class="status-dot"></span>Verbonden met Server</div>
         <div id="sideUser" style="margin-top:8px"></div>
       </div>
     </aside>
@@ -343,7 +325,7 @@
       <header class="topbar">
         <div>
           <h1 id="pageTitle">Overzicht</h1>
-          <div class="muted">Welkom, <span id="welcomeName">gebruiker</span></div>
+          <div class="muted">Welkom terug, <span id="welcomeName">gebruiker</span></div>
         </div>
         <button id="logoutBtn" class="btn" type="button">Uitloggen</button>
       </header>
@@ -352,7 +334,7 @@
         <div class="grid">
           <div class="card stat">
             <div><div class="muted">Botstatus</div><strong>Online</strong></div>
-            <span class="badge">Verbonden</span>
+            <span class="badge">Actief</span>
           </div>
           <div class="card stat">
             <div><div class="muted">Prefix</div><strong id="overviewPrefix">.</strong></div>
@@ -365,7 +347,7 @@
         <div class="card">
           <h2>AI-chat</h2>
           <div id="chatLog" class="chat-log">
-            <div class="message">Hoi! Stel hier je vraag aan de backend AI.</div>
+            <div class="message">Hoi! Stel hier je vraag aan de AI-backend.</div>
           </div>
           <form id="chatForm" class="chat-form">
             <input id="chatInput" placeholder="Stel een vraag..." required>
@@ -443,8 +425,7 @@
     const API_URL = "http://localhost:3000/api";
     const $ = (selector) => document.querySelector(selector); const $$ = (selector) => document.querySelectorAll(selector);
 
-    let creatingAccount = false;
-
+    // Controleer of de gebruiker is ingelogd via de backend sessie
     async function checkSession() {
       try {
         const res = await fetch(`${API_URL}/auth/me`, { credentials: "include" });
@@ -464,8 +445,8 @@
     function showApp(user) {
       $("#authScreen").classList.add("hidden");
       $("#app").classList.remove("hidden");
-      $("#welcomeName").textContent = user.name;
-      $("#sideUser").textContent = user.email;
+      $("#welcomeName").textContent = user.name || "Gebruiker";
+      $("#sideUser").textContent = user.email || user.name;
     }
 
     function showAuth() {
@@ -473,46 +454,8 @@
       $("#authScreen").classList.remove("hidden");
     }
 
-    $("#toggleAuth").addEventListener("click", () => {
-      creatingAccount = !creatingAccount;
-      $("#nameField").classList.toggle("hidden", !creatingAccount);
-      $("#authSubmit").textContent = creatingAccount ? "Account aanmaken" : "Inloggen";
-      $("#authPrompt").textContent = creatingAccount ? "Heb je al een account?" : "Nog geen account?";
-      $("#toggleAuth").textContent = creatingAccount ? "Inloggen" : "Account aanmaken";
-    });
-
-    $("#authForm").addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const email = $("#email").value.trim().toLowerCase();
-      const password = $("#password").value;
-      const name = $("#displayName").value.trim();
-
-      const endpoint = creatingAccount ? `${API_URL}/auth/register` : `${API_URL}/auth/login`;
-      const body = creatingAccount ? { email, password, name } : { email, password };
-
-      try {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-          credentials: "include"
-        });
-        const data = await res.json();
-
-        if (res.ok) {
-          showApp(data.user);
-          loadSettings();
-          loadTickets();
-        } else {
-          alert(data.error || "Fout bij inloggen/registreren.");
-        }
-      } catch {
-        alert("Kan geen verbinding maken met de backend server op poort 3000.");
-      }
-    });
-
     $("#logoutBtn").addEventListener("click", async () => {
-      await fetch(`${API_URL}/auth/logout`, { method: "POST", credentials: "include" });
+      await fetch(`http://localhost:3000/api/auth/logout`, { method: "POST", credentials: "include" });
       showAuth();
     });
 
@@ -584,7 +527,7 @@
         const data = await res.json();
         addMessage(data.reply || "Geen antwoord.", "");
       } catch {
-        addMessage("Fout bij verbinden met AI.", "");
+        addMessage("Fout bij verbinden met de AI-backend.", "");
       }
     });
 
@@ -637,4 +580,20 @@
       if (type === "command") {
         code += `RegisterCommand('${name}', function(source, args, rawCommand)\n    TriggerClientEvent('chat:addMessage', source, {\n        args = { '${name}', 'Hallo vanuit ${name}!' }\n    })\nend, false)`;
       } else if (type === "vehicle") {
-        code += `RegisterCommand('spawncar', function(source, args, rawCommand)\n    local xPlayer = ESX.GetPlayerFromId(source)\n    -- Voertuig spawn logica\nend, false)
+        code += `RegisterCommand('spawncar', function(source, args, rawCommand)\n    local xPlayer = ESX.GetPlayerFromId(source)\n    -- Voertuig spawn logica\nend, false)`;
+      } else {
+        code += `ESX = exports['es_extended']:getSharedObject()`;
+      }
+      $("#resourceOutput").textContent = code;
+    });
+
+    $("#copyResource").addEventListener("click", () => {
+      navigator.clipboard.writeText($("#resourceOutput").textContent);
+      alert("Code gekopieerd naar klembord!");
+    });
+
+    // Start de sessiecontrole bij openen van de pagina
+    checkSession();
+  </script>
+</body>
+</html>
