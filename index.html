@@ -3,79 +3,779 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#5865f2">
-  <title>Bot toevoegen aan Discord</title>
+  <meta name="theme-color" content="#10121a">
+  <title>Nova Panel — Bot & FiveM</title>
   <style>
+    :root {
+      color-scheme: dark;
+      --bg: #10121a;
+      --panel: #191c27;
+      --panel2: #202431;
+      --border: #303546;
+      --text: #f3f4f8;
+      --muted: #a1a8ba;
+      --accent: #8b7cff;
+      --green: #45d6a0;
+      --red: #ff7185;
+    }
+
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
       min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .hidden { display: none !important; }
+
+    .auth-wrap {
+      min-height: 100vh;
       display: grid;
       place-items: center;
       padding: 24px;
-      color: #f4f5f7;
-      background: #111318;
-      font-family: system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse at 15% 20%, #5145a833, transparent 45%),
+        radial-gradient(ellipse at 90% 80%, #176c6a22, transparent 40%),
+        var(--bg);
     }
 
-    main {
-      width: min(100%, 520px);
-      padding: 36px;
-      text-align: center;
-      background: #1b1d24;
-      border: 1px solid #30333d;
-      border-radius: 18px;
-      box-shadow: 0 18px 60px #0006;
+    .auth-card, .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
     }
 
-    .icon {
-      font-size: 48px;
-      margin-bottom: 12px;
+    .auth-card {
+      width: min(100%, 420px);
+      padding: 30px;
+      box-shadow: 0 24px 80px #0005;
     }
 
-    h1 { margin: 0 0 12px; }
-    p { color: #b9bbc6; line-height: 1.6; }
+    .brand { font-size: 22px; font-weight: 800; }
+    .brand span { color: var(--accent); }
+    .muted { color: var(--muted); }
+    .small { font-size: 13px; }
 
-    .button {
-      display: inline-block;
-      margin-top: 18px;
-      padding: 14px 22px;
-      color: white;
-      background: #5865f2;
+    label {
+      display: block;
+      margin: 15px 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
       border-radius: 9px;
-      font-weight: 700;
+      outline: none;
+      background: #11141c;
+      color: var(--text);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+    }
+
+    textarea { resize: vertical; min-height: 110px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel2);
+      color: var(--text);
       text-decoration: none;
     }
 
-    .button:hover { background: #4752c4; }
+    .btn:hover { filter: brightness(1.12); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+    .btn.danger { color: var(--red); }
+    .btn.full { width: 100%; margin-top: 20px; }
 
-    .note {
-      margin-top: 22px;
-      font-size: 13px;
-      color: #9295a1;
+    .link-btn {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: #b6adff;
+      text-decoration: underline;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 245px minmax(0, 1fr);
+    }
+
+    aside {
+      padding: 22px 14px;
+      border-right: 1px solid var(--border);
+      background: #141720;
+    }
+
+    .side-brand { padding: 0 10px 24px; }
+    .nav-label {
+      padding: 14px 10px 6px;
+      color: #7f879b;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .nav-btn {
+      display: flex;
+      width: 100%;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      margin: 3px 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      background: #272b3a;
+      color: white;
+    }
+
+    .side-bottom {
+      margin: 25px 8px 0;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    main { min-width: 0; padding: 28px; }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    h1 { margin: 0; font-size: 26px; }
+    h2 { margin: 0 0 12px; font-size: 18px; }
+    p { margin-top: 8px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card { padding: 20px; }
+    .wide { grid-column: 1 / -1; }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 105px;
+    }
+
+    .stat strong { font-size: 26px; }
+    .badge {
+      display: inline-block;
+      padding: 4px 9px;
+      border-radius: 99px;
+      background: #2b3040;
+      color: #c6c9d4;
+      font-size: 12px;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin-right: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .row:last-child { border-bottom: 0; }
+
+    .switch {
+      width: 42px;
+      height: 24px;
+      appearance: none;
+      border: 0;
+      border-radius: 99px;
+      background: #454b5c;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .switch::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      transition: .18s;
+    }
+
+    .switch:checked { background: var(--accent); }
+    .switch:checked::after { left: 21px; }
+
+    .chat-log {
+      height: 300px;
+      overflow: auto;
+      padding: 12px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #11141c;
+    }
+
+    .message {
+      max-width: 90%;
+      padding: 10px 12px;
+      margin: 8px 0;
+      border-radius: 10px;
+      background: #252a39;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .message.me { margin-left: auto; background: #403a78; }
+    .chat-form { display: flex; gap: 8px; }
+    .chat-form input { flex: 1; }
+
+    pre {
+      max-height: 380px;
+      overflow: auto;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #0d1016;
+      color: #d5d8e3;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .notice {
+      padding: 12px;
+      border: 1px solid #655827;
+      border-radius: 9px;
+      background: #332d1b;
+      color: #f4dda0;
+    }
+
+    .tickets { display: grid; gap: 10px; }
+    .ticket {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #151822;
+    }
+
+    .ticket.closed { opacity: .6; }
+    .footer-note { margin-top: 18px; color: var(--muted); font-size: 12px; }
+
+    @media (max-width: 800px) {
+      .app { grid-template-columns: 1fr; }
+      aside { border-right: 0; border-bottom: 1px solid var(--border); }
+      .nav-list { display: flex; overflow-x: auto; }
+      .nav-label, .side-bottom { display: none; }
+      .nav-btn { width: auto; flex: 0 0 auto; }
+      main { padding: 20px 14px; }
+    }
+
+    @media (max-width: 560px) {
+      .grid { grid-template-columns: 1fr; }
+      .wide { grid-column: auto; }
+      .topbar { align-items: flex-start; flex-direction: column; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <div class="icon" aria-hidden="true">🤖</div>
-    <h1>Voeg de bot toe</h1>
-    <p>Klik hieronder om Discord te openen en de bot aan een server toe te voegen.</p>
 
-    <a
-      class="button"
-      href="https://discord.com/oauth2/authorize?client_id=1546170500282064976&amp;permissions=8&amp;integration_type=0&amp;scope=bot%20applications.commands"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Toevoegen aan Discord
-    </a>
+  <section id="authScreen" class="auth-wrap">
+    <div class="auth-card">
+      <div class="brand">✦ Nova<span>Panel</span></div>
+      <p class="muted">Een demo-dashboard voor Discord-bots en FiveM-tools.</p>
 
-    <p class="note">
-      Je moet de server beheren om een bot te kunnen toevoegen.
-      Deze uitnodiging vraagt om Administrator-rechten.
-    </p>
-  </main>
+      <form id="authForm">
+        <div id="nameField" class="hidden">
+          <label for="displayName">Naam</label>
+          <input id="displayName" autocomplete="name" maxlength="40">
+        </div>
+
+        <label for="email">E-mailadres</label>
+        <input id="email" type="email" autocomplete="email" required maxlength="120">
+
+        <label for="password">Wachtwoord</label>
+        <input id="password" type="password" autocomplete="current-password" required minlength="6">
+
+        <button id="authSubmit" class="btn primary full" type="submit">Inloggen</button>
+      </form>
+
+      <p class="small muted">
+        <span id="authPrompt">Nog geen demo-account?</span>
+        <button id="toggleAuth" class="link-btn" type="button">Account aanmaken</button>
+      </p>
+      <p class="footer-note">Demo-login wordt alleen lokaal in deze browser bewaard. Gebruik hier geen echt wachtwoord.</p>
+    </div>
+  </section>
+
+  <div id="app" class="app hidden">
+    <aside>
+      <div class="side-brand">
+        <div class="brand">✦ Nova<span>Panel</span></div>
+        <div class="small muted">Bot & FiveM dashboard</div>
+      </div>
+
+      <div class="nav-label">Dashboard</div>
+      <nav class="nav-list">
+        <button class="nav-btn active" data-page="overview">⌂ Overzicht</button>
+        <button class="nav-btn" data-page="ai">✧ AI-chat</button>
+        <button class="nav-btn" data-page="fivem">⌘ FiveM scripts</button>
+        <button class="nav-btn" data-page="bot">◈ Botinstellingen</button>
+        <button class="nav-btn" data-page="moderation">⚑ Moderatie</button>
+        <button class="nav-btn" data-page="tickets">▤ Tickets</button>
+      </nav>
+
+      <div class="side-bottom small muted">
+        <div><span class="status-dot"></span>Demo-interface actief</div>
+        <div id="sideUser" style="margin-top:8px"></div>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Overzicht</h1>
+          <div class="muted">Welkom, <span id="welcomeName">gebruiker</span></div>
+        </div>
+        <button id="logoutBtn" class="btn" type="button">Uitloggen</button>
+      </header>
+
+      <section id="page-overview" class="page">
+        <div class="grid">
+          <div class="card stat">
+            <div><div class="muted">Botstatus</div><strong>Demo</strong></div>
+            <span class="badge">Niet verbonden</span>
+          </div>
+          <div class="card stat">
+            <div><div class="muted">Prefix</div><strong id="overviewPrefix">.</strong></div>
+            <span class="badge">Aanpasbaar</span>
+          </div>
+
+          <div class="card wide">
+            <h2>Snel aan de slag</h2>
+            <p class="muted">Deze pagina is de frontend. Koppel een backend om echte Discord-login, botcommands, AI, tickets en hosting te activeren.</p>
+            <div class="notice"><strong>Beveiliging:</strong> voer hier geen Discord-bottoken in. Een token in HTML of JavaScript is zichtbaar voor iedereen.</div>
+          </div>
+
+          <div class="card">
+            <h2>Bot uitnodigen</h2>
+            <p class="muted">Vervang de voorbeeld-ID door de applicatie-ID van je eigen bot.</p>
+            <a class="btn primary" href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer">Open Discord Developer Portal</a>
+          </div>
+
+          <div class="card">
+            <h2>Demo-commands</h2>
+            <p><code>.help</code> — commandolijst</p>
+            <p><code>.ping</code> — botstatus</p>
+            <p><code>.ticket</code> — ticket openen</p>
+            <p><code>.ban @gebruiker reden</code> — moderatie</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-ai" class="page hidden">
+        <div class="card">
+          <h2>AI-chat</h2>
+          <p class="muted">Lokale demo: antwoorden zijn voorbeeldtekst. Voor echte AI is een beveiligde backend nodig.</p>
+          <div id="chatLog" class="chat-log" aria-live="polite">
+            <div class="message">Hoi! Beschrijf wat je wilt maken. Deel geen wachtwoorden of tokens.</div>
+          </div>
+          <form id="chatForm" class="chat-form">
+            <input id="chatInput" placeholder="Stel een vraag..." maxlength="1000" required>
+            <button class="btn primary" type="submit">Verstuur</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="page-fivem" class="page hidden">
+        <div class="grid">
+          <div class="card">
+            <h2>FiveM resource-generator</h2>
+            <p class="muted">Genereert een eenvoudige voorbeeldresource in je browser.</p>
+            <label for="resourceName">Resourcenaam</label>
+            <input id="resourceName" value="nova_example" maxlength="40">
+            <label for="resourceType">Type resource</label>
+            <select id="resourceType">
+              <option value="command">Chatcommand</option>
+              <option value="vehicle">Voertuigvoorbeeld</option>
+              <option value="job">Jobvoorbeeld</option>
+            </select>
+            <button id="generateResource" class="btn primary" style="margin-top:14px" type="button">Genereer voorbeeld</button>
+          </div>
+          <div class="card">
+            <h2>Voorbeeldcode</h2>
+            <pre id="resourceOutput">Klik op “Genereer voorbeeld”.</pre>
+            <button id="copyResource" class="btn" type="button">Kopieer code</button>
+          </div>
+          <div class="card wide notice">Controleer gegenereerde code voordat je die op een server gebruikt. Deze demo voert geen scripts uit en uploadt niets.</div>
+        </div>
+      </section>
+
+      <section id="page-bot" class="page hidden">
+        <div class="grid">
+          <div class="card">
+            <h2>Botinstellingen</h2>
+            <label for="prefix">Command-prefix</label>
+            <input id="prefix" maxlength="5" value=".">
+            <button id="savePrefix" class="btn primary" style="margin-top:12px" type="button">Prefix opslaan</button>
+            <p class="footer-note">Demo-instelling wordt lokaal opgeslagen. Een echte bot moet dit server-side laden.</p>
+          </div>
+          <div class="card">
+            <h2>Bot hosting</h2>
+            <p class="muted">Deze HTML-pagina host geen bot en kan geen processen op een server starten.</p>
+            <div class="notice">Bewaar bot-token uitsluitend als server-side secret bij je hostingprovider. Deel het nooit in chat, HTML, GitHub of browsercode.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-moderation" class="page hidden">
+        <div class="grid">
+          <div class="card">
+            <h2>Moderatie-instellingen</h2>
+            <div class="row"><span>Welkomstbericht</span><input class="switch setting" type="checkbox" data-key="welcome"></div>
+            <div class="row"><span>Spamdetectie</span><input class="switch setting" type="checkbox" data-key="spam"></div>
+            <div class="row"><span>Linkfilter</span><input class="switch setting" type="checkbox" data-key="links"></div>
+            <div class="row"><span>Log moderatieacties</span><input class="switch setting" type="checkbox" data-key="logs"></div>
+            <p class="footer-note">Dit zijn alleen interface-instellingen; ze voeren geen Discord-acties uit.</p>
+          </div>
+          <div class="card">
+            <h2>Moderatiecommands</h2>
+            <p><code>.warn @gebruiker reden</code></p>
+            <p><code>.timeout @gebruiker tijd reden</code></p>
+            <p><code>.kick @gebruiker reden</code></p>
+            <p><code>.ban @gebruiker reden</code></p>
+            <p class="muted small">Gebruik permissiecontroles en auditlogs in de backend.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-tickets" class="page hidden">
+        <div class="grid">
+          <div class="card">
+            <h2>Ticketpaneel</h2>
+            <p class="muted">Maak een demo-ticket aan. Tickets worden alleen in deze browser bewaard.</p>
+            <label for="ticketSubject">Onderwerp</label>
+            <input id="ticketSubject" maxlength="100" placeholder="Waarmee kunnen we helpen?">
+            <button id="createTicket" class="btn primary" style="margin-top:12px" type="button">Ticket openen</button>
+          </div>
+          <div class="card">
+            <h2>Tickets</h2>
+            <div id="ticketList" class="tickets"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    "use strict";
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => document.querySelectorAll(selector);
+
+    const KEYS = {
+      user: "nova_demo_user",
+      prefix: "nova_demo_prefix",
+      settings: "nova_demo_settings",
+      tickets: "nova_demo_tickets"
+    };
+
+    let creatingAccount = false;
+
+    function readJSON(key, fallback) {
+      try {
+        const value = localStorage.getItem(key);
+        return value ? JSON.parse(value) : fallback;
+      } catch {
+        return fallback;
+      }
+    }
+
+    function showApp(user) {
+      $("#authScreen").classList.add("hidden");
+      $("#app").classList.remove("hidden");
+      const name = user?.name || user?.email?.split("@")[0] || "gebruiker";
+      $("#welcomeName").textContent = name;
+      $("#sideUser").textContent = user?.email || "";
+      loadSettings();
+      loadTickets();
+      setPrefix(localStorage.getItem(KEYS.prefix) || ".");
+    }
+
+    function showAuth() {
+      $("#app").classList.add("hidden");
+      $("#authScreen").classList.remove("hidden");
+    }
+
+    $("#toggleAuth").addEventListener("click", () => {
+      creatingAccount = !creatingAccount;
+      $("#nameField").classList.toggle("hidden", !creatingAccount);
+      $("#authSubmit").textContent = creatingAccount ? "Demo-account aanmaken" : "Inloggen";
+      $("#authPrompt").textContent = creatingAccount ? "Heb je al een demo-account?" : "Nog geen demo-account?";
+      $("#toggleAuth").textContent = creatingAccount ? "Inloggen" : "Account aanmaken";
+      $("#password").autocomplete = creatingAccount ? "new-password" : "current-password";
+    });
+
+    $("#authForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const email = $("#email").value.trim().toLowerCase();
+      const password = $("#password").value;
+      const name = $("#displayName").value.trim();
+
+      if (creatingAccount && name.length < 2) {
+        alert("Vul een naam van minimaal 2 tekens in.");
+        return;
+      }
+
+      // Demo-only: dit is GEEN echte of veilige accountauthenticatie.
+      const user = { email, name: name || email.split("@")[0] };
+      localStorage.setItem(KEYS.user, JSON.stringify(user));
+      showApp(user);
+    });
+
+    $("#logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem(KEYS.user);
+      showAuth();
+    });
+
+    const titles = {
+      overview: "Overzicht",
+      ai: "AI-chat",
+      fivem: "FiveM scripts",
+      bot: "Botinstellingen",
+      moderation: "Moderatie",
+      tickets: "Tickets"
+    };
+
+    $$(".nav-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        $$(".nav-btn").forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+
+        $$(".page").forEach((page) => page.classList.add("hidden"));
+        $("#page-" + button.dataset.page).classList.remove("hidden");
+        $("#pageTitle").textContent = titles[button.dataset.page];
+      });
+    });
+
+    function setPrefix(value) {
+      const prefix = (value || ".").slice(0, 5);
+      $("#prefix").value = prefix;
+      $("#overviewPrefix").textContent = prefix;
+    }
+
+    $("#savePrefix").addEventListener("click", () => {
+      const prefix = $("#prefix").value.trim();
+      if (!prefix) {
+        alert("De prefix mag niet leeg zijn.");
+        return;
+      }
+      localStorage.setItem(KEYS.prefix, prefix);
+      setPrefix(prefix);
+      alert("Demo-prefix opgeslagen in deze browser.");
+    });
+
+    $("#chatForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = $("#chatInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMessage(text, "me");
+      input.value = "";
+
+      window.setTimeout(() => {
+        addMessage("Dit is een frontend-demo. Koppel een beveiligde backend aan een AI-dienst om echte antwoorden te krijgen.", "");
+      }, 350);
+    });
+
+    function addMessage(text, className) {
+      const message = document.createElement("div");
+      message.className = "message " + className;
+      message.textContent = text;
+      $("#chatLog").appendChild(message);
+      $("#chatLog").scrollTop = $("#chatLog").scrollHeight;
+    }
+
+    $("#generateResource").addEventListener("click", () => {
+      const rawName = $("#resourceName").value.trim().toLowerCase();
+      const name = rawName.replace(/[^a-z0-9_-]/g, "") || "nova_example";
+      const type = $("#resourceType").value;
+
+      let client = "";
+      if (type === "command") {
+        client = `RegisterCommand('hello', function()
+    TriggerEvent('chat:addMessage', {
+        args = { 'Server', 'Hallo vanuit ${name}!' }
+    })
+end, false)
+`;
+      } else if (type === "vehicle") {
+        client = `RegisterCommand('myvehicle', function()
+    local model = joaat('adder')
+    RequestModel(model)
+
+    while not HasModelLoaded(model) do
+        Wait(0)
+    end
+
+    local ped = PlayerPedId()
+    local coords = GetEntityCoords(ped)
+    local vehicle = CreateVehicle(model, coords.x, coords.y, coords.z, GetEntityHeading(ped), true, false)
+
+    SetPedIntoVehicle(ped, vehicle, -1)
+    SetModelAsNoLongerNeeded(model)
+end, false)
+`;
+      } else {
+        client = `-- Voorbeeldstructuur voor een FiveM-job.
+-- Voeg framework-specifieke rechten en servervalidatie toe.
+local jobName = '${name}'
+
+RegisterCommand('jobinfo', function()
+    TriggerEvent('chat:addMessage', {
+        args = { 'Job', 'Voorbeeldjob: ' .. jobName }
+    })
+end, false)
+`;
+      }
+
+      const output = `-- fxmanifest.lua
+fx_version 'cerulean'
+game 'gta5'
+
+author 'NovaPanel demo'
+description 'Voorbeeldresource: ${name}'
+version '1.0.0'
+
+client_script 'client.lua'
+
+-- client.lua
+${client}`;
+
+      $("#resourceOutput").textContent = output;
+    });
+
+    $("#copyResource").addEventListener("click", async () => {
+      const text = $("#resourceOutput").textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        alert("Code gekopieerd.");
+      } catch {
+        alert("Kopiëren is niet beschikbaar. Selecteer en kopieer de code handmatig.");
+      }
+    });
+
+    function loadSettings() {
+      const settings = readJSON(KEYS.settings, {});
+      $$(".setting").forEach((input) => {
+        input.checked = Boolean(settings[input.dataset.key]);
+        input.addEventListener("change", () => {
+          const updated = readJSON(KEYS.settings, {});
+          updated[input.dataset.key] = input.checked;
+          localStorage.setItem(KEYS.settings, JSON.stringify(updated));
+        });
+      });
+    }
+
+    function loadTickets() {
+      const tickets = readJSON(KEYS.tickets, []);
+      const list = $("#ticketList");
+      list.replaceChildren();
+
+      if (!tickets.length) {
+        const empty = document.createElement("p");
+        empty.className = "muted";
+        empty.textContent = "Nog geen tickets.";
+        list.appendChild(empty);
+        return;
+      }
+
+      tickets.forEach((ticket, index) => {
+        const card = document.createElement("div");
+        card.className = "ticket" + (ticket.closed ? " closed" : "");
+
+        const title = document.createElement("strong");
+        title.textContent = ticket.subject;
+
+        const meta = document.createElement("div");
+        meta.className = "small muted";
+        meta.textContent = ticket.closed ? "Gesloten" : "Open";
+
+        const button = document.createElement("button");
+        button.className = "btn";
+        button.type = "button";
+        button.textContent = ticket.closed ? "Heropenen" : "Sluiten";
+        button.addEventListener("click", () => {
+          const current = readJSON(KEYS.tickets, []);
+          current[index].closed = !current[index].closed;
+          localStorage.setItem(KEYS.tickets, JSON.stringify(current));
+          loadTickets();
+        });
+
+        card.append(title, meta, button);
+        list.appendChild(card);
+      });
+    }
+
+    $("#createTicket").addEventListener("click", () => {
+      const subject = $("#ticketSubject").value.trim();
+      if (!subject) {
+        alert("Vul een ticketonderwerp in.");
+        return;
+      }
+
+      const tickets = readJSON(KEYS.tickets, []);
+      tickets.unshift({
+        subject,
+        closed: false,
+        createdAt: new Date().toISOString()
+      });
+
+      localStorage.setItem(KEYS.tickets, JSON.stringify(tickets));
+      $("#ticketSubject").value = "";
+      loadTickets();
+    });
+
+    const existingUser = readJSON(KEYS.user, null);
+    if (existingUser) showApp(existingUser);
+  </script>
 </body>
 </html>
