@@ -83,8 +83,6 @@
       border-color: var(--accent);
     }
 
-    textarea { resize: vertical; min-height: 110px; }
-
     .btn {
       display: inline-flex;
       align-items: center;
@@ -100,7 +98,6 @@
 
     .btn:hover { filter: brightness(1.12); }
     .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
-    .btn.danger { color: var(--red); }
     .btn.full { width: 100%; margin-top: 20px; }
 
     .link-btn {
@@ -177,7 +174,7 @@
       gap: 16px;
     }
 
-    .card { padding: 20px; }
+    .card { padding: 20px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; }
     .wide { grid-column: 1 / -1; }
 
     .stat {
@@ -192,8 +189,8 @@
       display: inline-block;
       padding: 4px 9px;
       border-radius: 99px;
-      background: #2b3040;
-      color: #c6c9d4;
+      background: #234a36;
+      color: #45d6a0;
       font-size: 12px;
     }
 
@@ -279,14 +276,6 @@
       overflow-wrap: anywhere;
     }
 
-    .notice {
-      padding: 12px;
-      border: 1px solid #655827;
-      border-radius: 9px;
-      background: #332d1b;
-      color: #f4dda0;
-    }
-
     .tickets { display: grid; gap: 10px; }
     .ticket {
       padding: 14px;
@@ -294,33 +283,15 @@
       border-radius: 10px;
       background: #151822;
     }
-
-    .ticket.closed { opacity: .6; }
-    .footer-note { margin-top: 18px; color: var(--muted); font-size: 12px; }
-
-    @media (max-width: 800px) {
-      .app { grid-template-columns: 1fr; }
-      aside { border-right: 0; border-bottom: 1px solid var(--border); }
-      .nav-list { display: flex; overflow-x: auto; }
-      .nav-label, .side-bottom { display: none; }
-      .nav-btn { width: auto; flex: 0 0 auto; }
-      main { padding: 20px 14px; }
-    }
-
-    @media (max-width: 560px) {
-      .grid { grid-template-columns: 1fr; }
-      .wide { grid-column: auto; }
-      .topbar { align-items: flex-start; flex-direction: column; }
-    }
   </style>
 </head>
 <body>
 
-  <!-- Authenticatie Scherm -->
+  <!-- Inlogscherm -->
   <section id="authScreen" class="auth-wrap">
     <div class="auth-card">
       <div class="brand">✦ Nova<span>Panel</span></div>
-      <p class="muted">Dashboard gekoppeld aan de Node.js backend.</p>
+      <p class="muted">Log in op je Node.js backend.</p>
 
       <form id="authForm">
         <div id="nameField" class="hidden">
@@ -337,14 +308,14 @@
         <button id="authSubmit" class="btn primary full" type="submit">Inloggen</button>
       </form>
 
-      <p class="small muted">
+      <p class="small muted" style="margin-top:15px;">
         <span id="authPrompt">Nog geen account?</span>
         <button id="toggleAuth" class="link-btn" type="button">Account aanmaken</button>
       </p>
     </div>
   </section>
 
-  <!-- Hoofdapplicatie -->
+  <!-- Dashboard App -->
   <div id="app" class="app hidden">
     <aside>
       <div class="side-brand">
@@ -363,7 +334,7 @@
       </nav>
 
       <div class="side-bottom small muted">
-        <div><span class="status-dot"></span>Verbonden met Backend</div>
+        <div><span class="status-dot"></span>Verbonden</div>
         <div id="sideUser" style="margin-top:8px"></div>
       </div>
     </aside>
@@ -381,29 +352,23 @@
         <div class="grid">
           <div class="card stat">
             <div><div class="muted">Botstatus</div><strong>Online</strong></div>
-            <span class="badge" style="background:#234a36; color:#45d6a0;">Verbonden</span>
+            <span class="badge">Verbonden</span>
           </div>
           <div class="card stat">
             <div><div class="muted">Prefix</div><strong id="overviewPrefix">.</strong></div>
-            <span class="badge">Backend gesynchroniseerd</span>
-          </div>
-
-          <div class="card wide">
-            <h2>Snel aan de slag</h2>
-            <p class="muted">Je paneel communiceert nu via veilige API-requests met de Node.js Express backend.</p>
+            <span class="badge">Live</span>
           </div>
         </div>
       </section>
 
       <section id="page-ai" class="page hidden">
         <div class="card">
-          <h2>AI-chat (Backend gekoppeld)</h2>
-          <p class="muted">Vragen worden naar je server gestuurd voor verwerking.</p>
-          <div id="chatLog" class="chat-log" aria-live="polite">
-            <div class="message">Hoi! Stel hier je vraag aan de AI-backend.</div>
+          <h2>AI-chat</h2>
+          <div id="chatLog" class="chat-log">
+            <div class="message">Hoi! Stel hier je vraag aan de backend AI.</div>
           </div>
           <form id="chatForm" class="chat-form">
-            <input id="chatInput" placeholder="Stel een vraag..." maxlength="1000" required>
+            <input id="chatInput" placeholder="Stel een vraag..." required>
             <button class="btn primary" type="submit">Verstuur</button>
           </form>
         </div>
@@ -412,7 +377,7 @@
       <section id="page-fivem" class="page hidden">
         <div class="grid">
           <div class="card">
-            <h2>FiveM resource-generator</h2>
+            <h2>FiveM Generator</h2>
             <label for="resourceName">Resourcenaam</label>
             <input id="resourceName" value="nova_example" maxlength="40">
             <label for="resourceType">Type resource</label>
@@ -424,7 +389,7 @@
             <button id="generateResource" class="btn primary" style="margin-top:14px" type="button">Genereer voorbeeld</button>
           </div>
           <div class="card">
-            <h2>Voorbeeldcode</h2>
+            <h2>Code</h2>
             <pre id="resourceOutput">Klik op “Genereer voorbeeld”.</pre>
             <button id="copyResource" class="btn" type="button">Kopieer code</button>
           </div>
@@ -464,7 +429,7 @@
             <button id="createTicket" class="btn primary" style="margin-top:12px" type="button">Ticket openen</button>
           </div>
           <div class="card">
-            <h2>Tickets</h2>
+            <h2>Open Tickets</h2>
             <div id="ticketList" class="tickets"></div>
           </div>
         </div>
@@ -480,7 +445,6 @@
 
     let creatingAccount = false;
 
-    // Controleer bij het laden of er al een actieve sessie is op de server
     async function checkSession() {
       try {
         const res = await fetch(`${API_URL}/auth/me`, { credentials: "include" });
@@ -500,9 +464,8 @@
     function showApp(user) {
       $("#authScreen").classList.add("hidden");
       $("#app").classList.remove("hidden");
-      const name = user?.name || user?.email?.split("@")[0] || "gebruiker";
-      $("#welcomeName").textContent = name;
-      $("#sideUser").textContent = user?.email || "";
+      $("#welcomeName").textContent = user.name;
+      $("#sideUser").textContent = user.email;
     }
 
     function showAuth() {
@@ -518,7 +481,6 @@
       $("#toggleAuth").textContent = creatingAccount ? "Inloggen" : "Account aanmaken";
     });
 
-    // Inloggen / Registreren via API
     $("#authForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       const email = $("#email").value.trim().toLowerCase();
@@ -542,10 +504,10 @@
           loadSettings();
           loadTickets();
         } else {
-          alert(data.error || "Er is een fout opgetreden.");
+          alert(data.error || "Fout bij inloggen/registreren.");
         }
-      } catch (err) {
-        alert("Kan geen verbinding maken met de backend server.");
+      } catch {
+        alert("Kan geen verbinding maken met de backend server op poort 3000.");
       }
     });
 
@@ -554,7 +516,6 @@
       showAuth();
     });
 
-    // Navigatie logica
     const titles = { overview: "Overzicht", ai: "AI-chat", fivem: "FiveM scripts", bot: "Botinstellingen", moderation: "Moderatie", tickets: "Tickets" };
     $$(".nav-btn").forEach((button) => {
       button.addEventListener("click", () => {
@@ -565,7 +526,6 @@
       });
     });
 
-    // Instellingen laden en opslaan
     async function loadSettings() {
       try {
         const res = await fetch(`${API_URL}/settings`, { credentials: "include" });
@@ -605,7 +565,6 @@
       if (res.ok) alert("Moderatie-instellingen opgeslagen!");
     });
 
-    // AI Chat integratie
     $("#chatForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       const input = $("#chatInput");
@@ -623,9 +582,9 @@
           credentials: "include"
         });
         const data = await res.json();
-        addMessage(data.reply || data.error || "Geen antwoord ontvangen.", "");
+        addMessage(data.reply || "Geen antwoord.", "");
       } catch {
-        addMessage("Kan geen verbinding maken met de AI-service.", "");
+        addMessage("Fout bij verbinden met AI.", "");
       }
     });
 
@@ -638,11 +597,44 @@
       log.scrollTop = log.scrollHeight;
     }
 
-    // Tickets laden en aanmaken
     async function loadTickets() {
       try {
         const res = await fetch(`${API_URL}/tickets`, { credentials: "include" });
         if (res.ok) {
           const tickets = await res.json();
           const list = $("#ticketList");
-          list.innerHTML = tickets.length ? "" : "<p cl
+          list.innerHTML = tickets.length ? "" : "<p class='muted'>Geen openstaande tickets.</p>";
+          tickets.forEach(t => {
+            const div = document.createElement("div");
+            div.className = "ticket";
+            div.innerHTML = `<strong>${t.id}</strong>: ${t.subject} <span class="badge" style="float:right">${t.status}</span>`;
+            list.appendChild(div);
+          });
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    $("#createTicket").addEventListener("click", async () => {
+      const subject = $("#ticketSubject").value.trim();
+      if (!subject) return alert("Vul een onderwerp in.");
+      
+      const res = await fetch(`${API_URL}/tickets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject }),
+        credentials: "include"
+      });
+      if (res.ok) {
+        $("#ticketSubject").value = "";
+        loadTickets();
+      }
+    });
+
+    $("#generateResource").addEventListener("click", () => {
+      const name = $("#resourceName").value.trim() || "nova_example";
+      const type = $("#resourceType").value;
+      let code = `-- Resource: ${name}\n\n`;
+      if (type === "command") {
+        code += `RegisterCommand('${name}', function(source, args, rawCommand)\n    TriggerClientEvent('chat:addMessage', source, {\n        args = { '${name}', 'Hallo vanuit ${name}!' }\n    })\nend, false)`;
+      } else if (type === "vehicle") {
+        code += `RegisterCommand('spawncar', function(source, args, rawCommand)\n    local xPlayer = ESX.GetPlayerFromId(source)\n    -- Voertuig spawn logica\nend, false)
