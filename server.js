@@ -1,119 +1,106 @@
-require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
-const passport = require('passport');
-const GitHubStrategy = require('passport-github2').Strategy;
-const cors = require('cors');
-
+const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware voor JSON verwerking
 app.use(express.json());
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5500', // Pas aan naar je GitHub Pages URL in productie
-  credentials: true
-}));
 
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'geheim_sleutel',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { 
-    secure: process.env.NODE_ENV === 'production', // True op HTTPS
-    httpOnly: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+// Serveer statische bestanden uit de huidige map
+app.use(express.static(path.join(__dirname)));
+
+// Server Status In-Memory State
+let serverState = {
+  id: "srv-01",
+  name: "Freddo Main Server",
+  status: "online", // online, offline, restarting
+  cpu: 18,
+  ram: 2.4,
+  disk: 14.2,
+  uptime: 0
+};
+
+// Logs geheugen
+let logs = [
+  { timestamp: new Date().toLocaleTimeString(), text: "Freddo Hosting Server Daemon v2.4 initialized." },
+  { timestamp: new Date().toLocaleTimeString(), text: "Listening on port " + PORT },
+  { timestamp: new Date().toLocaleTimeString(), text: "Connected to Freddo Node #1 (Amsterdam)." }
+];
+
+// Timer om uptime & stats te simuleren
+setInterval(() => {
+  if (serverState.status === 'online') {
+    serverState.uptime += 1;
+    // Kleine willekeurige schommelingen in CPU en RAM
+    serverState.cpu = Math.floor(15 + Math.random() * 20);
+    serverState.ram = parseFloat((2.3 + Math.random() * 0.4).toFixed(1));
+  } else {
+    serverState.cpu = 0;
+    serverState.ram = 0;
   }
-}));
+}, 3000);
 
-app.use(passport.initialize());
-app.use(passport.session());
+// API Endpoints
 
-// In-memory data
-const tickets = [];
-let botSettings = { prefix: '.', welcome: true, spam: true, links: false, logs: true };
+// Server status & stats ophalen
+app.get('/api/server/status', (req, res) => {
+  res.json(serverState);
+});
 
-// Passport GitHub Configuratie
-passport.use(new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: process.env.GITHUB_CALLBACK_URL || "http://localhost:3000/auth/github/callback"
-  },
-  function(accessToken, refreshToken, profile, done) {
-    // Hier koppel je de GitHub profieldata aan je sessie
-    return done(null, {
-      id: profile.id,
-      name: profile.displayName || profile.username,
-      email: profile.emails?.[0]?.value || `${profile.username}@github.user`,
-      avatar: profile.photos?.[0]?.value
-    });
+// Server actie uitvoeren (start, stop, restart)
+app.post('/api/server/action', (req, res) => {
+  const { action } = req.body;
+  const time = new Date().toLocaleTimeString();
+
+  if (action === 'start') {
+    serverState.status = 'online';
+    logs.push({ timestamp: time, text: "Command received: START. Starting server..." });
+    logs.push({ timestamp: time, text: "Server started successfully." });
+  } else if (action === 'stop') {
+    serverState.status = 'offline';
+    logs.push({ timestamp: time, text: "Command received: STOP. Gracefully shutting down..." });
+    logs.push({ timestamp: time, text: "Server stopped." });
+  } else if (action === 'restart') {
+    serverState.status = 'restarting';
+    logs.push({ timestamp: time, text: "Command received: RESTART. Rebooting server..." });
+    setTimeout(() => {
+      serverState.status = 'online';
+      logs.push({ timestamp: new Date().toLocaleTimeString(), text: "Server restart complete." });
+    }, 4000);
   }
-));
 
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((user, done) => done(null, user));
+  res.json({ success: true, status: serverState.status });
+});
 
-// --- ROUTES ---
+// Logs ophalen
+app.get('/api/server/logs', (req, res) => {
+  res.json(logs);
+});
 
-// Start GitHub login
-app.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
+// Commando uitvoeren via terminal
+app.post('/api/server/command', (req, res) => {
+  const { command } = req.body;
+  const time = new Date().toLocaleTimeString();
+  
+  logs.push({ timestamp: time, text: `$ ${command}` });
 
-// GitHub callback
-app.get('/auth/github/callback', 
-  passport.authenticate('github', { failureRedirect: '/' }),
-  (req, res) => {
-    // Redirect terug naar je frontend dashboard na succesvolle login
-    res.redirect(process.env.FRONTEND_URL || 'http://localhost:5500');
+  let responseText = `Command '${command}' executed.`;
+  if (command.toLowerCase() === 'help') {
+    responseText = "Available commands: help, status, clear, ping, restart";
+  } else if (command.toLowerCase() === 'status') {
+    responseText = `Current Status: ${serverState.status.toUpperCase()} | CPU: ${serverState.cpu}% | RAM: ${serverState.ram}GB`;
+  } else if (command.toLowerCase() === 'ping') {
+    responseText = "PONG! Response time: 12ms";
   }
-);
 
-// Huidige gebruiker opvragen
-app.get('/api/auth/me', (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ error: 'Niet ingelogd.' });
-  }
-  res.json({ user: req.user });
+  logs.push({ timestamp: time, text: responseText });
+  res.json({ success: true, response: responseText });
 });
 
-// Uitloggen
-app.post('/api/auth/logout', (req, res) => {
-  req.logout((err) => {
-    res.clearCookie('connect.sid');
-    res.json({ success: true });
-  });
+// Start de HTTP-server
+app.listen(PORT, () => {
+  console.log(`=========================================`);
+  console.log(`🚀 Freddo Hosting Server is gestart!`);
+  console.log(`🌐 Open in je browser: http://localhost:${PORT}`);
+  console.log(`=========================================`);
 });
-
-// Middleware check
-function ensureAuth(req, res, next) {
-  if (!req.isAuthenticated()) return res.status(401).json({ error: 'Niet geautoriseerd.' });
-  next();
-}
-
-// Bot instellingen
-app.get('/api/settings', ensureAuth, (req, res) => res.json(botSettings));
-app.post('/api/settings', ensureAuth, (req, res) => {
-  const { prefix, settings } = req.body;
-  if (prefix) botSettings.prefix = prefix.slice(0, 5);
-  if (settings) botSettings = { ...botSettings, ...settings };
-  res.json({ success: true, botSettings });
-});
-
-// AI Chat
-app.post('/api/ai/chat', ensureAuth, (req, res) => {
-  const { message } = req.body;
-  res.json({ reply: `GitHub AI antwoord op: "${message}"` });
-});
-
-// Tickets
-app.get('/api/tickets', ensureAuth, (req, res) => {
-  const userTickets = tickets.filter(t => t.userId === req.user.id);
-  res.json(userTickets);
-});
-
-app.post('/api/tickets', ensureAuth, (req, res) => {
-  const { subject } = req.body;
-  const newTicket = { id: 'TICK-' + Math.floor(1000 + Math.random() * 9000), userId: req.user.id, subject, status: 'open' };
-  tickets.push(newTicket);
-  res.json({ success: true, ticket: newTicket });
-});
-
-app.listen(PORT, () => console.log(`Backend draait op poort ${PORT}`));
