@@ -1,46 +1,45 @@
-<div align="center">
+# Freddo Bot Hosting — starter
 
-# ❄️ Freddo Hosting
-### *Next-Generation Server Management & Dashboard*
+## Vereisten
+- Node.js 20 of nieuwer
+- Een Discord OAuth-app en/of Google OAuth-client voor echte login
 
-[![Node.js](https://img.shields.io/badge/Node.js-v18%2B-green?style=for-the-badge&logo=nodedotjs)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express.js-4.18-blue?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![Status](https://img.shields.io/badge/Status-Online-success?style=for-the-badge&logo=statuspage)](http://localhost:3000)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+## Installeren
+1. Maak deze map aan en plaats `server.js` in de hoofdmap.
+2. Maak een map `public` en plaats `index.html` daarin.
+3. Kopieer `.env.example` naar `.env` en vul `SESSION_SECRET` in.
+4. Installeer dependencies:
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20,30,45&height=120&section=header&text=Freddo%20Hosting&fontSize=40&fontColor=38bdf8&animation=fadeIn" width="100%"/>
+   npm init -y
+   npm install express socket.io express-session passport passport-discord passport-google-oauth20 dotenv helmet express-rate-limit discord.js
 
-</div>
+5. Start de server:
 
----
+   node server.js
 
-## 🚀 Over Freddo Hosting
+6. Open http://localhost:3000
 
-**Freddo Hosting** is een strak, modern en interactief webhosting- en serverdashboard. Het stelt gebruikers in staat om hun virtuele servers in real-time te beheren, resourcegebruik te monitoren, live console-commando's uit te voeren en serverstatuten (Online/Offline/Herstarten) direct te beheren.
+## OAuth instellen
 
----
+### Discord
+- Maak een app in het Discord Developer Portal.
+- Ga naar OAuth2 en voeg als redirect URI toe:
+  `http://localhost:3000/auth/discord/callback`
+- Zet de client ID, client secret en callback URL in `.env`.
 
-## ✨ Functies
+### Google
+- Maak een OAuth 2.0 Client ID in Google Cloud Console.
+- Voeg als geautoriseerde redirect URI toe:
+  `http://localhost:3000/auth/google/callback`
+- Zet de client ID, client secret en callback URL in `.env`.
 
-| Component | Beschrijving |
-| :--- | :--- |
-| 📊 **Live Dashboard** | Real-time weergave van CPU, RAM en schijfgebruik. |
-| 🎮 **Server Controls** | Volledige controle met instant Start, Stop en Herstart acties. |
-| 💻 **Live Terminal** | Interactieve console met log-simulatie en commando-ondersteuning (`help`, `status`, `ping`). |
-| 🎨 **Modern Design** | Strak donker thema (Dark Mode) geoptimaliseerd voor gebruikerservaring. |
-| ⚡ **Node.js / Express** | Lichtgewicht en snelle backend serverarchitectuur. |
+Voor productie moet je HTTPS gebruiken en de callback URL's aanpassen aan je echte domein.
 
----
-
-## 🛠️ Installatie & Starten
-
-Volg deze eenvoudige stappen om Freddo Hosting lokaal op te starten:
-
-### 1. Kloon of download de repository
-Zorg ervoor dat je de bestanden (`server.js` en `index.html`) in dezelfde map hebt geplaatst.
-
-### 2. Installeer afhankelijkheden
-Open je terminal in de projectmap en installeer Express:
-```bash
-npm init -y
-npm install express
+## Belangrijke grenzen van deze starter
+- Bots/logs worden in geheugen bewaard; serverrestart wist deze demo-data.
+- De knoppen start/stop/restart veranderen alleen demo-status. Er wordt geen botproces gestart.
+- Console-invoer wordt bewust niet als shell-commando uitgevoerd.
+- Moderatie-, welcome-, bye- en verify-formulieren zijn UI/configuratievoorbeelden; ze voeren nog geen Discord-acties uit.
+- Voor productie: voeg een database toe, sla identiteiten persistent op, maak CSRF-bescherming en strengere CSP-configuratie, voeg eigendomscontroles toe aan alle resources, en gebruik een geïsoleerde worker/process supervisor voor echte botprocessen.
+- Sla nooit bot-tokens in HTML/localStorage op. Bewaar ze uitsluitend als server-side secrets of versleutelde server-side gegevens.
+- Gebruik een persistent session store in plaats van de standaard MemoryStore van express-session.

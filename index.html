@@ -1,694 +1,168 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freddo Hosting - Pro Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-base: #090d16;
-            --bg-card: rgba(18, 26, 43, 0.7);
-            --border-color: rgba(51, 65, 85, 0.4);
-            --accent-blue: #38bdf8;
-            --accent-glow: rgba(56, 189, 248, 0.15);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --warning: #eab308;
-            --sidebar-width: 260px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-base);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 40%);
-        }
-
-        /* Mobile Hamburger Toggle */
-        .mobile-toggle {
-            display: none;
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1000;
-            background: #1e293b;
-            border: 1px solid var(--border-color);
-            color: white;
-            padding: 10px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: rgba(13, 19, 33, 0.85);
-            backdrop-filter: blur(12px);
-            border-right: 1px solid var(--border-color);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            height: 100vh;
-            transition: transform 0.3s ease;
-            z-index: 999;
-        }
-
-        .brand {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--accent-blue);
-            margin-bottom: 35px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: -0.5px;
-        }
-
-        .nav-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .nav-item {
-            padding: 12px 16px;
-            border-radius: 10px;
-            cursor: pointer;
-            color: var(--text-muted);
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            background: var(--accent-glow);
-            color: var(--accent-blue);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-        }
-
-        /* Main Content Wrapper */
-        .main-wrapper {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            padding: 40px;
-            max-width: 1400px;
-            transition: margin 0.3s ease;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 35px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 4px;
-        }
-
-        .header p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        .status-badge {
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-        }
-
-        .status-online { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); }
-        .status-offline { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
-        .status-restarting { background: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.4); }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: currentColor;
-            box-shadow: 0 0 8px currentColor;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 0.8; }
-            50% { transform: scale(1.15); opacity: 1; }
-            100% { transform: scale(0.95); opacity: 0.8; }
-        }
-
-        /* Controls Panel */
-        .controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 11px 22px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        .btn:active { transform: translateY(0); }
-        
-        .btn-start { background: #22c55e; color: #05170d; }
-        .btn-stop { background: #ef4444; color: #fff; }
-        .btn-restart { background: #eab308; color: #1a1500; }
-        .btn-primary { background: var(--accent-blue); color: #020617; }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: var(--bg-card);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            transition: border-color 0.2s ease;
-        }
-
-        .card:hover {
-            border-color: rgba(56, 189, 248, 0.3);
-        }
-
-        .card h3 {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-        }
-
-        .card .value {
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: -1px;
-            margin-bottom: 15px;
-        }
-
-        /* Progress Bar Animation */
-        .progress-bar-bg {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #38bdf8, #6366f1);
-            border-radius: 3px;
-            width: 0%;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Console Card */
-        .console-card {
-            background: #050811;
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
-        }
-
-        .console-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid rgba(51, 65, 85, 0.3);
-            padding-bottom: 12px;
-        }
-
-        .console-header h3 {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-        }
-
-        .console-logs {
-            height: 280px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            padding-right: 5px;
-        }
-
-        .console-logs::-webkit-scrollbar {
-            width: 6px;
-        }
-        .console-logs::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 3px;
-        }
-
-        .log-entry {
-            color: #cbd5e1;
-            line-height: 1.4;
-            word-break: break-all;
-        }
-
-        .log-time {
-            color: #64748b;
-            margin-right: 8px;
-        }
-
-        .console-input-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .console-input {
-            flex: 1;
-            background: #0f172a;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px 16px;
-            color: #fff;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .console-input:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-
-        /* Modal Overlay & Card Styling */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(2, 6, 23, 0.75);
-            backdrop-filter: blur(8px);
-            z-index: 2000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background: #0f172a;
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            overflow: hidden;
-            animation: fadeIn 0.2s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h2 {
-            font-size: 1.1rem;
-            color: var(--text-main);
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .modal-body {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .form-group label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .form-input {
-            background: #020617;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px 14px;
-            color: #fff;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-        }
-
-        .modal-footer {
-            padding: 16px 20px;
-            background: #090d16;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .settings-msg {
-            font-size: 0.85rem;
-            color: #4ade80;
-            margin-top: 5px;
-        }
-
-        /* Responsive Breakpoints */
-        @media (max-width: 1024px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .main-wrapper {
-                margin-left: 0;
-                padding: 20px;
-                padding-top: 70px;
-            }
-            .mobile-toggle {
-                display: block;
-            }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090b13">
+<title>Freddo — Bot Hosting</title>
+<style>
+:root{--bg:#090b13;--panel:#111522;--panel2:#151a2b;--line:rgba(255,255,255,.085);--text:#f4f6ff;--muted:#929bb3;--violet:#8b5cf6;--cyan:#4de2d0;--green:#43d9a3;--red:#ff6b86;--radius:20px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 75% -10%,rgba(102,72,220,.2),transparent 38%),radial-gradient(ellipse at 0% 55%,rgba(34,211,238,.06),transparent 30%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}.app{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}.sidebar{position:sticky;top:0;height:100vh;padding:25px 17px;border-right:1px solid var(--line);background:rgba(10,12,21,.8);backdrop-filter:blur(20px);display:flex;flex-direction:column;z-index:5}.brand{display:flex;align-items:center;gap:11px;padding:0 10px 29px;font-size:19px;font-weight:800;letter-spacing:-.6px}.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--violet),#4f46e5 60%,var(--cyan));display:grid;place-items:center;box-shadow:0 8px 28px #7049e755;font-size:19px}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700}.nav-label{font-size:10px;letter-spacing:1.7px;color:#69738c;font-weight:800;padding:14px 12px 8px}.nav{display:grid;gap:5px}.nav button{display:flex;align-items:center;gap:12px;width:100%;border:1px solid transparent;background:transparent;color:#a6aec3;padding:11px 12px;border-radius:12px;text-align:left;transition:.2s}.nav button:hover{background:#ffffff08;color:white;transform:translateX(2px)}.nav button.active{color:white;background:linear-gradient(100deg,#8b5cf625,#4de2d00a);border-color:#8b5cf640;box-shadow:inset 2px 0 var(--violet)}.nav .ico{width:20px;text-align:center;font-size:16px}.sidebar-bottom{margin-top:auto}.plan-card{padding:15px;border:1px solid #8b5cf638;border-radius:16px;background:linear-gradient(145deg,#8b5cf619,#4de2d00a);margin:18px 2px}.plan-card strong{display:block;font-size:13px}.plan-card p{font-size:11px;color:var(--muted);margin:5px 0 12px}.progress{height:5px;border-radius:10px;background:#ffffff12;overflow:hidden}.progress span{display:block;width:38%;height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan));border-radius:10px}.user-mini{display:flex;align-items:center;gap:10px;padding:14px 8px 2px;border-top:1px solid var(--line)}.avatar{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#6d5dfc,#20b7b6);font-weight:800}.user-mini strong{font-size:12px;display:block}.user-mini small{font-size:10px;color:var(--muted)}.main{min-width:0;padding:25px clamp(18px,3vw,42px) 48px;max-width:1700px;width:100%;margin:0 auto}.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:34px}.crumb{font-size:12px;color:var(--muted)}.crumb b{color:#e8eaff;font-weight:600}.top-actions{display:flex;align-items:center;gap:10px}.icon-btn,.ghost-btn{border:1px solid var(--line);background:#ffffff06;color:#dce2f4;border-radius:12px;padding:10px 13px;transition:.2s}.icon-btn:hover,.ghost-btn:hover{border-color:#8b5cf688;background:#8b5cf615}.primary{border:0;color:white;font-weight:700;border-radius:12px;padding:11px 16px;background:linear-gradient(110deg,#7857f5,#5b65e8 58%,#3dbec6);box-shadow:0 7px 25px #6956e433;transition:transform .2s,filter .2s}.primary:hover{transform:translateY(-2px);filter:brightness(1.1)}.page{display:none;animation:fadeUp .4s ease both}.page.active{display:block}@keyframes fadeUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}.eyebrow{display:flex;align-items:center;gap:8px;color:#b8a6ff;font-size:11px;text-transform:uppercase;letter-spacing:1.7px;font-weight:800}.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 13px var(--green)}h1{font-size:clamp(27px,3vw,38px);line-height:1.15;letter-spacing:-1.5px;margin:12px 0 10px}h2{font-size:19px;letter-spacing:-.5px;margin:0}h3{font-size:14px;margin:0}.subtitle{color:var(--muted);margin:0;max-width:650px}.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:27px}.hero-actions{display:flex;gap:9px;flex-wrap:wrap}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin:24px 0}.stat,.card{border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(145deg,rgba(21,26,43,.9),rgba(14,17,29,.92));box-shadow:0 15px 50px #00000012}.stat{padding:19px;position:relative;overflow:hidden;transition:.25s}.stat:hover,.bot-card:hover{transform:translateY(-3px);border-color:#8b5cf64c}.stat:after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;right:-42px;top:-45px;background:var(--glow,#8b5cf6);filter:blur(50px);opacity:.22}.stat-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}.stat-icon{width:33px;height:33px;border-radius:11px;display:grid;place-items:center;background:#8b5cf61c;color:#c7b9ff;font-size:15px}.stat strong{display:block;font-size:28px;letter-spacing:-1px;margin:13px 0 3px}.trend{font-size:11px;color:var(--green)}.muted{color:var(--muted)}.grid-2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:17px}.card{padding:21px;min-width:0}.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}.card-head p{font-size:12px;color:var(--muted);margin:5px 0 0}.pill{display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border:1px solid var(--line);border-radius:999px;font-size:10px;font-weight:700;color:#b9c2d8;background:#ffffff05;white-space:nowrap}.pill.green{color:var(--green);border-color:#43d9a333;background:#43d9a30d}.pill.yellow{color:#ffd479;border-color:#ffd47933}.pill.red{color:var(--red);border-color:#ff6b8633}.bot-list{display:grid;gap:10px}.bot-row{display:flex;align-items:center;gap:13px;padding:13px;border:1px solid var(--line);border-radius:15px;background:#ffffff03;transition:.2s}.bot-row:hover{background:#ffffff06;border-color:#ffffff18}.bot-icon{width:43px;height:43px;border-radius:14px;display:grid;place-items:center;font-size:20px;background:linear-gradient(140deg,#8b5cf632,#4de2d019);border:1px solid #8b5cf626}.bot-info{flex:1;min-width:0}.bot-info strong{display:block;font-size:13px}.bot-info small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.row-actions{display:flex;align-items:center;gap:7px}.small-btn{border:1px solid var(--line);background:#ffffff06;color:#cbd3e8;border-radius:9px;padding:7px 9px;font-size:11px}.small-btn:hover{border-color:#8b5cf6;color:white}.activity{display:grid;gap:17px}.activity-item{display:flex;gap:11px;align-items:flex-start}.activity-icon{width:31px;height:31px;border-radius:10px;display:grid;place-items:center;background:#8b5cf61b;color:#c6b5ff;flex-shrink:0}.activity-item strong{font-size:12px;display:block}.activity-item p{font-size:11px;color:var(--muted);margin:3px 0}.activity-item time{font-size:10px;color:#66708a}.chart{height:170px;display:flex;align-items:flex-end;gap:10px;padding:15px 4px 0;border-bottom:1px solid var(--line);position:relative}.bar{flex:1;min-width:5px;border-radius:7px 7px 2px 2px;background:linear-gradient(180deg,#9b7bff,#5b56dc35);height:var(--h);position:relative;animation:grow .8s ease both;transform-origin:bottom;transition:filter .2s}.bar:hover{filter:brightness(1.4)}@keyframes grow{from{transform:scaleY(.1)}to{transform:scaleY(1)}}.chart-labels{display:flex;justify-content:space-between;color:#717b94;font-size:10px;padding-top:10px}.section-title{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:27px 0 15px}.bot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.bot-card{padding:19px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#151a2b,#0f1220);transition:.25s}.bot-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.bot-card h3{font-size:16px}.bot-card p{font-size:12px;color:var(--muted);margin:6px 0 18px}.bot-metrics{display:flex;gap:18px;padding:13px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:14px}.bot-metrics span{font-size:10px;color:var(--muted)}.bot-metrics b{display:block;font-size:13px;color:#e7ebf9;margin-top:3px}.console{border:1px solid #252b40;border-radius:16px;background:#080b12;overflow:hidden}.console-top{padding:12px 15px;background:#101422;border-bottom:1px solid #242a3c;display:flex;align-items:center;justify-content:space-between;gap:10px}.dots{display:flex;gap:5px}.dots i{width:7px;height:7px;border-radius:50%;background:#ff6b86}.dots i:nth-child(2){background:#ffd479}.dots i:nth-child(3){background:#43d9a3}.console-body{height:330px;overflow:auto;padding:16px;font:12px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace;color:#a8b5ce}.log-line{display:flex;gap:12px;overflow-wrap:anywhere}.log-time{color:#626e89;flex-shrink:0}.log-level{color:var(--cyan);flex-shrink:0}.log-text{color:#c6cee1}.console-input{display:flex;gap:8px;padding:12px;border-top:1px solid #242a3c}.console-input input{flex:1;min-width:0;background:#0f1320;color:white;border:1px solid #242a3c;border-radius:10px;padding:10px 12px;outline:none}.console-input input:focus{border-color:#8b5cf6}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.field{display:grid;gap:7px}.field label{font-size:12px;color:#c2c9dc}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;background:#0b0e18;color:white;outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:#8b5cf6}.field textarea{min-height:100px;resize:vertical}.toggle-row{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:15px 0;border-bottom:1px solid var(--line)}.toggle-row:last-child{border:0}.toggle-row strong{display:block;font-size:13px}.toggle-row small{display:block;color:var(--muted);font-size:11px;margin-top:4px}.switch{appearance:none;width:39px;height:23px;border-radius:99px;background:#30364a;position:relative;cursor:pointer;transition:.2s;flex-shrink:0}.switch:before{content:"";position:absolute;left:3px;top:3px;width:17px;height:17px;border-radius:50%;background:#b8bfd1;transition:.2s}.switch:checked{background:#7557ed}.switch:checked:before{left:19px;background:white}.verify-preview{border:1px solid #2b3150;border-radius:15px;overflow:hidden;background:#101526}.verify-banner{height:7px;background:linear-gradient(90deg,#8b5cf6,#4de2d0)}.verify-content{padding:20px}.verify-content h3{font-size:16px}.verify-content p{font-size:12px;color:var(--muted);margin:8px 0 18px}.verify-button{border:0;border-radius:8px;padding:10px 14px;background:#5865f2;color:white;font-weight:700}.toast{position:fixed;right:22px;bottom:22px;padding:13px 17px;border-radius:13px;background:#171d2c;border:1px solid #8b5cf666;box-shadow:0 20px 60px #0007;z-index:30;animation:fadeUp .25s ease;max-width:min(380px,calc(100vw - 44px));font-size:13px}.empty{padding:35px;text-align:center;color:var(--muted)}.mobile-menu{display:none}.login-modal{position:fixed;inset:0;z-index:20;background:#03040bdc;backdrop-filter:blur(12px);display:none;place-items:center;padding:20px}.login-modal.show{display:grid}.modal{width:min(430px,100%);padding:28px;border:1px solid #ffffff18;border-radius:24px;background:#111522;box-shadow:0 30px 100px #0009;animation:fadeUp .3s ease}.modal h2{font-size:25px;margin:14px 0 7px}.modal p{font-size:13px;color:var(--muted);margin:0 0 23px}.login-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;border-radius:12px;border:1px solid var(--line);background:#ffffff08;color:white;font-weight:700;margin-top:10px;transition:.2s}.login-btn:hover{border-color:#8b5cf6;background:#8b5cf615}.fineprint{font-size:10px!important;margin:18px 0 0!important}.close-modal{float:right;border:0;background:transparent;color:var(--muted);font-size:20px}.tagline{font-size:10px;color:var(--muted)}.mobile-overlay{display:none}
+@media(max-width:1100px){.app{grid-template-columns:215px minmax(0,1fr)}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-2{grid-template-columns:1fr}.main{padding:22px}.sidebar{padding:20px 12px}}
+@media(max-width:700px){.app{display:block}.sidebar{position:fixed;left:-270px;top:0;width:250px;transition:left .25s;box-shadow:20px 0 70px #0007}.sidebar.open{left:0}.mobile-overlay.show{display:block;position:fixed;inset:0;background:#0009;z-index:4}.mobile-menu{display:inline-flex}.main{padding:18px 14px 35px}.topbar{margin-bottom:25px}.hero{align-items:flex-start;flex-direction:column}.hero-actions{width:100%}.stats{gap:10px}.stat{padding:14px}.stat strong{font-size:24px}.stat-top{font-size:10px}.bot-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.row-actions .small-btn{padding:7px}.hide-mobile{display:none}.card{padding:16px}.console-body{height:290px}.top-actions{gap:6px}.crumb{font-size:11px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
 </head>
 <body>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+  <a href="#" class="brand" data-page="overview"><span class="logo">✦</span><span>freddo<small>BOT HOSTING</small></span></a>
+  <div class="nav-label">WORKSPACE</div>
+  <nav class="nav">
+    <button class="active" data-page="overview"><span class="ico">◈</span> Overzicht</button>
+    <button data-page="bots"><span class="ico">🤖</span> Mijn bots <span class="pill" style="margin-left:auto" id="botCount">2</span></button>
+    <button data-page="console"><span class="ico">⌘</span> Live console</button>
+  </nav>
+  <div class="nav-label">CONFIGURATIE</div>
+  <nav class="nav">
+    <button data-page="moderation"><span class="ico">🛡</span> Moderatie</button>
+    <button data-page="welcome"><span class="ico">✧</span> Welcome & Bye</button>
+    <button data-page="verify"><span class="ico">✓</span> Verify panel</button>
+    <button data-page="settings"><span class="ico">⚙</span> Instellingen</button>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="plan-card"><strong>✦ Starter plan</strong><p>Je dashboard is klaar om te configureren.</p><div class="progress"><span></span></div><p style="margin:9px 0 0">2 van 5 bot-slots gebruikt</p></div>
+    <div class="user-mini"><div class="avatar" id="avatar">G</div><div style="min-width:0;flex:1"><strong id="userName">Gastgebruiker</strong><small id="userStatus">Niet ingelogd</small></div><button class="icon-btn" id="accountButton" title="Account">↗</button></div>
+  </div>
+</aside>
+<main class="main">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:12px"><button class="icon-btn mobile-menu" id="mobileMenu">☰</button><div class="crumb">Workspace <span style="color:#4b5570">/</span> <b id="crumbTitle">Overzicht</b></div></div>
+    <div class="top-actions"><span class="pill"><span class="pulse"></span> Systeem online</span><button class="icon-btn" id="helpButton" title="Status">ⓘ</button><button class="primary" id="topAddBot">＋ Nieuwe bot</button></div>
+  </header>
 
-    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
-
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="brand">❄️ Freddo Hosting</div>
-        <ul class="nav-list">
-            <li class="nav-item active">📊 Dashboard</li>
-            <li class="nav-item" onclick="alert('Console tab is actief op het dashboard.')">💻 Console</li>
-            <li class="nav-item" onclick="alert('Bestandsbeheer binnenkort beschikbaar.')">📁 Bestanden</li>
-            <li class="nav-item" onclick="alert('Database manager binnenkort beschikbaar.')">🗄️ Databases</li>
-            <li class="nav-item" onclick="openSettings()">⚙️ Instellingen</li>
-        </ul>
+  <section class="page active" id="page-overview">
+    <div class="hero"><div><div class="eyebrow"><span class="pulse"></span> CONTROL CENTER</div><h1>Welkom terug<span style="color:#a993ff">.</span></h1><p class="subtitle">Beheer je Discord-bots, controleer je status en houd je community soepel draaiend.</p></div><div class="hero-actions"><button class="ghost-btn" data-goto="console">⌘ Open console</button><button class="primary" id="addBotHero">＋ Bot toevoegen</button></div></div>
+    <div class="stats">
+      <div class="stat" style="--glow:#8b5cf6"><div class="stat-top">Totaal bots <span class="stat-icon">🤖</span></div><strong id="statBots">02</strong><span class="trend">↗ Je workspace</span></div>
+      <div class="stat" style="--glow:#43d9a3"><div class="stat-top">Online <span class="stat-icon" style="color:var(--green);background:#43d9a319">◉</span></div><strong id="statOnline">01</strong><span class="trend">● Statusoverzicht</span></div>
+      <div class="stat" style="--glow:#4de2d0"><div class="stat-top">Servers <span class="stat-icon" style="color:var(--cyan);background:#4de2d019">◫</span></div><strong>12</strong><span class="muted" style="font-size:11px">Voorbeeldstatistiek</span></div>
+      <div class="stat" style="--glow:#ffbd69"><div class="stat-top">Uptime <span class="stat-icon" style="color:#ffd479;background:#ffd47919">◷</span></div><strong>99.9<span style="font-size:15px">%</span></strong><span class="muted" style="font-size:11px">Demo-weergave</span></div>
     </div>
-
-    <!-- Main Content -->
-    <div class="main-wrapper">
-        <div class="header">
-            <div>
-                <h1 id="server-name">Freddo Core Node</h1>
-                <p>Node ID: <span id="server-id">srv-freddo-01</span> • Amsterdam, NL</p>
-            </div>
-            <div>
-                <div id="status-badge" class="status-badge status-online">
-                    <span class="status-dot"></span> Online
-                </div>
-            </div>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls">
-            <button class="btn btn-start" onclick="sendAction('start')">▶ Start Node</button>
-            <button class="btn btn-stop" onclick="sendAction('stop')">⏹ Stop Node</button>
-            <button class="btn btn-restart" onclick="sendAction('restart')">🔄 Herstart</button>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="card">
-                <h3>CPU Gebruik</h3>
-                <div class="value" id="cpu-value">0%</div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" id="cpu-bar" style="width: 0%;"></div>
-                </div>
-            </div>
-            <div class="card">
-                <h3>RAM Geheugen</h3>
-                <div class="value" id="ram-value">0.0 GB</div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" id="ram-bar" style="width: 0%;"></div>
-                </div>
-            </div>
-            <div class="card">
-                <h3>Schijfruimte</h3>
-                <div class="value" id="disk-value">18.4 GB</div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" style="width: 36%;"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Terminal Console -->
-        <div class="console-card">
-            <div class="console-header">
-                <h3>Live Server Console & Daemon Logs</h3>
-                <span style="font-size: 0.8rem; color: var(--text-muted);" id="connection-status">Real-time SSE: Verbonden</span>
-            </div>
-            <div class="console-logs" id="console-logs">
-                <!-- Logs worden dynamisch geladen -->
-            </div>
-            <div class="console-input-group">
-                <input type="text" id="command-input" class="console-input" placeholder="Typ commando (bijv. 'help', 'status', 'ping', 'sysinfo')..." onkeydown="if(event.key==='Enter') sendCommand()">
-                <button class="btn btn-primary" onclick="sendCommand()">Uitvoeren</button>
-            </div>
-        </div>
+    <div class="grid-2">
+      <div class="card"><div class="card-head"><div><h2>Jouw bots</h2><p>Snelle status en acties</p></div><button class="small-btn" data-goto="bots">Alles bekijken ↗</button></div><div class="bot-list" id="overviewBots"></div></div>
+      <div class="card"><div class="card-head"><div><h2>Activiteit</h2><p>Recente workspace-gebeurtenissen</p></div><span class="pill">LIVE UI</span></div><div class="activity" id="activityList"><div class="activity-item"><div class="activity-icon">✦</div><div><strong>Dashboard gestart</strong><p>De hostinginterface is geladen.</p><time>Zojuist</time></div></div><div class="activity-item"><div class="activity-icon">🛡</div><div><strong>Moderatiepaneel beschikbaar</strong><p>Configureer je commando's.</p><time>Nu</time></div></div><div class="activity-item"><div class="activity-icon">⌘</div><div><strong>Console verbonden</strong><p>Demo-stream actief na inloggen.</p><time>Nu</time></div></div></div></div>
     </div>
+    <div class="section-title"><div><h2>Resource activiteit</h2><p class="muted" style="font-size:12px;margin:5px 0 0">Illustratieve grafiek — geen echte servermetingen</p></div><span class="pill">Laatste 24 uur</span></div>
+    <div class="card"><div class="chart" id="chart"></div><div class="chart-labels"><span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span><span>Nu</span></div></div>
+  </section>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>⚙️ Server & Discord Instellingen</h2>
-                <button class="close-btn" onclick="closeSettings()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="cfg-token">Discord Bot Token</label>
-                    <input type="password" id="cfg-token" class="form-input" placeholder="OTA1M... (Laat leeg om niet te wijzigen)">
-                </div>
-                <div class="form-group">
-                    <label for="cfg-guild">Discord Guild ID (Server ID)</label>
-                    <input type="text" id="cfg-guild" class="form-input" placeholder="123456789012345678">
-                </div>
-                <div class="form-group">
-                    <label for="cfg-role">Staff Role ID</label>
-                    <input type="text" id="cfg-role" class="form-input" placeholder="987654321098765432">
-                </div>
-                <div id="settings-msg" class="settings-msg"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-stop" onclick="closeSettings()">Annuleren</button>
-                <button class="btn btn-primary" onclick="saveSettings()">💾 Opslaan</button>
-            </div>
-        </div>
+  <section class="page" id="page-bots">
+    <div class="hero"><div><div class="eyebrow">WORKSPACE / INSTANCES</div><h1>Mijn bots</h1><p class="subtitle">Beheer je instanties, status en botconfiguratie.</p></div><button class="primary" id="addBotPage">＋ Nieuwe bot</button></div>
+    <div class="bot-grid" id="allBots"></div>
+  </section>
+
+  <section class="page" id="page-console">
+    <div class="hero"><div><div class="eyebrow"><span class="pulse"></span> TERMINAL</div><h1>Live console</h1><p class="subtitle">Bekijk logregels en volg de verbinding van je bot.</p></div><select id="consoleBot" class="ghost-btn" aria-label="Selecteer bot"></select></div>
+    <div class="card"><div class="card-head"><div><h2>Console output</h2><p id="consoleDescription">Selecteer een bot om de console te bekijken.</p></div><div style="display:flex;gap:7px"><span class="pill green" id="socketStatus">● UI actief</span><button class="small-btn" id="clearConsole">Wissen</button></div></div>
+      <div class="console"><div class="console-top"><div style="display:flex;align-items:center;gap:10px"><span class="dots"><i></i><i></i><i></i></span><span style="font-size:11px;color:#8f9ab4">freddo — terminal</span></div><span class="tagline">UTF-8 · DEMO / API</span></div><div class="console-body" id="consoleOutput" aria-live="polite"></div><form class="console-input" id="consoleForm"><span style="color:var(--cyan);align-self:center">›</span><input id="consoleCommand" autocomplete="off" placeholder="Typ een logbericht (demo)..." maxlength="160"><button class="primary">Verstuur</button></form></div>
+      <p class="muted" style="font-size:11px;margin:13px 0 0">Veiligheidsmelding: console-invoer wordt niet als shell-commando uitgevoerd. Echte bot-runtime vereist een aparte worker.</p>
     </div>
+  </section>
 
-    <script>
-        // Mobiele menu toggle
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-        }
+  <section class="page" id="page-moderation">
+    <div class="hero"><div><div class="eyebrow">SERVER TOOLS</div><h1>Moderatie</h1><p class="subtitle">Stel in welke moderatiecommando's jouw bot ondersteunt.</p></div><button class="primary" id="saveModeration">Instellingen opslaan</button></div>
+    <div class="grid-2"><div class="card"><div class="card-head"><div><h2>Commando's</h2><p>Schakel functies in of uit</p></div><span class="pill">CONFIG</span></div>
+      <div class="toggle-row"><div><strong>/ban</strong><small>Verwijder een gebruiker uit de server.</small></div><input class="switch moderation-toggle" type="checkbox" checked data-key="ban"></div>
+      <div class="toggle-row"><div><strong>/kick</strong><small>Verwijder een gebruiker tijdelijk uit de community.</small></div><input class="switch moderation-toggle" type="checkbox" checked data-key="kick"></div>
+      <div class="toggle-row"><div><strong>/timeout</strong><small>Beperk tijdelijk het versturen van berichten.</small></div><input class="switch moderation-toggle" type="checkbox" checked data-key="timeout"></div>
+      <div class="toggle-row"><div><strong>/purge</strong><small>Verwijder meerdere recente berichten.</small></div><input class="switch moderation-toggle" type="checkbox" checked data-key="purge"></div>
+      <div class="toggle-row"><div><strong>Audit log</strong><small>Registreer acties voor bevoegde moderators.</small></div><input class="switch moderation-toggle" type="checkbox" checked data-key="audit"></div>
+    </div><div class="card"><div class="card-head"><div><h2>Moderatiegedrag</h2><p>Standaardinstellingen</p></div></div><div class="field" style="margin-bottom:16px"><label for="modChannel">Logkanaal</label><input id="modChannel" placeholder="#mod-logs"></div><div class="field" style="margin-bottom:16px"><label for="modRole">Moderatorrol</label><input id="modRole" placeholder="@Moderators"></div><div class="field"><label for="modReason">Standaardreden</label><textarea id="modReason" placeholder="Geen reden opgegeven"></textarea></div><p class="muted" style="font-size:11px;margin-top:16px">Dit formulier slaat lokaal op in deze browser. Koppel database en Discord-worker voor serverbrede werking.</p></div></div>
+  </section>
 
-        // Real-time Server-Sent Events (SSE) koppeling
-        const eventSource = new EventSource('/api/stream');
+  <section class="page" id="page-welcome">
+    <div class="hero"><div><div class="eyebrow">COMMUNITY AUTOMATION</div><h1>Welcome & Bye</h1><p class="subtitle">Personaliseer berichten voor nieuwe leden en vertrekkende leden.</p></div><button class="primary" id="saveWelcome">Instellingen opslaan</button></div>
+    <div class="grid-2"><div class="card"><div class="card-head"><div><h2>Berichtinstellingen</h2><p>Pas de berichten en kanalen aan</p></div></div>
+      <div class="toggle-row"><div><strong>Welcome-berichten</strong><small>Stuur een bericht wanneer iemand joint.</small></div><input id="welcomeEnabled" class="switch" type="checkbox" checked></div>
+      <div class="field" style="margin-top:17px"><label for="welcomeChannel">Welcome-kanaal</label><input id="welcomeChannel" placeholder="#welkom"></div>
+      <div class="field" style="margin-top:15px"><label for="welcomeText">Welcome-bericht</label><textarea id="welcomeText">Welkom {user} bij {server}! Bekijk de regels en veel plezier 🎉</textarea></div>
+      <div class="toggle-row" style="margin-top:14px"><div><strong>Bye-berichten</strong><small>Stuur een bericht wanneer iemand vertrekt.</small></div><input id="byeEnabled" class="switch" type="checkbox" checked></div>
+      <div class="field" style="margin-top:15px"><label for="byeChannel">Bye-kanaal</label><input id="byeChannel" placeholder="#afscheid"></div>
+      <div class="field" style="margin-top:15px"><label for="byeText">Bye-bericht</label><textarea id="byeText">{user} heeft de server verlaten. We wensen je het beste!</textarea></div>
+    </div><div class="card"><div class="card-head"><div><h2>Berichtvoorbeeld</h2><p>Voorbeeld van hoe het bericht eruit kan zien</p></div><span class="pill green">PREVIEW</span></div><div style="border:1px solid var(--line);background:#0c101b;border-radius:14px;padding:16px"><div style="display:flex;gap:10px;align-items:center"><div class="avatar">✦</div><div><strong style="font-size:12px">Freddo Bot <span class="pill" style="padding:2px 5px;font-size:9px">BOT</span></strong><small class="muted" style="font-size:10px">Vandaag om 12:00</small></div></div><p id="welcomePreview" style="font-size:13px;margin:13px 0 0">Welkom @gebruiker bij Community Hub! Bekijk de regels en veel plezier 🎉</p></div><p class="muted" style="font-size:11px;margin-top:15px">Beschikbare variabelen: <code>{user}</code> en <code>{server}</code>.</p></div></div>
+  </section>
 
-        eventSource.addEventListener('stats', (e) => {
-            const data = JSON.parse(e.data);
-            updateDashboard(data);
-        });
+  <section class="page" id="page-verify">
+    <div class="hero"><div><div class="eyebrow">MEMBER VERIFICATION</div><h1>Verify panel</h1><p class="subtitle">Ontwerp een verificatiebericht met een knop voor je Discord-server.</p></div><button class="primary" id="saveVerify">Panel opslaan</button></div>
+    <div class="grid-2"><div class="card"><div class="card-head"><div><h2>Panel configuratie</h2><p>Bericht, knop en rol</p></div></div><div class="field" style="margin-bottom:15px"><label for="verifyTitle">Titel</label><input id="verifyTitle" value="Welkom in de community!"></div><div class="field" style="margin-bottom:15px"><label for="verifyBody">Beschrijving</label><textarea id="verifyBody">Klik op de knop hieronder om te verifiëren dat je toegang wilt krijgen tot de server.</textarea></div><div class="field" style="margin-bottom:15px"><label for="verifyButtonText">Knoptekst</label><input id="verifyButtonText" value="✓ Verifiëren"></div><div class="field"><label for="verifyRole">Rol na verificatie</label><input id="verifyRole" placeholder="@Verified"></div></div>
+      <div class="card"><div class="card-head"><div><h2>Live voorbeeld</h2><p>Interactieve preview van het panel</p></div><span class="pill green">PREVIEW</span></div><div class="verify-preview"><div class="verify-banner"></div><div class="verify-content"><h3 id="verifyPreviewTitle">Welkom in de community!</h3><p id="verifyPreviewBody">Klik op de knop hieronder om te verifiëren dat je toegang wilt krijgen tot de server.</p><button class="verify-button" id="verifyPreviewButton">✓ Verifiëren</button><p class="muted" style="font-size:10px;margin:13px 0 0">Voorbeeldknop — kent geen echte Discord-rol toe.</p></div></div></div></div>
+  </section>
 
-        eventSource.addEventListener('log', (e) => {
-            const log = JSON.parse(e.data);
-            appendLogToUI(log);
-        });
+  <section class="page" id="page-settings">
+    <div class="hero"><div><div class="eyebrow">ACCOUNT & INTEGRATIONS</div><h1>Instellingen</h1><p class="subtitle">Accountstatus, loginproviders en integratie-informatie.</p></div></div>
+    <div class="grid-2"><div class="card"><div class="card-head"><div><h2>Account</h2><p>Huidige sessie</p></div></div><div class="bot-row" style="margin-bottom:15px"><div class="avatar" id="settingsAvatar">G</div><div class="bot-info"><strong id="settingsName">Gastgebruiker</strong><small id="settingsProvider">Niet ingelogd</small></div><button class="small-btn" id="loginFromSettings">Inloggen</button></div><button class="ghost-btn" id="logoutButton" style="width:100%;display:none">Uitloggen</button><div class="toggle-row"><div><strong>Realtime console</strong><small>Socket.IO-verbinding voor live logregels.</small></div><span class="pill green">Beschikbaar</span></div></div>
+      <div class="card"><div class="card-head"><div><h2>Integraties</h2><p>Backend-configuratie</p></div><button class="small-btn" id="refreshFeatures">Vernieuwen</button></div><div id="integrationStatus"><div class="toggle-row"><div><strong>Discord OAuth</strong><small>Login met Discord</small></div><span class="pill yellow">Controleren…</span></div><div class="toggle-row"><div><strong>Google OAuth</strong><small>Login met Google</small></div><span class="pill yellow">Controleren…</span></div><div class="toggle-row"><div><strong>Bot worker</strong><small>Langlopende botprocessen</small></div><span class="pill red">Niet ingesteld</span></div><div class="toggle-row"><div><strong>Database</strong><small>Persistente opslag</small></div><span class="pill red">Niet ingesteld</span></div></div><p class="muted" style="font-size:11px;margin-top:15px">OAuth werkt pas na het instellen van client ID, client secret en callback-URL's in de serveromgeving. Gebruik HTTPS in productie.</p></div></div>
+    <div class="card" style="margin-top:17px"><div class="card-head"><div><h2>Productiestappen</h2><p>Voordat je dit openbaar maakt</p></div></div><div class="activity"><div class="activity-item"><div class="activity-icon">1</div><div><strong>Configureer OAuth</strong><p>Maak Discord- en Google OAuth-apps aan en stel callback-URL's in.</p></div></div><div class="activity-item"><div class="activity-icon">2</div><div><strong>Voeg database en toegangsregels toe</strong><p>De starter gebruikt in-memory demo-data; die verdwijnt bij een serverrestart.</p></div></div><div class="activity-item"><div class="activity-icon">3</div><div><strong>Start een geïsoleerde bot-worker</strong><p>Bewaar bot-tokens als server-side secrets. Beperk CPU, geheugen en rechten.</p></div></div><div class="activity-item"><div class="activity-icon">4</div><div><strong>Voer echte Discord-acties server-side uit</strong><p>Controleer rollen en rechten vóór moderatiecommando's en log elke actie.</p></div></div></div></div>
+  </section>
+</main>
+</div>
 
-        eventSource.onerror = () => {
-            document.getElementById('connection-status').innerText = "Real-time SSE: Verbinding verbroken (herverbinden...)";
-            document.getElementById('connection-status').style.color = "#ef4444";
-        };
-
-        function updateDashboard(data) {
-            document.getElementById('cpu-value').innerText = data.cpu + '%';
-            document.getElementById('cpu-bar').style.width = data.cpu + '%';
-
-            document.getElementById('ram-value').innerText = data.ram + ' GB';
-            const ramPercent = Math.min(100, (data.ram / 8) * 100);
-            document.getElementById('ram-bar').style.width = ramPercent + '%';
-
-            const badge = document.getElementById('status-badge');
-            badge.className = `status-badge status-${data.status}`;
-            badge.innerHTML = `<span class="status-dot"></span> ${data.status.toUpperCase()}`;
-        }
-
-        function appendLogToUI(log) {
-            const logContainer = document.getElementById('console-logs');
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.innerHTML = `<span class="log-time">[${log.timestamp}]</span> ${log.text}`;
-            logContainer.appendChild(entry);
-            logContainer.scrollTop = logContainer.scrollHeight;
-        }
-
-        // Initiële logs ophalen bij laden pagina
-        async function fetchInitialLogs() {
-            try {
-                const res = await fetch('/api/server/logs');
-                const logs = await res.json();
-                const logContainer = document.getElementById('console-logs');
-                logContainer.innerHTML = logs.map(log => 
-                    `<div class="log-entry"><span class="log-time">[${log.timestamp}]</span> ${log.text}</div>`
-                ).join('');
-                logContainer.scrollTop = logContainer.scrollHeight;
-            } catch (err) {
-                console.error("Fout bij laden logs:", err);
-            }
-        }
-
-        async function sendAction(action) {
-            await fetch('/api/server/action', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action })
-            });
-        }
-
-        async function sendCommand() {
-            const input = document.getElementById('command-input');
-            const command = input.value.trim();
-            if (!command) return;
-
-            await fetch('/api/server/command', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ command })
-            });
-
-            input.value = '';
-        }
-
-        // --- INSTELLINGEN MODAL FUNCTIES ---
-        async function openSettings() {
-            try {
-                const res = await fetch('/api/settings');
-                const data = await res.json();
-
-                document.getElementById('cfg-token').value = data.discordBotToken || '';
-                document.getElementById('cfg-guild').value = data.guildId || '';
-                document.getElementById('cfg-role').value = data.staffRoleId || '';
-                document.getElementById('settings-msg').innerText = '';
-
-                document.getElementById('settings-modal').style.display = 'flex';
-            } catch (err) {
-                console.error("Fout bij ophalen instellingen:", err);
-            }
-        }
-
-        function closeSettings() {
-            document.getElementById('settings-modal').style.display = 'none';
-        }
-
-        async function saveSettings() {
-            const discordBotToken = document.getElementById('cfg-token').value.trim();
-            const guildId = document.getElementById('cfg-guild').value.trim();
-            const staffRoleId = document.getElementById('cfg-role').value.trim();
-
-            try {
-                const res = await fetch('/api/settings', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ discordBotToken, guildId, staffRoleId })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    document.getElementById('settings-msg').innerText = "✅ Instellingen opgeslagen!";
-                    setTimeout(() => {
-                        closeSettings();
-                    }, 1200);
-                }
-            } catch (err) {
-                console.error("Fout bij opslaan instellingen:", err);
-            }
-        }
-
-        // Initialisatie bij het openen van de pagina
-        fetchInitialLogs();
-    </script>
+<div class="login-modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle"><div class="modal"><button class="close-modal" id="closeModal" aria-label="Sluiten">×</button><div class="logo">✦</div><h2 id="loginTitle">Welkom bij Freddo</h2><p>Log in om je bots en workspace te beheren.</p><button class="login-btn" id="discordLogin"><span>◉</span> Doorgaan met Discord</button><button class="login-btn" id="googleLogin"><span style="font-weight:900">G</span> Doorgaan met Google</button><p class="fineprint">OAuth wordt veilig via de server afgehandeld. Providers moeten eerst worden geconfigureerd.</p></div></div>
+<div id="toastRoot" aria-live="polite"></div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const state = { user:null, bots:[], currentBot:null, socket:null, features:null };
+const demoBots = [
+  {id:"demo-guardian",name:"Guardian",status:"online",guild:"Community Hub",members:1248,mode:"demo"},
+  {id:"demo-welcome",name:"Welcome Bot",status:"stopped",guild:"Creator Lounge",members:386,mode:"demo"}
+];
+function toast(message){const root=$("#toastRoot");root.innerHTML="";const el=document.createElement("div");el.className="toast";el.textContent=message;root.appendChild(el);setTimeout(()=>el.remove(),3600)}
+function esc(v=""){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function showPage(name){$$(".page").forEach(p=>p.classList.toggle("active",p.id===`page-${name}`));$$(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===name));$("#crumbTitle").textContent=({overview:"Overzicht",bots:"Mijn bots",console:"Live console",moderation:"Moderatie",welcome:"Welcome & Bye",verify:"Verify panel",settings:"Instellingen"})[name]||name;$("#sidebar").classList.remove("open");$("#mobileOverlay").classList.remove("show");if(name==="console")renderConsole();if(name==="bots")renderBots()}
+$$("[data-page]").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+$$("[data-goto]").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.goto)));
+$("#mobileMenu").onclick=()=>{$("#sidebar").classList.toggle("open");$("#mobileOverlay").classList.toggle("show")};
+$("#mobileOverlay").onclick=()=>{$("#sidebar").classList.remove("open");$("#mobileOverlay").classList.remove("show")};
+function openLogin(){ $("#loginModal").classList.add("show") } function closeLogin(){ $("#loginModal").classList.remove("show") }
+$("#accountButton").onclick=()=>state.user?showPage("settings"):openLogin();$("#loginFromSettings").onclick=openLogin;$("#closeModal").onclick=closeLogin;$("#loginModal").addEventListener("click",e=>{if(e.target===$("#loginModal"))closeLogin()});
+$("#discordLogin").onclick=()=>location.href="/auth/discord";$("#googleLogin").onclick=()=>location.href="/auth/google";
+function botPill(bot){return bot.status==="online"?'<span class="pill green"><span class="pulse"></span> Online</span>':'<span class="pill red">● Gestopt</span>'}
+function botIcon(bot){return bot.name.toLowerCase().includes("welcome")?"✧":"🤖"}
+function botRow(bot){return `<div class="bot-row"><div class="bot-icon">${botIcon(bot)}</div><div class="bot-info"><strong>${esc(bot.name)}</strong><small>${esc(bot.guild||"Niet gekoppeld")} · ${bot.mode==="demo"?"Demo-runtime":"Configuratie"}</small></div>${botPill(bot)}<div class="row-actions"><button class="small-btn" data-console="${esc(bot.id)}">Console</button><button class="small-btn" data-action="${bot.status==="online"?"stop":"start"}" data-id="${esc(bot.id)}">${bot.status==="online"?"Stop":"Start"}</button></div></div>`}
+function botCard(bot){return `<article class="bot-card"><div class="bot-card-top"><div class="bot-icon">${botIcon(bot)}</div>${botPill(bot)}</div><h3>${esc(bot.name)}</h3><p>${esc(bot.guild||"Nog geen Discord-server gekoppeld")}</p><div class="bot-metrics"><div><span>LEDEN</span><b>${Number(bot.members||0).toLocaleString("nl-NL")}</b></div><div><span>RUNTIME</span><b>${bot.mode==="demo"?"Demo":"Setup"}</b></div><div><span>STATUS</span><b>${bot.status==="online"?"Actief":"Gestopt"}</b></div></div><div style="display:flex;gap:8px"><button class="small-btn" data-console="${esc(bot.id)}">⌘ Console</button><button class="small-btn" data-action="${bot.status==="online"?"stop":"start"}" data-id="${esc(bot.id)}">${bot.status==="online"?"■ Stop":"▶ Start"}</button><button class="small-btn" data-action="restart" data-id="${esc(bot.id)}">↻ Herstart</button></div></article>`}
+function renderBots(){$("#overviewBots").innerHTML=state.bots.length?state.bots.slice(0,4).map(botRow).join(""):'<div class="empty">Nog geen bots. Voeg je eerste bot toe.</div>';$("#allBots").innerHTML=state.bots.length?state.bots.map(botCard).join(""):'<div class="card empty">Nog geen bots. Klik op “Nieuwe bot” om te beginnen.</div>';$("#botCount").textContent=state.bots.length;$("#statBots").textContent=String(state.bots.length).padStart(2,"0");$("#statOnline").textContent=String(state.bots.filter(b=>b.status==="online").length).padStart(2,"0");const select=$("#consoleBot");const prev=select.value;select.innerHTML=state.bots.map(b=>`<option value="${esc(b.id)}">${esc(b.name)}</option>`).join("");if(state.bots.some(b=>b.id===prev))select.value=prev;state.currentBot=select.value||state.bots[0]?.id||null}
+async function api(url,options={}){const res=await fetch(url,{credentials:"same-origin",headers:{"Content-Type":"application/json",...(options.headers||{})},...options});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.error||`HTTP ${res.status}`);return data}
+async function loadMe(){try{const d=await api("/api/me");state.user=d.user;updateUser()}catch{}}
+function updateUser(){const u=state.user;$("#userName").textContent=u?.displayName||"Gastgebruiker";$("#userStatus").textContent=u?`${u.provider} account`:"Niet ingelogd";$("#avatar").textContent=(u?.displayName||"G").slice(0,1).toUpperCase();$("#settingsAvatar").textContent=$("#avatar").textContent;$("#settingsName").textContent=u?.displayName||"Gastgebruiker";$("#settingsProvider").textContent=u?`${u.provider} · ${u.email||u.username||"Verbonden"}`:"Niet ingelogd";$("#logoutButton").style.display=u?"block":"none";$("#loginFromSettings").textContent=u?"Account actief":"Inloggen"}
+async function loadBots(){if(!state.user){state.bots=demoBots.map(x=>({...x}));renderBots();return}try{const d=await api("/api/bots");state.bots=d.bots;renderBots()}catch(e){state.bots=demoBots.map(x=>({...x}));renderBots();toast("Backend niet bereikbaar: "+e.message)}}
+async function botAction(id,action){if(!state.user){toast("Log in om botacties via de backend te gebruiken.");openLogin();return}try{const d=await api(`/api/bots/${encodeURIComponent(id)}/action`,{method:"POST",body:JSON.stringify({action})});state.bots=state.bots.map(b=>b.id===id?d.bot:b);renderBots();if(state.currentBot===id)renderConsole();toast(d.message||"Actie verwerkt.")}catch(e){toast(e.message)}}
+document.addEventListener("click",e=>{const con=e.target.closest("[data-console]");if(con){state.currentBot=con.dataset.console;$("#consoleBot").value=state.currentBot;showPage("console");return}const act=e.target.closest("[data-action]");if(act)botAction(act.dataset.id,act.dataset.action)});
+async function addBot(){const name=prompt("Hoe heet je bot?");if(!name?.trim())return;if(!state.user){toast("Log eerst in om bots aan je account toe te voegen.");openLogin();return}try{const d=await api("/api/bots",{method:"POST",body:JSON.stringify({name:name.trim()})});state.bots.push(d.bot);renderBots();toast("Bot toegevoegd aan je workspace.")}catch(e){toast(e.message)}}
+$("#topAddBot").onclick=addBot;$("#addBotHero").onclick=addBot;$("#addBotPage").onclick=addBot;
+function timestamp(iso){return new Date(iso||Date.now()).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+function addLog(log){const out=$("#consoleOutput");const line=document.createElement("div");line.className="log-line";const time=document.createElement("span");time.className="log-time";time.textContent=timestamp(log.time);const level=document.createElement("span");level.className="log-level";level.textContent=`[${log.level||"INFO"}]`;const msg=document.createElement("span");msg.className="log-text";msg.textContent=log.message;line.append(time,level,msg);out.appendChild(line);out.scrollTop=out.scrollHeight}
+async function renderConsole(){const bot=state.bots.find(b=>b.id===state.currentBot)||state.bots[0];if(!bot){$("#consoleOutput").innerHTML="";$("#consoleDescription").textContent="Voeg eerst een bot toe.";return}state.currentBot=bot.id;$("#consoleBot").value=bot.id;$("#consoleDescription").textContent=`${bot.name} · ${bot.mode==="demo"?"demo-runtime":"setup"} · ${bot.status}`;$("#consoleOutput").innerHTML="";if(!state.user){["Freddo console UI gestart.","Wacht op bot-worker configuratie.","Demo-logstream — er draait nog geen echt botproces."].forEach((message,i)=>addLog({time:new Date(Date.now()-i*5000).toISOString(),level:"INFO",message:"[DEMO] "+message}));return}try{const d=await api(`/api/bots/${encodeURIComponent(bot.id)}/logs`);d.logs.forEach(addLog);if(state.socket){state.socket.emit("console:subscribe",{botId:bot.id})}}catch(e){addLog({level:"WARN",message:e.message})}}
+$("#consoleBot").onchange=()=>{state.currentBot=$("#consoleBot").value;renderConsole()};
+$("#consoleForm").onsubmit=async e=>{e.preventDefault();const command=$("#consoleCommand").value.trim();if(!command)return;const bot=state.bots.find(b=>b.id===state.currentBot);if(!bot)return;if(!state.user){addLog({level:"USER",message:`> ${command} [demo — niet uitgevoerd]`});$("#consoleCommand").value="";return}try{const d=await api(`/api/bots/${encodeURIComponent(bot.id)}/console`,{method:"POST",body:JSON.stringify({command})});addLog(d.entry);$("#consoleCommand").value=""}catch(err){toast(err.message)}};
+$("#clearConsole").onclick=()=>$("#consoleOutput").innerHTML="";
+async function loadFeatures(){try{const d=await api("/api/features");state.features=d;const items=[["Discord OAuth",d.oauth.discord,"Login met Discord"],["Google OAuth",d.oauth.google,"Login met Google"],["Bot worker",d.botWorkerConfigured,"Langlopende botprocessen"],["Database",d.databaseConfigured,"Persistente opslag"]];$("#integrationStatus").innerHTML=items.map(([name,ok,desc])=>`<div class="toggle-row"><div><strong>${name}</strong><small>${desc}</small></div><span class="pill ${ok?"green":"red"}">${ok?"Geconfigureerd":"Niet ingesteld"}</span></div>`).join("")}catch{$("#integrationStatus").innerHTML='<p class="muted">Kon backendstatus niet ophalen. Start server.js.</p>'}}
+$("#refreshFeatures").onclick=loadFeatures;$("#helpButton").onclick=()=>toast("Tip: open Instellingen voor OAuth-, database- en workerstatus.");
+$("#logoutButton").onclick=async()=>{try{await api("/auth/logout",{method:"POST",body:"{}"});state.user=null;updateUser();await loadBots();toast("Je bent uitgelogd.")}catch(e){toast(e.message)}};
+function chart(){const root=$("#chart");root.innerHTML="";[28,35,24,48,39,58,45,67,52,72,62,43,57,82,65,74,50,60,87,69,78,58,72,91].forEach(h=>{const bar=document.createElement("div");bar.className="bar";bar.style.setProperty("--h",`${h}%`);root.appendChild(bar)})}
+function loadLocalSettings(){try{const m=JSON.parse(localStorage.getItem("freddo.moderation")||"{}");$$(".moderation-toggle").forEach(el=>{if(m[el.dataset.key]!==undefined)el.checked=m[el.dataset.key]});["modChannel","modRole","modReason","welcomeEnabled","welcomeChannel","welcomeText","byeEnabled","byeChannel","byeText","verifyTitle","verifyBody","verifyButtonText","verifyRole"].forEach(id=>{const el=$("#"+id);const val=JSON.parse(localStorage.getItem("freddo."+id)??"null");if(el&&val!==null){if(el.type==="checkbox")el.checked=val;else el.value=val}});updatePreviews()}catch{}}
+function saveFields(ids){ids.forEach(id=>{const el=$("#"+id);if(el)localStorage.setItem("freddo."+id,JSON.stringify(el.type==="checkbox"?el.checked:el.value))});toast("Instellingen lokaal opgeslagen in deze browser.")}
+$("#saveModeration").onclick=()=>{const m={};$$(".moderation-toggle").forEach(el=>m[el.dataset.key]=el.checked);localStorage.setItem("freddo.moderation",JSON.stringify(m));saveFields(["modChannel","modRole","modReason"]);};
+$("#saveWelcome").onclick=()=>saveFields(["welcomeEnabled","welcomeChannel","welcomeText","byeEnabled","byeChannel","byeText"]);
+$("#saveVerify").onclick=()=>saveFields(["verifyTitle","verifyBody","verifyButtonText","verifyRole"]);
+function updatePreviews(){$("#welcomePreview").textContent=($("#welcomeText").value||"Welkom {user} bij {server}!").replaceAll("{user}","@gebruiker").replaceAll("{server}","Community Hub");$("#verifyPreviewTitle").textContent=$("#verifyTitle").value||"Verificatie";$("#verifyPreviewBody").textContent=$("#verifyBody").value||"";$("#verifyPreviewButton").textContent=$("#verifyButtonText").value||"Verifiëren"}
+["welcomeText","verifyTitle","verifyBody","verifyButtonText"].forEach(id=>$("#"+id).addEventListener("input",updatePreviews));
+$("#verifyPreviewButton").onclick=()=>toast("Dit is alleen een preview. Koppel de Discord-bot-worker voor echte verificatie.");
+async function init(){chart();loadLocalSettings();await loadMe();await loadBots();await loadFeatures();if(window.io){state.socket=io();state.socket.on("connect",()=>{$("#socketStatus").textContent="● Verbonden";$("#socketStatus").className="pill green";if(state.currentBot&&state.user)state.socket.emit("console:subscribe",{botId:state.currentBot})});state.socket.on("disconnect",()=>{$("#socketStatus").textContent="● Offline";$("#socketStatus").className="pill red"});state.socket.on("console:log",log=>{if(state.currentBot)addLog(log)})}if(new URLSearchParams(location.search).get("login")==="failed")toast("Inloggen is niet gelukt. Controleer OAuth-instellingen.");}
+init();
+</script>
 </body>
 </html>
