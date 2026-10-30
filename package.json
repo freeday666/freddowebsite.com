@@ -1,0 +1,14 @@
+{
+  "name": "freddo-hosting",
+  "version": "2.0.0",
+  "description": "Next-Gen Server Management & Discord Bot Dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
