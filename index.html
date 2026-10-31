@@ -1,37 +1,261 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Oranjestad Roleplay</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Coastal City — Freemode</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#82c9dd;font-family:Arial,sans-serif;touch-action:none}
+  canvas{display:block;width:100%;height:100%;touch-action:none}
+  .hud{position:fixed;top:12px;left:12px;color:white;background:#132330cc;border-radius:10px;padding:10px 12px;font-size:13px;pointer-events:none}
+  .controls{position:fixed;inset:0;pointer-events:none}
+  button{pointer-events:auto;border:2px solid #ffffffaa;border-radius:16px;background:#152329bb;color:white;font-size:16px;font-weight:bold;touch-action:none;user-select:none;-webkit-user-select:none}
+  button:active,.pressed{background:#35ab85dd}
+  .move{position:absolute;bottom:22px;left:18px;width:160px;height:150px}
+  .move button{position:absolute;width:54px;height:54px}
+  #up{left:53px;top:0} #down{left:53px;bottom:0}
+  #left{left:0;top:48px} #right{right:0;top:48px}
+  .action{position:absolute;right:18px;bottom:24px;display:flex;flex-direction:column;gap:12px;align-items:flex-end}
+  .action button{min-width:118px;height:54px;padding:0 12px}
+  .drive{display:none;position:absolute;right:18px;bottom:24px;gap:10px}
+  .drive button{width:68px;height:68px;border-radius:50%}
+  .drive .wide{width:78px;height:78px}
+  #hint{position:fixed;left:50%;bottom:190px;transform:translateX(-50%);background:#14252bd9;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;pointer-events:none;white-space:nowrap}
+  @media (min-width:700px){.move{left:30px;bottom:30px}.action{right:30px;bottom:30px}.drive{right:30px;bottom:30px}}
+</style>
 </head>
 <body>
-  <div id="loading">Oranjestad Roleplay laden...</div>
+<canvas id="game"></canvas>
+<div class="hud" id="hud">COASTAL CITY<br><span id="status">TE VOET</span></div>
+<div id="hint">Loop naar een auto en tik op INSTAPPEN</div>
 
-  <div id="hud">
-    <div class="brand">🇦🇼 ORANJESTAD RP</div>
-    <div id="playerCount">Spelers: 1</div>
-    <div id="status">Verbinden...</div>
-    <button id="nameButton">Verander naam</button>
+<div class="controls">
+  <div class="move" id="movePad">
+    <button id="up" aria-label="Vooruit">▲</button>
+    <button id="down" aria-label="Achteruit">▼</button>
+    <button id="left" aria-label="Links">◀</button>
+    <button id="right" aria-label="Rechts">▶</button>
   </div>
-
-  <div id="instructions">
-    Beweeg met de joystick
+  <div class="action" id="walkActions">
+    <button id="enter">INSTAPPEN</button>
   </div>
-
-  <div id="joystick">
-    <div id="stick"></div>
+  <div class="drive" id="driveControls">
+    <button id="steerLeft">◀</button>
+    <button class="wide" id="gas">GAS</button>
+    <button id="steerRight">▶</button>
+    <button id="brake">REM</button>
+    <button id="exit">UITSTAPPEN</button>
   </div>
+</div>
 
-  <div id="actions">
-    <button id="carButton">🚘 Auto</button>
-    <button id="exitButton">🚶 Uitstappen</button>
-  </div>
+<script>
+(()=>{
+  const canvas=document.querySelector("#game"),ctx=canvas.getContext("2d");
+  const status=document.querySelector("#status"),hint=document.querySelector("#hint");
+  const movePad=document.querySelector("#movePad"),walkActions=document.querySelector("#walkActions");
+  const driveControls=document.querySelector("#driveControls");
+  let W=innerWidth,H=innerHeight,dpr=1, last=performance.now();
+  let player={x:0,y:0,walk:0};
+  let keys={}, driving=false, speed=0, carX=0, carY=0, steer=0;
+  const cars=[
+    {x:-55,y:0,color:"#be583b",name:"Sportwagen"},
+    {x:65,y:0,color:"#6d7780",name:"Sedan"},
+    {x:155,y:0,color:"#e4b83b",name:"Cabrio"}
+  ];
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
-  <script src="game.js"></script>
+  function resize(){
+    dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+    canvas.width=W*dpr;canvas.height=H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  addEventListener("resize",resize);resize();
+
+  function bindHold(id,key){
+    const b=document.getElementById(id);
+    const on=e=>{e.preventDefault();keys[key]=true;b.classList.add("pressed");try{b.setPointerCapture(e.pointerId)}catch(_){}};
+    const off=e=>{e.preventDefault();keys[key]=false;b.classList.remove("pressed")};
+    b.addEventListener("pointerdown",on);
+    b.addEventListener("pointerup",off);
+    b.addEventListener("pointercancel",off);
+    b.addEventListener("lostpointercapture",off);
+  }
+  bindHold("up","up");bindHold("down","down");bindHold("left","left");bindHold("right","right");
+  bindHold("gas","gas");bindHold("brake","brake");
+  bindHold("steerLeft","steerLeft");bindHold("steerRight","steerRight");
+
+  addEventListener("keydown",e=>{
+    const k=e.key.toLowerCase();keys[k]=true;
+    if(k==="e")toggleCar();
+  });
+  addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+  function nearestCar(){
+    let best=null,dist=Infinity;
+    for(const c of cars){
+      const d=Math.hypot(player.x-c.x,player.y-c.y);
+      if(d<dist){best=c;dist=d}
+    }
+    return dist<105?best:null;
+  }
+  function toggleCar(){
+    if(driving){
+      driving=false;speed=0;
+      player.x=carX+42;player.y=carY+22;
+      hint.textContent="Je bent uitgestapt. Loop naar een auto om weer in te stappen.";
+      return;
+    }
+    const c=nearestCar();
+    if(c){driving=true;carX=c.x;carY=c.y;hint.textContent="Gebruik GAS, REM en de stuurknoppen. Tik UITSTAPPEN om uit te stappen."}
+    else hint.textContent="Loop dichter naar een geparkeerde auto.";
+  }
+  document.querySelector("#enter").addEventListener("click",toggleCar);
+  document.querySelector("#exit").addEventListener("click",toggleCar);
+
+  function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(x,y,w,h)}
+  function poly(points,color){
+    ctx.fillStyle=color;ctx.beginPath();
+    points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+    ctx.closePath();ctx.fill();
+  }
+  function line(x,y,x2,y2,color,width=1){
+    ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke();
+  }
+  function shade(color){
+    return color==="#e3b43c"?"#a96c32":color==="#bd5141"?"#79382f":color==="#6c9e69"?"#3f6d53":"#255d69";
+  }
+  function building(x,y,w,h,color){
+    rect(x,y,w,h,color);
+    poly([[x,y],[x+w*.12,y-h*.08],[x+w,y-h*.08],[x+w,y]],shade(color));
+    let cols=Math.max(2,Math.floor(w/42)),rows=Math.max(2,Math.floor(h/50));
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+      let wx=x+8+c*(w-16)/cols,wy=y+12+r*(h-20)/rows;
+      let ww=Math.min(18,w/cols*.45),wh=Math.min(25,h/rows*.48);
+      rect(wx,wy,ww,wh,"#344955");rect(wx+3,wy+3,ww-6,wh-6,"#a8ccd0");
+      line(wx+ww/2,wy,wx+ww/2,wy+wh,"#eee3ce",2);
+    }
+  }
+  function drawCar(x,y,s,color,angle=0){
+    ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(s,s);
+    poly([[-34,0],[-27,-12],[-14,-18],[13,-17],[27,-9],[35,-3],[34,8],[-33,8]],color);
+    poly([[-18,-13],[-10,-22],[12,-20],[23,-9]],"#35434b");
+    rect(-13,-18,10,7,"#9bc5ce");rect(2,-17,10,7,"#9bc5ce");
+    rect(-32,-4,5,4,"#ffe8a0");rect(28,-4,5,4,"#ffe8a0");
+    ctx.fillStyle="#202426";
+    for(const wx of [-22,22]){ctx.beginPath();ctx.arc(wx,7,6,0,Math.PI*2);ctx.fill()}
+    ctx.restore();
+  }
+
+  function draw(){
+    const horizon=H*.47,cx=W*.52-(driving?carX:player.x)*.16;
+    ctx.clearRect(0,0,W,H);
+    let sky=ctx.createLinearGradient(0,0,0,horizon+100);
+    sky.addColorStop(0,"#78c9e5");sky.addColorStop(1,"#f1e6ce");
+    rect(0,0,W,H,sky);
+
+    rect(0,horizon,W,H-horizon,"#55b9ca");
+    line(0,horizon,W,horizon,"#f8efd8",2);
+
+    const roadTop=horizon+10,roadBottom=H*1.08;
+    poly([[cx-10,roadTop],[cx+10,roadTop],[W*.95,roadBottom],[W*.04,roadBottom]],"#45494a");
+    poly([[0,roadTop],[cx-10,roadTop],[W*.04,roadBottom],[0,roadBottom]],"#d6ceba");
+    poly([[cx+10,roadTop],[W,roadTop],[W,roadBottom],[W*.95,roadBottom]],"#c9c1ad");
+    line(cx,roadTop,cx-W*.12,roadBottom,"#f2d25b",Math.max(2,W*.004));
+    line(cx+4,roadTop,cx+W*.35,roadBottom,"#eee3bd",1);
+
+    for(let i=1;i<12;i++){
+      const y=roadTop+(roadBottom-roadTop)*i/12;
+      line(0,y,W,y,"#b9b19f",1);
+    }
+    for(let i=-5;i<=5;i++)line(cx+i*8,roadTop,W*.52+i*W*.11,roadBottom,"#c1b9a7",1);
+
+    building(0,horizon-15,W*.16,H*.44,"#e3b43c");
+    building(W*.17,horizon+5,W*.08,H*.33,"#257f82");
+    building(W*.255,horizon+22,W*.055,H*.25,"#bd5141");
+    building(W*.67,horizon+5,W*.12,H*.30,"#6c9e69");
+    building(W*.80,horizon-12,W*.20,H*.45,"#bd5141");
+
+    poly([[0,H*.57],[W*.19,H*.57],[W*.23,H*.63],[0,H*.63]],"#f7bd27");
+    for(let i=0;i<7;i++)line(i*W*.032,H*.57,i*W*.032,H*.63,"#dc8b18",2);
+
+    function palm(x,y,h){
+      const top=y-h;line(x,y,x,top,"#6c5335",Math.max(3,h*.035));
+      for(let i=0;i<7;i++){
+        const a=-Math.PI*.92+i/6*Math.PI*.84;
+        const ex=x+Math.cos(a)*h*.48,ey=top+Math.sin(a)*h*.32;
+        ctx.strokeStyle="#347448";ctx.lineWidth=Math.max(3,h*.035);
+        ctx.beginPath();ctx.moveTo(x,top);ctx.quadraticCurveTo(x+Math.cos(a)*h*.22,top-h*.12,ex,ey);ctx.stroke();
+      }
+    }
+    palm(W*.42,H*.62,H*.58);palm(W*.59,H*.55,H*.23);palm(W*.36,H*.54,H*.32);
+
+    // Parked cars and the currently driven car
+    for(const c of cars){
+      if(driving&&c.x===carX&&c.y===carY)continue;
+      const screenX=W*.52+(c.x-player.x)*.65;
+      drawCar(screenX,H*.67,Math.max(.65,Math.min(1.2,W/700)),c.color);
+    }
+    if(driving){
+      drawCar(W*.52,H*.79,1.25,"#be583b",steer*.12);
+    }
+
+    if(!driving){
+      const px=W*.52-player.x*.45,py=H*.81-player.y*.12;
+      ctx.fillStyle="#20252a55";ctx.beginPath();ctx.ellipse(px,py+8,26,8,0,0,7);ctx.fill();
+      const swing=Math.sin(player.walk)*4;
+      line(px-8,py-22,px-9+swing,py+3,"#292b2d",10);
+      line(px+8,py-22,px+9-swing,py+3,"#292b2d",10);
+      poly([[px-18,py-77],[px-13,py-85],[px+13,py-85],[px+19,py-72],[px+16,py-25],[px-16,py-25]],"#454d5b");
+      line(px-17,py-67,px-21,py-34,"#c2916e",7);
+      line(px+17,py-67,px+21,py-34,"#c2916e",7);
+      ctx.fillStyle="#332a25";ctx.beginPath();ctx.ellipse(px,py-98,13,16,0,0,7);ctx.fill();
+    }
+
+    // Simple minimap
+    ctx.fillStyle="#17242bd9";ctx.beginPath();ctx.arc(W-57,57,38,0,7);ctx.fill();
+    ctx.strokeStyle="#d8e0cf";ctx.lineWidth=2;ctx.beginPath();ctx.arc(W-57,57,36,0,7);ctx.stroke();
+    line(W-84,57,W-30,57,"#82948c",2);line(W-57,31,W-57,83,"#82948c",2);
+    ctx.fillStyle="#42d7a0";ctx.beginPath();ctx.arc(W-57,57,4,0,7);ctx.fill();
+
+    requestAnimationFrame(draw);
+  }
+
+  function update(now){
+    const dt=Math.min((now-last)/16,2);last=now;
+    const forward=keys.up||keys.w||keys.arrowup;
+    const backward=keys.down||keys.s||keys.arrowdown;
+    const left=keys.left||keys.a||keys.arrowleft;
+    const right=keys.right||keys.d||keys.arrowright;
+
+    if(driving){
+      if(keys.gas||forward)speed=Math.min(speed+.12*dt,5);
+      else if(keys.brake||backward)speed=Math.max(speed-.18*dt,-1.6);
+      else speed*=.97;
+      steer=(left||keys.steerLeft?-1:0)+(right||keys.steerRight?1:0);
+      carX+=steer*speed*.55*dt;
+      player.x=carX;
+      status.textContent="IN DE AUTO  ·  "+Math.round(Math.abs(speed)*20)+" KM/U";
+    }else{
+      let dx=(right?1:0)-(left?1:0),dy=(backward?1:0)-(forward?1:0);
+      if(dx||dy){
+        const n=Math.hypot(dx,dy);
+        player.x+=dx/n*2.5*dt;player.y+=dy/n*2.5*dt;
+        player.walk+=.17*dt;
+      }
+      const c=nearestCar();
+      status.textContent=c?"AUTO DICHTBIJ":"TE VOET";
+      hint.textContent=c?"Tik op INSTAPPEN om in de auto te stappen":"Loop naar een auto en tik op INSTAPPEN";
+    }
+
+    movePad.style.display=driving?"none":"block";
+    walkActions.style.display=driving?"none":"flex";
+    driveControls.style.display=driving?"flex":"none";
+    requestAnimationFrame(update);
+  }
+
+  requestAnimationFrame(draw);
+  requestAnimationFrame(update);
+})();
+</script>
 </body>
 </html>
