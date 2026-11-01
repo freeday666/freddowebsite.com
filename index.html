@@ -11,7 +11,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .top{position:fixed;inset:12px 12px auto;display:flex;justify-content:space-between;color:#fff;text-shadow:0 2px 4px #000;pointer-events:none}
 .badge{background:#111c;border:1px solid #ffffff55;border-radius:9px;padding:8px 11px;font-size:12px}
 .controls{position:fixed;inset:0;pointer-events:none}
-button{pointer-events:auto;color:white;background:#16212dcc;border:2px solid #ffffff66;border-radius:50%;font-weight:bold;font-size:13px;touch-action:none;user-select:none;-webkit-user-select:none}
+button{pointer-events:auto;color:#fff;background:#16212dcc;border:2px solid #ffffff66;border-radius:50%;font-weight:bold;font-size:13px;touch-action:none;user-select:none;-webkit-user-select:none}
 button:active,.on{background:#347b70dd}
 #move{position:absolute;left:20px;bottom:25px;width:132px;height:132px}
 #fire{position:absolute;right:22px;bottom:32px;width:76px;height:76px;background:#8d302ddd}
@@ -27,8 +27,8 @@ button:active,.on{background:#347b70dd}
 <body>
 <canvas id="game"></canvas>
 <div class="top">
-  <div class="badge">SWAT · BREACH TRAINING<br><span id="objective">DOEL: beveilig de ruimte</span></div>
-  <div class="badge"><span id="health">❤ 100</span><br><span id="ammo">AMMO 12 / 48</span></div>
+  <div class="badge">SWAT · BREACH TRAINING<br><span id="objective"></span></div>
+  <div class="badge"><span id="health"></span><br><span id="ammo"></span></div>
 </div>
 <div class="cross"></div>
 <div class="controls">
@@ -64,7 +64,8 @@ function resize(){
   canvas.width=W*D;canvas.height=H*D;
   ctx.setTransform(D,0,0,D,0,0);
 }
-addEventListener("resize",resize);resize();
+addEventListener("resize",resize);
+resize();
 
 function bindHold(id,setter){
   const button=document.getElementById(id);
@@ -87,16 +88,24 @@ bindHold("aim",v=>aiming=v);
 
 let dragging=false,lastX=0;
 canvas.addEventListener("pointerdown",e=>{
-  if(e.clientX>W*.38){dragging=true;lastX=e.clientX;canvas.setPointerCapture(e.pointerId)}
+  if(e.clientX>W*.38){
+    dragging=true;
+    lastX=e.clientX;
+    canvas.setPointerCapture(e.pointerId);
+  }
 });
 canvas.addEventListener("pointermove",e=>{
-  if(dragging){aimX+=(e.clientX-lastX)*.006;lastX=e.clientX}
+  if(dragging){
+    aimX+=(e.clientX-lastX)*.006;
+    lastX=e.clientX;
+  }
 });
 canvas.addEventListener("pointerup",()=>dragging=false);
 canvas.addEventListener("pointercancel",()=>dragging=false);
 
 document.querySelector("#fire").addEventListener("pointerdown",e=>{
-  e.preventDefault();shoot();
+  e.preventDefault();
+  shoot();
 });
 document.querySelector("#reload").addEventListener("click",reload);
 
@@ -110,31 +119,43 @@ function updateHUD(){
 function reload(){
   if(ammo<12&&reserve>0&&!gameOver){
     const amount=Math.min(12-ammo,reserve);
-    ammo+=amount;reserve-=amount;updateHUD();
+    ammo+=amount;
+    reserve-=amount;
+    updateHUD();
   }
 }
 function shoot(){
   if(gameOver)return;
   if(ammo<=0){reload();return}
-  ammo--;flash=1;recoil=1;updateHUD();
+  ammo--;
+  flash=1;
+  recoil=1;
+  updateHUD();
 
   const targets=enemies.filter(e=>e.alive);
   if(!targets.length)return;
   targets.sort((a,b)=>Math.abs(a.x-aimX)-Math.abs(b.x-aimX));
   const target=targets[0];
+
   if(Math.abs(target.x-aimX)<.72){
     target.hp--;
-    if(target.hp<=0){target.alive=false;score++;updateHUD()}
+    if(target.hp<=0){
+      target.alive=false;
+      score++;
+      updateHUD();
+    }
   }
 }
-
 function rect(x,y,w,h,color){
-  ctx.fillStyle=color;ctx.fillRect(x,y,w,h);
+  ctx.fillStyle=color;
+  ctx.fillRect(x,y,w,h);
 }
 function polygon(points,color){
-  ctx.fillStyle=color;ctx.beginPath();
+  ctx.fillStyle=color;
+  ctx.beginPath();
   points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
-  ctx.closePath();ctx.fill();
+  ctx.closePath();
+  ctx.fill();
 }
 function drawEnemy(e){
   const scale=H/(e.z*2.4);
@@ -143,30 +164,30 @@ function drawEnemy(e){
   const bodyW=scale*.42,bodyH=scale*.76;
   if(x<-bodyW||x>W+bodyW)return;
 
-  // Schaduw en laarzen
   ctx.fillStyle="#0007";
-  ctx.beginPath();ctx.ellipse(x,y+bodyH*.53,bodyW*.75,scale*.08,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(x,y+bodyH*.53,bodyW*.75,scale*.08,0,0,Math.PI*2);
+  ctx.fill();
+
   rect(x-bodyW*.35,y+bodyH*.31,bodyW*.25,bodyH*.22,"#252a2b");
   rect(x+bodyW*.1,y+bodyH*.31,bodyW*.25,bodyH*.22,"#252a2b");
-
-  // Uniform en armen
   rect(x-bodyW*.43,y-bodyH*.03,bodyW*.86,bodyH*.42,"#333d3c");
   rect(x-bodyW*.67,y+bodyH*.02,bodyW*.22,bodyH*.33,"#39413e");
   rect(x+bodyW*.45,y+bodyH*.02,bodyW*.22,bodyH*.33,"#39413e");
-
-  // Vest
   rect(x-bodyW*.3,y+bodyH*.02,bodyW*.6,bodyH*.28,"#1d2728");
   rect(x-bodyW*.18,y+bodyH*.08,bodyW*.14,bodyH*.1,"#65705f");
   rect(x+bodyW*.04,y+bodyH*.08,bodyW*.14,bodyH*.1,"#65705f");
 
-  // Hoofd en helm
   ctx.fillStyle="#ae896b";
-  ctx.beginPath();ctx.arc(x,y-bodyH*.12,bodyW*.25,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x,y-bodyH*.12,bodyW*.25,0,Math.PI*2);
+  ctx.fill();
   ctx.fillStyle="#202829";
-  ctx.beginPath();ctx.arc(x,y-bodyH*.17,bodyW*.29,Math.PI,Math.PI*2);ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x,y-bodyH*.17,bodyW*.29,Math.PI,Math.PI*2);
+  ctx.fill();
   rect(x-bodyW*.28,y-bodyH*.17,bodyW*.56,bodyH*.06,"#141a1b");
 
-  // Gezondheidsindicator
   rect(x-bodyW*.35,y-bodyH*.34,bodyW*.7,4,"#161616");
   rect(x-bodyW*.35,y-bodyH*.34,bodyW*.7*(e.hp/2),4,"#c95042");
 }
@@ -182,34 +203,37 @@ function drawGun(){
   ],"#39413f");
   rect(W*.495,H*.695+kick,W*.045,30,"#171c1d");
   if(flash>0){
-    polygon([[W*.5,H*.68+kick],[W*.46,H*.61+kick],[W*.5,H*.63+kick],[W*.54,H*.61+kick]],"#ffd778");
+    polygon([
+      [W*.5,H*.68+kick],[W*.46,H*.61+kick],
+      [W*.5,H*.63+kick],[W*.54,H*.61+kick]
+    ],"#ffd778");
   }
 }
 function draw(){
   time=performance.now();
   ctx.clearRect(0,0,W,H);
 
-  // Tavan, seinät en vloer van een trainingsruimte
   rect(0,0,W,H,"#323a39");
   polygon([[0,0],[W,0],[W*.75,H*.42],[W*.25,H*.42]],"#4b514c");
   polygon([[0,0],[W*.25,H*.42],[W*.25,H*.72],[0,H]],"#39413d");
   polygon([[W,0],[W*.75,H*.42],[W*.75,H*.72],[W,H]],"#353d3a");
   polygon([[0,H],[W,H],[W*.75,H*.42],[W*.25,H*.42]],"#65655a");
 
-  // Vloer- en muurperspectief
   for(let i=1;i<9;i++){
     const t=i/9,y=H*.42+(H*.58)*t*t;
-    ctx.strokeStyle="#ffffff16";ctx.lineWidth=1;
+    ctx.strokeStyle="#ffffff16";
+    ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
   }
   for(let i=0;i<=8;i++){
     const bx=W*i/8;
     ctx.strokeStyle="#ffffff12";
-    ctx.beginPath();ctx.moveTo(W*.5+(bx-W*.5)*.35,H*.42);
-    ctx.lineTo(bx,H);ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(W*.5+(bx-W*.5)*.35,H*.42);
+    ctx.lineTo(bx,H);
+    ctx.stroke();
   }
 
-  // Deur en dekking
   rect(W*.39,H*.2,W*.22,H*.42,"#211f1b");
   rect(W*.405,H*.215,W*.19,H*.405,"#495149");
   rect(W*.425,H*.24,W*.15,H*.38,"#252c2a");
@@ -230,19 +254,23 @@ function draw(){
   if(aiming){
     ctx.strokeStyle="#9dd4bd";
     ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(W/2,H/2,18,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(W/2,H/2,18,0,Math.PI*2);
+    ctx.stroke();
   }
   if(flash>0)flash=Math.max(0,flash-.12);
   if(recoil>0)recoil=Math.max(0,recoil-.09);
   requestAnimationFrame(draw);
 }
-
 function update(now){
-  const dt=Math.min((now-last)/16,2);last=now;
+  const dt=Math.min((now-last)/16,2);
+  last=now;
+
   if(!gameOver&&moving){
-    // Vijanden nemen langzaam wat trainingsschade terug.
-    for(const e of enemies){
-      if(e.alive&&Math.random()<.0015*dt)health=Math.max(0,health-1);
+    for(const enemy of enemies){
+      if(enemy.alive&&Math.random()<.0015*dt){
+        health=Math.max(0,health-1);
+      }
     }
     if(health<=0){
       gameOver=true;
