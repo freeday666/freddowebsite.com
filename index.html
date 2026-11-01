@@ -3,289 +3,912 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SWAT — Breach Training</title>
+<meta name="theme-color" content="#101820">
+<title>Oranjestad Roleplay</title>
+
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111820;font-family:Arial,sans-serif;touch-action:none}
-canvas{display:block;width:100%;height:100%;touch-action:none}
-.top{position:fixed;inset:12px 12px auto;display:flex;justify-content:space-between;color:#fff;text-shadow:0 2px 4px #000;pointer-events:none}
-.badge{background:#111c;border:1px solid #ffffff55;border-radius:9px;padding:8px 11px;font-size:12px}
-.controls{position:fixed;inset:0;pointer-events:none}
-button{pointer-events:auto;color:#fff;background:#16212dcc;border:2px solid #ffffff66;border-radius:50%;font-weight:bold;font-size:13px;touch-action:none;user-select:none;-webkit-user-select:none}
-button:active,.on{background:#347b70dd}
-#move{position:absolute;left:20px;bottom:25px;width:132px;height:132px}
-#fire{position:absolute;right:22px;bottom:32px;width:76px;height:76px;background:#8d302ddd}
-#reload{position:absolute;right:110px;bottom:42px;width:60px;height:60px}
-#aim{position:absolute;right:25px;bottom:122px;width:58px;height:58px}
-#message{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff;background:#101820ee;padding:18px 22px;border:1px solid #fff6;border-radius:12px;text-align:center;display:none}
-.cross{position:fixed;left:50%;top:50%;width:24px;height:24px;transform:translate(-50%,-50%);pointer-events:none}
-.cross:before,.cross:after{content:"";position:absolute;background:#d8e6df;box-shadow:0 0 3px #000}
-.cross:before{width:2px;height:24px;left:11px}
-.cross:after{height:2px;width:24px;top:11px}
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: none;
+}
+
+html, body, #game {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: system-ui;
+  background: #101820;
+  color: white;
+}
+
+#game {
+  position: fixed;
+  inset: 0;
+}
+
+canvas {
+  display: block;
+}
+
+.panel, .action, .pedal {
+  background: #101c29d9;
+  border: 1px solid #ffffff55;
+  color: white;
+  border-radius: 12px;
+  backdrop-filter: blur(7px);
+  box-shadow: 0 3px 12px #0006;
+}
+
+#top {
+  position: fixed;
+  top: 8px;
+  left: 9px;
+  right: 9px;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.panel {
+  padding: 8px 11px;
+}
+
+#brand {
+  font-weight: 900;
+  font-size: 14px;
+}
+
+#speed {
+  font-size: 27px;
+  font-weight: 900;
+}
+
+#speedbox {
+  text-align: right;
+}
+
+#gear {
+  font-size: 10px;
+}
+
+#signals {
+  position: fixed;
+  top: 66px;
+  left: 9px;
+  display: flex;
+  gap: 5px;
+}
+
+.action {
+  padding: 9px 10px;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.active {
+  background: #a36b10 !important;
+  border-color: #ffdb76 !important;
+}
+
+#extras {
+  position: fixed;
+  right: 9px;
+  top: 66px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+#wheelArea {
+  position: fixed;
+  left: 12px;
+  bottom: 18px;
+  width: min(30vw,160px);
+  height: min(30vw,160px);
+  display: grid;
+  place-items: center;
+}
+
+#wheel {
+  width: 100%;
+  height: 100%;
+  border: 10px solid #d9e0e4;
+  border-radius: 50%;
+  background: radial-gradient(circle,#273c4a 0 22%,#62727b 23% 29%,transparent 30%);
+  box-shadow: 0 4px 15px #0009;
+  position: relative;
+}
+
+#wheel:before, #wheel:after {
+  content: "";
+  position: absolute;
+  left: calc(50% - 5px);
+  top: 7%;
+  height: 86%;
+  width: 10px;
+  background: #d9e0e4;
+  border-radius: 8px;
+}
+
+#wheel:after {
+  transform: rotate(90deg);
+}
+
+#hub {
+  position: absolute;
+  inset: 38%;
+  border-radius: 50%;
+  background: #263846;
+  border: 3px solid #d9e0e4;
+  z-index: 2;
+}
+
+#pedals {
+  position: fixed;
+  right: 12px;
+  bottom: 18px;
+  display: flex;
+  gap: 9px;
+}
+
+.pedal {
+  width: min(17vw,82px);
+  height: min(25vw,112px);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.pedal small {
+  display: block;
+  font-size: 10px;
+}
+
+#gas {
+  background: #155d38;
+}
+
+#brake {
+  background: #742323;
+}
+
+#dash {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  pointer-events: none;
+}
+
+.dashitem {
+  text-align: center;
+  font-size: 9px;
+  min-width: 52px;
+}
+
+.dashitem b {
+  display: block;
+  font-size: 14px;
+}
+
+#start, #rotate {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  background: #091521df;
+}
+
+#startcard {
+  max-width: 370px;
+  padding: 24px;
+  border-radius: 18px;
+  background: #142536;
+  border: 1px solid #ffffff44;
+}
+
+h1 {
+  margin: 0;
+  font-size: 35px;
+}
+
+#start button {
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 12px;
+  background: #ffca28;
+  font-size: 17px;
+  font-weight: 900;
+  margin-top: 12px;
+}
+
+#rotate {
+  display: none;
+  background: #091521ed;
+  z-index: 4;
+}
+
+#toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  background: #111d;
+  padding: 10px 16px;
+  border-radius: 10px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media(orientation:portrait) {
+  #rotate {
+    display: flex;
+  }
+
+  #wheelArea {
+    width: 125px;
+    height: 125px;
+  }
+
+  #dash {
+    bottom: 145px;
+  }
+}
+
+@media(orientation:landscape) and (max-height:500px) {
+  #wheelArea {
+    width: 115px;
+    height: 115px;
+  }
+
+  .pedal {
+    height: 88px;
+  }
+
+  #signals, #extras {
+    top: 56px;
+  }
+
+  .action {
+    padding: 6px 8px;
+  }
+}
 </style>
 </head>
+
 <body>
-<canvas id="game"></canvas>
-<div class="top">
-  <div class="badge">SWAT · BREACH TRAINING<br><span id="objective"></span></div>
-  <div class="badge"><span id="health"></span><br><span id="ammo"></span></div>
-</div>
-<div class="cross"></div>
-<div class="controls">
-  <button id="move">INZETTEN<br>HOUD VAST</button>
-  <button id="aim">RICHTEN</button>
-  <button id="reload">HERLADEN</button>
-  <button id="fire">VUUR</button>
-</div>
-<div id="message"></div>
 
-<script>
-(()=>{
-"use strict";
-const canvas=document.querySelector("#game");
-const ctx=canvas.getContext("2d");
-const ammoEl=document.querySelector("#ammo");
-const healthEl=document.querySelector("#health");
-const objective=document.querySelector("#objective");
-const message=document.querySelector("#message");
+<div id="game"></div>
 
-let W=innerWidth,H=innerHeight,D=1;
-let moving=false,aiming=false,ammo=12,reserve=48,health=100,score=0;
-let aimX=0,recoil=0,flash=0,gameOver=false,last=performance.now(),time=0;
-const enemies=[
-  {x:-1.3,z:7,hp:2,alive:true,phase:0},
-  {x:1.6,z:10,hp:2,alive:true,phase:2},
-  {x:.1,z:14,hp:2,alive:true,phase:4}
+<div id="top">
+  <div class="panel">
+    <div id="brand">🇳🇱 ORANJESTAD ROLEPLAY</div>
+    <small>Mobiele rijtest · vrije rit</small>
+  </div>
+
+  <div class="panel" id="speedbox">
+    <div>
+      <span id="speed">0</span> KM/U
+    </div>
+    <div id="gear">N · STILSTAND</div>
+  </div>
+</div>
+
+<div id="signals">
+  <button class="action" id="left">◀ LINK</button>
+  <button class="action" id="right">RECHT ▶</button>
+  <button class="action" id="hazard">⚠</button>
+</div>
+
+<div id="extras">
+  <button class="action" id="horn">📣 Claxon</button>
+  <button class="action" id="park">🅿 Handrem UIT</button>
+  <button class="action" id="lamp">💡 Lampen UIT</button>
+  <button class="action" id="reset">↻ Reset auto</button>
+</div>
+
+<div id="wheelArea">
+  <div id="wheel">
+    <div id="hub"></div>
+  </div>
+</div>
+
+<div id="pedals">
+  <button class="pedal" id="brake">
+    REM
+    <small>vasthouden</small>
+  </button>
+
+  <button class="pedal" id="gas">
+    GAS
+    <small>vasthouden</small>
+  </button>
+</div>
+
+<div id="dash">
+  <div class="panel dashitem">
+    <b id="turn">—</b>
+    RICHTING
+  </div>
+
+  <div class="panel dashitem">
+    <b id="battery">100%</b>
+    ACCU
+  </div>
+
+  <div class="panel dashitem">
+    <b id="parking">UIT</b>
+    HANDREM
+  </div>
+</div>
+
+<div id="rotate">
+  <div>
+    <div style="font-size:48px">📱 ↻</div>
+    <b>Draai je telefoon</b>
+    <p>Oranjestad rijdt het fijnst liggend.</p>
+  </div>
+</div>
+
+<div id="start">
+  <div id="startcard">
+    <h1>ORANJESTAD</h1>
+    <b style="color:#ffca28">ROLEPLAY · RIJTEST</b>
+
+    <p>
+      Test stuurwiel, gas, rem, knipperlichten
+      en stadswegen.
+    </p>
+
+    <p style="font-size:12px">
+      Draai je telefoon naar liggende stand.
+      Houd GAS of REM ingedrukt.
+    </p>
+
+    <button id="startbtn">START RIJTEST</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+import * as THREE from
+'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+const root = document.querySelector('#game');
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x91c7df);
+scene.fog = new THREE.Fog(0x91c7df,70,230);
+
+const camera = new THREE.PerspectiveCamera(
+  65,
+  innerWidth / innerHeight,
+  0.1,
+  400
+);
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: true
+});
+
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
+renderer.setSize(innerWidth,innerHeight);
+root.appendChild(renderer.domElement);
+
+scene.add(
+  new THREE.HemisphereLight(0xeaf7ff,0x63775b,2)
+);
+
+const sun = new THREE.DirectionalLight(0xffffff,2);
+sun.position.set(-30,50,20);
+scene.add(sun);
+
+const M = c => new THREE.MeshStandardMaterial({
+  color: c,
+  roughness: .85
+});
+
+function box(w,h,d,m,x,y,z,p=scene) {
+  let o = new THREE.Mesh(
+    new THREE.BoxGeometry(w,h,d),
+    m
+  );
+
+  o.position.set(x,y,z);
+  o.castShadow = true;
+  p.add(o);
+  return o;
+}
+
+// Stad en wegen
+
+box(400,.2,400,M(0x619653),0,-.2,0);
+
+box(18,.12,260,M(0x343a40),0,-.05,0);
+box(260,.12,18,M(0x343a40),0,-.05,0);
+
+let white = M(0xf5efdb);
+let side = M(0xb9b8ad);
+
+for(let n=-120;n<=120;n+=10) {
+  box(.12,.02,7,white,0,.03,n);
+  box(7,.02,.12,white,n,.03,0);
+}
+
+for(let s of [-1,1]) {
+  box(.7,.15,260,side,s*10,-.02,0);
+  box(260,.15,.7,side,0,-.02,s*10);
+}
+
+// Gebouwen
+
+let colors = [
+  M(0xb96f52),
+  M(0xe2c99a),
+  M(0xc7d1d2),
+  M(0xd9aa70),
+  M(0xb8c5a1)
 ];
 
-function resize(){
-  D=Math.min(devicePixelRatio||1,2);
-  W=innerWidth;H=innerHeight;
-  canvas.width=W*D;canvas.height=H*D;
-  ctx.setTransform(D,0,0,D,0,0);
-}
-addEventListener("resize",resize);
-resize();
+let glass = M(0x83b6c7);
+let dark = M(0x202a32);
 
-function bindHold(id,setter){
-  const button=document.getElementById(id);
-  button.addEventListener("pointerdown",e=>{
-    e.preventDefault();
-    button.setPointerCapture(e.pointerId);
-    setter(true);
-    button.classList.add("on");
-  });
-  const release=e=>{
-    e.preventDefault();
-    setter(false);
-    button.classList.remove("on");
-  };
-  button.addEventListener("pointerup",release);
-  button.addEventListener("pointercancel",release);
-}
-bindHold("move",v=>moving=v);
-bindHold("aim",v=>aiming=v);
+for(let x=-75;x<=75;x+=25) {
+  for(let z=-75;z<=75;z+=25) {
 
-let dragging=false,lastX=0;
-canvas.addEventListener("pointerdown",e=>{
-  if(e.clientX>W*.38){
-    dragging=true;
-    lastX=e.clientX;
-    canvas.setPointerCapture(e.pointerId);
-  }
-});
-canvas.addEventListener("pointermove",e=>{
-  if(dragging){
-    aimX+=(e.clientX-lastX)*.006;
-    lastX=e.clientX;
-  }
-});
-canvas.addEventListener("pointerup",()=>dragging=false);
-canvas.addEventListener("pointercancel",()=>dragging=false);
-
-document.querySelector("#fire").addEventListener("pointerdown",e=>{
-  e.preventDefault();
-  shoot();
-});
-document.querySelector("#reload").addEventListener("click",reload);
-
-function updateHUD(){
-  ammoEl.textContent=`AMMO ${ammo} / ${reserve}`;
-  healthEl.textContent=`❤ ${health}`;
-  objective.textContent=score>=enemies.length
-    ?"DOEL: ruimte beveiligd"
-    :`DOEL: beveilig de ruimte · ${score}/${enemies.length}`;
-}
-function reload(){
-  if(ammo<12&&reserve>0&&!gameOver){
-    const amount=Math.min(12-ammo,reserve);
-    ammo+=amount;
-    reserve-=amount;
-    updateHUD();
-  }
-}
-function shoot(){
-  if(gameOver)return;
-  if(ammo<=0){reload();return}
-  ammo--;
-  flash=1;
-  recoil=1;
-  updateHUD();
-
-  const targets=enemies.filter(e=>e.alive);
-  if(!targets.length)return;
-  targets.sort((a,b)=>Math.abs(a.x-aimX)-Math.abs(b.x-aimX));
-  const target=targets[0];
-
-  if(Math.abs(target.x-aimX)<.72){
-    target.hp--;
-    if(target.hp<=0){
-      target.alive=false;
-      score++;
-      updateHUD();
+    if(Math.abs(x)<18 || Math.abs(z)<18) {
+      continue;
     }
+
+    let w=13;
+    let h=9+Math.random()*8;
+    let d=13;
+
+    box(
+      w,h,d,
+      colors[Math.floor(Math.random()*5)],
+      x,h/2,z
+    );
+
+    box(
+      w*.8,h*.4,.12,
+      glass,
+      x,h*.55,z+d/2+.08
+    );
+
+    box(
+      1,2,.15,
+      dark,
+      x-3,1,z+d/2+.15
+    );
   }
 }
-function rect(x,y,w,h,color){
-  ctx.fillStyle=color;
-  ctx.fillRect(x,y,w,h);
-}
-function polygon(points,color){
-  ctx.fillStyle=color;
-  ctx.beginPath();
-  points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
-  ctx.closePath();
-  ctx.fill();
-}
-function drawEnemy(e){
-  const scale=H/(e.z*2.4);
-  const x=W/2+(e.x-aimX*.65)*scale;
-  const y=H*.48+scale*.42+Math.sin(time*.002+e.phase)*3;
-  const bodyW=scale*.42,bodyH=scale*.76;
-  if(x<-bodyW||x>W+bodyW)return;
 
-  ctx.fillStyle="#0007";
-  ctx.beginPath();
-  ctx.ellipse(x,y+bodyH*.53,bodyW*.75,scale*.08,0,0,Math.PI*2);
-  ctx.fill();
+// Bomen
 
-  rect(x-bodyW*.35,y+bodyH*.31,bodyW*.25,bodyH*.22,"#252a2b");
-  rect(x+bodyW*.1,y+bodyH*.31,bodyW*.25,bodyH*.22,"#252a2b");
-  rect(x-bodyW*.43,y-bodyH*.03,bodyW*.86,bodyH*.42,"#333d3c");
-  rect(x-bodyW*.67,y+bodyH*.02,bodyW*.22,bodyH*.33,"#39413e");
-  rect(x+bodyW*.45,y+bodyH*.02,bodyW*.22,bodyH*.33,"#39413e");
-  rect(x-bodyW*.3,y+bodyH*.02,bodyW*.6,bodyH*.28,"#1d2728");
-  rect(x-bodyW*.18,y+bodyH*.08,bodyW*.14,bodyH*.1,"#65705f");
-  rect(x+bodyW*.04,y+bodyH*.08,bodyW*.14,bodyH*.1,"#65705f");
+for(let n=-100;n<=100;n+=15) {
+  for(let s of [-1,1]) {
 
-  ctx.fillStyle="#ae896b";
-  ctx.beginPath();
-  ctx.arc(x,y-bodyH*.12,bodyW*.25,0,Math.PI*2);
-  ctx.fill();
-  ctx.fillStyle="#202829";
-  ctx.beginPath();
-  ctx.arc(x,y-bodyH*.17,bodyW*.29,Math.PI,Math.PI*2);
-  ctx.fill();
-  rect(x-bodyW*.28,y-bodyH*.17,bodyW*.56,bodyH*.06,"#141a1b");
+    box(
+      .25,2,.25,
+      M(0x765035),
+      s*12,1,n
+    );
 
-  rect(x-bodyW*.35,y-bodyH*.34,bodyW*.7,4,"#161616");
-  rect(x-bodyW*.35,y-bodyH*.34,bodyW*.7*(e.hp/2),4,"#c95042");
-}
-function drawGun(){
-  const kick=recoil*12;
-  polygon([
-    [W*.43,H],[W*.45,H*.79+kick],[W*.55,H*.79+kick],
-    [W*.59,H],[W*.43,H]
-  ],"#202629");
-  polygon([
-    [W*.47,H*.83+kick],[W*.49,H*.72+kick],[W*.54,H*.72+kick],
-    [W*.56,H*.89+kick],[W*.47,H*.89+kick]
-  ],"#39413f");
-  rect(W*.495,H*.695+kick,W*.045,30,"#171c1d");
-  if(flash>0){
-    polygon([
-      [W*.5,H*.68+kick],[W*.46,H*.61+kick],
-      [W*.5,H*.63+kick],[W*.54,H*.61+kick]
-    ],"#ffd778");
+    let crown = new THREE.Mesh(
+      new THREE.SphereGeometry(1.2,8,7),
+      M(0x397747)
+    );
+
+    crown.position.set(s*12,2.6,n);
+    scene.add(crown);
   }
 }
-function draw(){
-  time=performance.now();
-  ctx.clearRect(0,0,W,H);
 
-  rect(0,0,W,H,"#323a39");
-  polygon([[0,0],[W,0],[W*.75,H*.42],[W*.25,H*.42]],"#4b514c");
-  polygon([[0,0],[W*.25,H*.42],[W*.25,H*.72],[0,H]],"#39413d");
-  polygon([[W,0],[W*.75,H*.42],[W*.75,H*.72],[W,H]],"#353d3a");
-  polygon([[0,H],[W,H],[W*.75,H*.42],[W*.25,H*.42]],"#65655a");
+// Auto
 
-  for(let i=1;i<9;i++){
-    const t=i/9,y=H*.42+(H*.58)*t*t;
-    ctx.strokeStyle="#ffffff16";
-    ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+const car = new THREE.Group();
+scene.add(car);
+
+box(2,.65,4.2,M(0x1769aa),0,.8,0,car);
+
+box(
+  1.55,.75,2,
+  M(0x173d53),
+  0,1.48,-.15,car
+);
+
+box(1.35,.08,1,glass,0,1.55,-.2,car);
+
+let wheels=[];
+
+for(let x of [-1.05,1.05]) {
+  for(let z of [-1.35,1.35]) {
+
+    let w = new THREE.Mesh(
+      new THREE.CylinderGeometry(.42,.42,.28,16),
+      dark
+    );
+
+    w.rotation.z = Math.PI/2;
+    w.position.set(x,.45,z);
+
+    car.add(w);
+    wheels.push(w);
   }
-  for(let i=0;i<=8;i++){
-    const bx=W*i/8;
-    ctx.strokeStyle="#ffffff12";
-    ctx.beginPath();
-    ctx.moveTo(W*.5+(bx-W*.5)*.35,H*.42);
-    ctx.lineTo(bx,H);
-    ctx.stroke();
-  }
-
-  rect(W*.39,H*.2,W*.22,H*.42,"#211f1b");
-  rect(W*.405,H*.215,W*.19,H*.405,"#495149");
-  rect(W*.425,H*.24,W*.15,H*.38,"#252c2a");
-  rect(W*.55,H*.42,5,12,"#b38f52");
-  rect(W*.08,H*.3,W*.12,H*.16,"#68716a");
-  rect(W*.81,H*.3,W*.11,H*.16,"#68716a");
-  rect(W*.04,H*.65,W*.2,H*.13,"#514b3d");
-  rect(W*.77,H*.64,W*.19,H*.14,"#514b3d");
-
-  for(const enemy of enemies)if(enemy.alive)drawEnemy(enemy);
-  drawGun();
-
-  if(moving){
-    ctx.fillStyle="#dce4d5";
-    ctx.font="bold 13px Arial";
-    ctx.fillText("VOORZICHTIG VOORUIT",W/2-75,H*.66);
-  }
-  if(aiming){
-    ctx.strokeStyle="#9dd4bd";
-    ctx.lineWidth=2;
-    ctx.beginPath();
-    ctx.arc(W/2,H/2,18,0,Math.PI*2);
-    ctx.stroke();
-  }
-  if(flash>0)flash=Math.max(0,flash-.12);
-  if(recoil>0)recoil=Math.max(0,recoil-.09);
-  requestAnimationFrame(draw);
 }
-function update(now){
-  const dt=Math.min((now-last)/16,2);
+
+// Koplampen en achterlichten
+
+for(let x of [-.65,.65]) {
+  box(.35,.16,.08,M(0xfff0ae),x,.9,-2.12,car);
+  box(.35,.16,.08,M(0xc83228),x,.9,2.12,car);
+}
+
+// Besturing
+
+let speed=0;
+let steer=0;
+let gas=0;
+let brake=false;
+let park=false;
+let battery=100;
+let turn=0;
+let hazard=false;
+let lamps=false;
+
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+function say(t) {
+  let e=document.querySelector('#toast');
+  e.textContent=t;
+  e.style.opacity=1;
+
+  clearTimeout(say.t);
+
+  say.t=setTimeout(()=>{
+    e.style.opacity=0;
+  },1200);
+}
+
+// Knipperlichten
+
+function setSignals() {
+
+  document.querySelector('#left')
+    .classList.toggle('active',turn===-1);
+
+  document.querySelector('#right')
+    .classList.toggle('active',turn===1);
+
+  document.querySelector('#hazard')
+    .classList.toggle('active',hazard);
+
+  document.querySelector('#turn').textContent =
+    hazard ? '⚠' :
+    turn===-1 ? '◀' :
+    turn===1 ? '▶' : '—';
+}
+
+document.querySelector('#left').onclick=()=>{
+  turn=turn===-1?0:-1;
+  hazard=false;
+  setSignals();
+};
+
+document.querySelector('#right').onclick=()=>{
+  turn=turn===1?0:1;
+  hazard=false;
+  setSignals();
+};
+
+document.querySelector('#hazard').onclick=()=>{
+  hazard=!hazard;
+  turn=0;
+  setSignals();
+};
+
+// Handrem
+
+document.querySelector('#park').onclick=()=>{
+  park=!park;
+
+  document.querySelector('#park').textContent =
+    '🅿 Handrem '+(park?'AAN':'UIT');
+
+  document.querySelector('#parking').textContent =
+    park?'AAN':'UIT';
+
+  document.querySelector('#park')
+    .classList.toggle('active',park);
+};
+
+// Lampen
+
+document.querySelector('#lamp').onclick=()=>{
+  lamps=!lamps;
+
+  document.querySelector('#lamp').textContent =
+    '💡 Lampen '+(lamps?'AAN':'UIT');
+
+  say(lamps?'Lampen aan':'Lampen uit');
+};
+
+// Claxon
+
+document.querySelector('#horn').onclick=()=>{
+  say('📣 TOET!');
+
+  try {
+    let A=new AudioContext();
+    let o=A.createOscillator();
+    let g=A.createGain();
+
+    o.frequency.value=390;
+    g.gain.value=.07;
+
+    o.connect(g);
+    g.connect(A.destination);
+
+    o.start();
+    o.stop(A.currentTime+.2);
+
+    o.onended=()=>A.close();
+  } catch(e) {}
+};
+
+// Gaspedaal en rempedaal
+
+function hold(el,down,up) {
+
+  el.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    el.setPointerCapture(e.pointerId);
+    down();
+  });
+
+  ['pointerup','pointercancel','lostpointercapture']
+    .forEach(ev=>el.addEventListener(ev,up));
+}
+
+hold(
+  document.querySelector('#gas'),
+  ()=>gas=1,
+  ()=>gas=0
+);
+
+hold(
+  document.querySelector('#brake'),
+  ()=>brake=true,
+  ()=>brake=false
+);
+
+// Stuurwiel
+
+let wheel=document.querySelector('#wheel');
+let pid=null;
+let px=0;
+let sv=0;
+
+wheel.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+
+  pid=e.pointerId;
+  wheel.setPointerCapture(pid);
+
+  px=e.clientX;
+  sv=steer;
+});
+
+wheel.addEventListener('pointermove',e=>{
+  if(e.pointerId===pid) {
+
+    steer=clamp(
+      sv+(e.clientX-px)/85,
+      -1,
+      1
+    );
+
+    wheel.style.transform=
+      `rotate(${steer*135}deg)`;
+  }
+});
+
+function endwheel() {
+  pid=null;
+}
+
+wheel.addEventListener('pointerup',endwheel);
+wheel.addEventListener('pointercancel',endwheel);
+wheel.addEventListener('lostpointercapture',endwheel);
+
+// Toetsenbordbesturing
+
+let keys={};
+
+onkeydown=e=>{
+  keys[e.key.toLowerCase()]=true;
+};
+
+onkeyup=e=>{
+  keys[e.key.toLowerCase()]=false;
+};
+
+// Auto reset
+
+document.querySelector('#reset').onclick=()=>{
+  car.position.set(0,0,0);
+  car.rotation.y=0;
+  speed=0;
+  say('Auto terug op de weg');
+};
+
+// Knipperende lampjes
+
+let blink=true;
+
+setInterval(()=>{
+  blink=!blink;
+
+  car.children.forEach(o=>{
+    if(o.userData.sig) {
+      o.material.emissive.setHex(
+        (blink && (hazard || turn!==0))
+          ? 0xff9900
+          : 0x000000
+      );
+    }
+  });
+},450);
+
+for(let x of [-.7,.7]) {
+  for(let z of [-2.14,2.14]) {
+
+    let o=box(
+      .18,.13,.06,
+      new THREE.MeshStandardMaterial({
+        color:0x442200,
+        emissive:0x000000
+      }),
+      x,1,z,car
+    );
+
+    o.userData.sig=true;
+  }
+}
+
+// Scherm aanpassen
+
+function resize() {
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+}
+
+addEventListener('resize',resize);
+
+// Startknop
+
+document.querySelector('#startbtn').onclick=async()=>{
+  document.querySelector('#start').style.display='none';
+
+  try {
+    await screen.orientation.lock('landscape');
+  } catch(e) {}
+
+  say('Veel rijplezier!');
+};
+
+// Rijgame
+
+let last=performance.now();
+
+function loop(now) {
+
+  requestAnimationFrame(loop);
+
+  let dt=Math.min((now-last)/1000,.04);
   last=now;
 
-  if(!gameOver&&moving){
-    for(const enemy of enemies){
-      if(enemy.alive&&Math.random()<.0015*dt){
-        health=Math.max(0,health-1);
-      }
-    }
-    if(health<=0){
-      gameOver=true;
-      message.innerHTML="MISSIE MISLUKT<br><small>Tik om opnieuw te beginnen</small>";
-      message.style.display="block";
-      message.onclick=()=>location.reload();
-    }
-    updateHUD();
+  let g=gas || keys.w || keys.arrowup;
+  let b=brake || keys.s || keys.arrowdown;
+
+  let s =
+    keys.a || keys.arrowleft ? -1 :
+    keys.d || keys.arrowright ? 1 :
+    steer;
+
+  if(g && !park) {
+    speed+=16*dt;
+  } else {
+    speed-=2.2*dt;
   }
-  requestAnimationFrame(update);
+
+  if(b || park) {
+    speed-=25*dt;
+  }
+
+  speed=clamp(speed,0,115);
+
+  // Auto draaien
+
+  car.rotation.y -= s*1.05*(speed/115)*dt;
+
+  // Auto vooruit rijden
+
+  let f=new THREE.Vector3(
+    Math.sin(car.rotation.y),
+    0,
+    -Math.cos(car.rotation.y)
+  );
+
+  car.position.addScaledVector(
+    f,
+    speed/3.6*dt
+  );
+
+  car.position.x=clamp(car.position.x,-115,115);
+  car.position.z=clamp(car.position.z,-115,115);
+
+  // Wielen draaien
+
+  wheels.forEach(w=>{
+    w.rotation.x-=speed/3.6*dt/.42;
+  });
+
+  // Camera volgt auto
+
+  let target=new THREE.Vector3(
+    car.position.x+Math.sin(car.rotation.y)*8,
+    5.1,
+    car.position.z+Math.cos(car.rotation.y)*8
+  );
+
+  camera.position.lerp(
+    target,
+    1-Math.pow(.001,dt)
+  );
+
+  camera.lookAt(
+    car.position.x,
+    1,
+    car.position.z
+  );
+
+  // Dashboard
+
+  document.querySelector('#speed').textContent=
+    Math.round(speed);
+
+  document.querySelector('#gear').textContent=
+    speed<1 ? 'N · STILSTAND' : 'D · RIJDEN';
+
+  battery=Math.max(
+    0,
+    battery-(g?.001:0)*dt*60
+  );
+
+  document.querySelector('#battery').textContent=
+    Math.round(battery)+'%';
+
+  renderer.render(scene,camera);
 }
-updateHUD();
-requestAnimationFrame(draw);
-requestAnimationFrame(update);
-})();
+
+camera.position.set(0,5,8);
+camera.lookAt(0,1,0);
+
+requestAnimationFrame(loop);
+
 </script>
 </body>
 </html>
