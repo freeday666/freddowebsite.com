@@ -1,438 +1,77 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Oranjestad Roleplay</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#080d14;color:white;font-family:Arial,sans-serif;overflow:hidden}
-#game{position:fixed;inset:0}
-#view{position:absolute;inset:0}
-#map{position:absolute;right:12px;top:12px;width:31vw;height:24vh;min-width:150px;min-height:130px;border:2px solid white;border-radius:12px;z-index:5}
-#top{position:absolute;top:12px;left:12px;z-index:6;background:#101b2add;padding:10px 14px;border-radius:12px}
-#top strong{font-size:17px;color:#ff9c35}
-#speed{font-size:30px;font-weight:bold}
-#gear{font-size:13px;color:#a9d9ff}
-#menu{position:absolute;z-index:10;inset:0;background:linear-gradient(#06101ddd,#071522ee);display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}
-.panel{max-width:440px;width:100%;background:#142438;border:1px solid #426080;border-radius:18px;padding:25px}
-.panel h1{color:#ff9c35;margin:0 0 8px}
-button{border:0;border-radius:12px;padding:13px 17px;background:#ff941f;color:#111;font-weight:bold;font-size:15px;cursor:pointer;touch-action:none}
-button.secondary{background:#263d56;color:white}
-#controls{position:absolute;z-index:7;bottom:15px;left:0;right:0;display:flex;justify-content:space-between;align-items:end;padding:0 15px;pointer-events:none}
-#controls>*{pointer-events:auto}
-#wheel{width:118px;height:118px;border:12px solid #d7e0e9;border-radius:50%;background:radial-gradient(circle,#25384a 0 22%,transparent 24%);position:relative;touch-action:none}
-#wheel:before,#wheel:after{content:"";position:absolute;background:#d7e0e9;left:calc(50% - 5px);top:5px;width:10px;height:85px;border-radius:8px}
-#wheel:after{transform:rotate(90deg)}
-#hub{position:absolute;inset:40px;border-radius:50%;background:#ff941f;z-index:2}
-.pedals{display:flex;gap:10px}
-.pedal{width:72px;height:100px;background:#263b51;color:white;border:2px solid #66809b}
-#gas{background:#168b54}
-#brake{background:#b53b35}
-#buttons{position:absolute;z-index:8;left:12px;top:105px;display:flex;flex-direction:column;gap:7px}
-#buttons button{padding:9px 11px;font-size:12px}
-#help{position:absolute;z-index:6;bottom:140px;left:12px;font-size:11px;color:#dbe8f5;background:#101b2acc;padding:8px;border-radius:8px}
-#location{position:absolute;z-index:6;right:12px;top:calc(24vh + 22px)}
-#status{font-size:12px;color:#a8c3dc;margin-top:10px}
-@media(min-width:750px){
- #map{width:300px;height:220px}
- #location{top:245px}
- #controls{max-width:900px;margin:auto}
-}
+*{box-sizing:border-box}html,body,#game{margin:0;width:100%;height:100%;overflow:hidden}
+body{font:14px system-ui,Arial;background:#9bc4d7;color:#fff;touch-action:none}
+#game{position:fixed;inset:0}button{font:inherit;color:white;border:1px solid #ffffff44;background:#111c2add;border-radius:12px;padding:11px;touch-action:none}
+#hud{position:fixed;inset:0;pointer-events:none}.panel{background:#101827d9;border:1px solid #ffffff25;border-radius:12px;padding:10px}
+#brand,#status,#signal,#actions,#controls,#help{position:absolute;pointer-events:auto}
+#brand{left:12px;top:12px}#brand b{letter-spacing:.08em}#status{right:12px;top:12px;text-align:right}
+#speed{font-size:24px;font-weight:800}#signal{right:12px;top:83px}
+#actions{right:12px;bottom:12px;display:flex;flex-direction:column;gap:7px}
+#controls{inset:0;display:none;pointer-events:none}.cluster{position:absolute;bottom:16px;display:flex;gap:8px;pointer-events:auto}
+#steer{left:12px}#pedals{right:150px}.control{width:64px;height:64px;border-radius:50%;font-weight:bold;background:#111c2de8}
+#gas{background:#c96820e8}#help{left:50%;bottom:15px;transform:translateX(-50%);white-space:nowrap;font-size:12px}
+#menu{position:fixed;inset:0;z-index:3;display:grid;place-items:center;padding:16px;background:#101827c9}
+#card{width:min(440px,100%);padding:22px;background:#111c2df2;border:1px solid #ffffff30;border-radius:16px}
+h1{margin:0 0 8px;font-size:32px}p{color:#c5cfdb;line-height:1.45}
+input,select{width:100%;padding:12px;border-radius:9px;background:#0b1320;color:white;border:1px solid #ffffff35;margin:5px 0}
+#start{width:100%;background:#f28b2e;color:#17120b;font-weight:900;margin-top:8px}
+#toast{position:absolute;top:20%;left:50%;transform:translateX(-50%);display:none}
+@media(max-width:650px){#help{bottom:95px;font-size:10px}.control{width:58px;height:58px}#pedals{right:125px}}
 </style>
 </head>
 <body>
-<div id="game">
- <div id="view"></div>
- <div id="map"></div>
-
- <div id="top">
-  <strong>ORANJESTAD ROLEPLAY</strong>
-  <div><span id="speed">0</span> <small>KM/U</small></div>
-  <div id="gear">Versnelling: N · BMW M4 CSL</div>
- </div>
-
- <div id="buttons">
-  <button class="secondary" id="camera">Cockpit / buiten</button>
-  <button class="secondary" id="mapbtn">Kaart tonen/verbergen</button>
-  <button class="secondary" id="locbtn">Mijn locatie</button>
-  <button class="secondary" id="reset">Opnieuw starten</button>
- </div>
-
- <div id="location">
-  <button class="secondary" id="zoomIn">Kaart +</button>
-  <button class="secondary" id="zoomOut">Kaart −</button>
- </div>
-
- <div id="help">Sleep aan het stuur om te sturen.<br>Gebruik gas en rem om te rijden.<br>Computer: WASD of pijltjestoetsen.</div>
-
- <div id="controls">
-  <div id="wheel"><div id="hub"></div></div>
-  <div class="pedals">
-   <button class="pedal" id="brake">REM<br>■</button>
-   <button class="pedal" id="gas">GAS<br>▲</button>
+<div id="game"></div>
+<div id="hud">
+  <div id="brand" class="panel"><b>ORANJESTAD RP</b><br><small id="playerLabel">Dutch Driving Simulator</small></div>
+  <div id="status" class="panel"><span id="speed">0</span> km/u<br><small id="mode">Te voet</small></div>
+  <div id="signal" class="panel">🚦 <span id="signalText">Groen licht</span></div>
+  <div id="actions">
+    <button id="enter">🚗 Instappen</button>
+    <button id="pause">Ⅱ Pauze</button>
+    <button id="reset">↻ Herstart</button>
   </div>
- </div>
-
- <div id="menu">
-  <div class="panel">
-   <h1>ORANJESTAD ROLEPLAY</h1>
-   <h3>Nederland & België · BMW M4 CSL</h3>
-   <p>Stap in en rijd vrij rond op de kaart. Gebruik het stuur, gas en rem op je telefoon.</p>
-   <button id="start">START RIJDEN</button>
-   <div id="status">Bezig met laden...</div>
+  <div id="controls">
+    <div id="steer" class="cluster">
+      <button class="control" data-key="left">◀</button><button class="control" data-key="right">▶</button>
+    </div>
+    <div id="pedals" class="cluster">
+      <button class="control" data-key="brake">REM</button><button class="control" id="gas" data-key="gas">GAS</button>
+    </div>
   </div>
- </div>
+  <div id="help" class="panel">WASD / pijltjes · E instappen/uitstappen · Shift rennen · P pauze</div>
+  <div id="toast" class="panel"></div>
 </div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script type="importmap">
-{
- "imports":{
-  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
- }
-}
-</script>
+<div id="menu">
+  <div id="card">
+    <h1>Oranjestad <span style="color:#ff982f">Roleplay</span></h1>
+    <p>Speelbare browserprototype: Nederlandse stadswegen, verkeerslichten, eenvoudige AI-auto’s en een elektrische auto.</p>
+    <label>Spelersnaam<input id="name" value="Bestuurder" maxlength="18"></label>
+    <label>Modus<select id="modeSelect"><option>Vrij rondrijden</option><option>Verkeersregels oefenen</option></select></label>
+    <label>Grafische kwaliteit<select id="quality"><option value="normal">Normaal</option><option value="low">Laag (mobiel)</option></select></label>
+    <button id="start">START SPEL</button>
+    <p><small>Three.js wordt via CDN geladen. Dit prototype bevat geen APK en gebruikt eenvoudige zelfgemaakte 3D-modellen.</small></p>
+  </div>
+</div>
 <script type="module">
-import * as THREE from "three";
-import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-const statusEl=document.getElementById("status");
-const view=document.getElementById("view");
+const $=id=>document.getElementById(id);
+const game=$("game"), scene=new THREE.Scene();
+scene.background=new THREE.Color(0x9bc4d7);
+scene.fog=new THREE.Fog(0x9bc4d7,100,330);
 
-// Kaart van Nederland en België
-const map=L.map("map",{zoomControl:false}).setView([51.75,4.2],8);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
- attribution:'© OpenStreetMap contributors',
- maxZoom:19
-}).addTo(map);
-
-const carIcon=L.divIcon({
- className:"",
- html:'<div style="font-size:25px;transform:rotate(0deg)" id="mapcar">🚘</div>',
- iconSize:[30,30],iconAnchor:[15,15]
-});
-const marker=L.marker([51.75,4.2],{icon:carIcon}).addTo(map);
-
-// 3D-wereld
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x91b8d4);
-scene.fog=new THREE.Fog(0x91b8d4,80,450);
-
-const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.1,1200);
-const renderer=new THREE.WebGLRenderer({antialias:true});
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,500);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
 renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
 renderer.shadowMap.enabled=true;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
-view.appendChild(renderer.domElement);
+game.appendChild(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xffffff,0x52616c,2));
-const sun=new THREE.DirectionalLight(0xffffff,2.3);
-sun.position.set(-40,90,50);
-sun.castShadow=true;
-scene.add(sun);
-
-// Weg en omgeving
-const ground=new THREE.Mesh(
- new THREE.PlaneGeometry(1200,1200),
- new THREE.MeshStandardMaterial({color:0x47794b})
-);
-ground.rotation.x=-Math.PI/2;
-ground.position.y=-.12;
-ground.receiveShadow=true;
-scene.add(ground);
-
-const road=new THREE.Mesh(
- new THREE.PlaneGeometry(15,1200),
- new THREE.MeshStandardMaterial({color:0x30343a})
-);
-road.rotation.x=-Math.PI/2;
-road.position.y=0;
-scene.add(road);
-
-const lineMat=new THREE.MeshBasicMaterial({color:0xf3e6ae});
-for(let z=-590;z<600;z+=12){
- const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),lineMat);
- line.rotation.x=-Math.PI/2;
- line.position.set(0,.025,z);
- scene.add(line);
-}
-const sideMat=new THREE.MeshStandardMaterial({color:0xb4b5b0});
-for(const x of [-7.8,7.8]){
- const side=new THREE.Mesh(new THREE.PlaneGeometry(1.5,1200),sideMat);
- side.rotation.x=-Math.PI/2;side.position.set(x,.01,0);scene.add(side);
-}
-
-// Bomen langs de weg
-for(let i=0;i<100;i++){
- const z=-500+i*10;
- for(const x of [-15,15]){
-  const trunk=new THREE.Mesh(
-   new THREE.CylinderGeometry(.18,.25,2.5,7),
-   new THREE.MeshStandardMaterial({color:0x654326})
-  );
-  trunk.position.set(x,1.2,z);scene.add(trunk);
-  const crown=new THREE.Mesh(
-   new THREE.SphereGeometry(1.6,8,7),
-   new THREE.MeshStandardMaterial({color:0x27613a})
-  );
-  crown.position.set(x,3.3,z);scene.add(crown);
- }
-}
-
-// BMW-auto
-const car=new THREE.Group();
-scene.add(car);
-const placeholder=new THREE.Group();
-car.add(placeholder);
-
-const paint=new THREE.MeshStandardMaterial({color:0x173d66,metalness:.85,roughness:.25});
-const glass=new THREE.MeshStandardMaterial({color:0x101c27,metalness:.3,roughness:.12});
-const black=new THREE.MeshStandardMaterial({color:0x090b0e,roughness:.8});
-
-function cube(parent,w,h,d,mat,x,y,z){
- const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
- m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
-}
-cube(placeholder,2,0.55,4.5,paint,0,.8,0);
-cube(placeholder,1.65,.75,2.1,paint,0,1.35,.25);
-cube(placeholder,1.55,.52,1.9,glass,0,1.42,.25);
-cube(placeholder,.7,.23,.12,black,0,.82,-2.28);
-
-const wheels=[];
-for(const x of [-1,1])for(const z of [-1.45,1.45]){
- const w=new THREE.Mesh(
-  new THREE.CylinderGeometry(.43,.43,.28,24),
-  black
- );
- w.rotation.z=Math.PI/2;
- w.position.set(x,.45,z);
- placeholder.add(w);wheels.push(w);
-}
-
-// BMW GLB laden, als echte Karosserie verwenden
-let modelLoaded=false;
-new GLTFLoader().load("./bmw_m4csl.glb",gltf=>{
- const model=gltf.scene;
- const box=new THREE.Box3().setFromObject(model);
- const size=box.getSize(new THREE.Vector3());
- const center=box.getCenter(new THREE.Vector3());
- const maxDim=Math.max(size.x,size.y,size.z);
- if(maxDim>0)model.scale.setScalar(4.6/maxDim);
- model.position.sub(center.multiplyScalar(model.scale.x));
- model.position.y+=.15;
- model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
- car.add(model);
- placeholder.visible=false;
- modelLoaded=true;
- statusEl.textContent="BMW M4 CSL-model geladen!";
-},undefined,err=>{
- console.warn("BMW-model niet geladen:",err);
- statusEl.textContent="BMW-placeholder actief. Zet bmw_m4csl.glb naast index.html.";
-});
-
-// Cockpit-interieur vast aan camera
-const cockpit=new THREE.Group();
-camera.add(cockpit);
-scene.add(camera);
-
-const dashMat=new THREE.MeshStandardMaterial({color:0x111820,metalness:.4,roughness:.45});
-const dash=new THREE.Mesh(new THREE.BoxGeometry(2.2,.32,.7),dashMat);
-dash.position.set(0,-.58,-.85);cockpit.add(dash);
-
-const steering=new THREE.Mesh(
- new THREE.TorusGeometry(.29,.035,10,40),
- new THREE.MeshStandardMaterial({color:0x171a1e,metalness:.5})
-);
-steering.position.set(0,-.38,-.65);
-cockpit.add(steering);
-
-const hub=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.09,20),
- new THREE.MeshStandardMaterial({color:0x999999,metalness:.8}));
-hub.rotation.x=Math.PI/2;
-hub.position.set(0,-.38,-.65);
-cockpit.add(hub);
-
-const displayCanvas=document.createElement("canvas");
-displayCanvas.width=512;displayCanvas.height=256;
-const ctx=displayCanvas.getContext("2d");
-const displayTexture=new THREE.CanvasTexture(displayCanvas);
-const display=new THREE.Mesh(
- new THREE.PlaneGeometry(.48,.25),
- new THREE.MeshBasicMaterial({map:displayTexture})
-);
-display.position.set(.57,-.52,-.48);
-cockpit.add(display);
-
-function updateDashboard(){
- ctx.fillStyle="#07131d";ctx.fillRect(0,0,512,256);
- ctx.fillStyle="#73e5ff";ctx.font="bold 38px Arial";
- ctx.fillText("ORANJESTAD",20,48);
- ctx.fillStyle="white";ctx.font="bold 75px Arial";
- ctx.fillText(Math.round(speed),25,145);
- ctx.font="25px Arial";ctx.fillText("KM/U",250,145);
- ctx.fillStyle="#ffad36";ctx.font="23px Arial";
- ctx.fillText("BMW M4 CSL  |  "+Math.round(rpm)+" RPM",20,210);
- displayTexture.needsUpdate=true;
-}
-
-// Rijden
-let lat=51.75,lon=4.2;
-let heading=0;
-let speed=0;
-let rpm=850;
-let throttle=0,braking=0,steer=0;
-let cockpitMode=true;
-let started=false;
-
-function updateMap(){
- marker.setLatLng([lat,lon]);
- map.panTo([lat,lon],{animate:false});
- const icon=document.getElementById("mapcar");
- if(icon)icon.style.transform=`rotate(${heading*180/Math.PI}deg)`;
-}
-
-function setPosition(){
- // Snelheid omzetten naar verplaatsing op aarde
- const metersPerSecond=speed/3.6;
- const distance=metersPerSecond/60;
- const angle=heading;
- lat+=Math.cos(angle)*distance/111320;
- lon+=Math.sin(angle)*distance/(111320*Math.cos(lat*Math.PI/180));
-}
-
-function updateCamera(){
- if(cockpitMode){
-  camera.position.copy(car.position);
-  camera.position.y+=1.45;
-  camera.position.z+=.25;
-  camera.rotation.set(0,car.rotation.y,0);
-  cockpit.visible=true;
- }else{
-  const offset=new THREE.Vector3(0,4.3,8.5);
-  offset.applyAxisAngle(new THREE.Vector3(0,1,0),car.rotation.y);
-  camera.position.copy(car.position).add(offset);
-  camera.lookAt(car.position.x,1,car.position.z-2);
-  cockpit.visible=false;
- }
-}
-
-// Stuurbediening
-const wheel=document.getElementById("wheel");
-let pointerDown=false,lastX=0,wheelAngle=0;
-wheel.addEventListener("pointerdown",e=>{
- pointerDown=true;lastX=e.clientX;wheel.setPointerCapture(e.pointerId);
-});
-wheel.addEventListener("pointermove",e=>{
- if(!pointerDown)return;
- const dx=e.clientX-lastX;lastX=e.clientX;
- wheelAngle=Math.max(-1,Math.min(1,wheelAngle+dx*.012));
- wheel.style.transform=`rotate(${wheelAngle*150}deg)`;
- steer=wheelAngle;
-});
-function releaseWheel(){
- pointerDown=false;
-}
-wheel.addEventListener("pointerup",releaseWheel);
-wheel.addEventListener("pointercancel",releaseWheel);
-
-// Gas en rem: vasthouden
-function holdButton(id,callback){
- const el=document.getElementById(id);
- el.addEventListener("pointerdown",e=>{e.preventDefault();callback(true);el.setPointerCapture(e.pointerId);});
- el.addEventListener("pointerup",()=>callback(false));
- el.addEventListener("pointercancel",()=>callback(false));
- el.addEventListener("lostpointercapture",()=>callback(false));
-}
-holdButton("gas",v=>throttle=v?1:0);
-holdButton("brake",v=>braking=v?1:0);
-
-// Toetsenbord
-const keys={};
-addEventListener("keydown",e=>{keys[e.key.toLowerCase()]=true;});
-addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false;});
-addEventListener("blur",()=>{throttle=0;braking=0;});
-
-document.getElementById("camera").onclick=()=>{
- cockpitMode=!cockpitMode;
-};
-document.getElementById("mapbtn").onclick=()=>{
- const el=document.getElementById("map");
- el.style.display=el.style.display==="none"?"block":"none";
-};
-document.getElementById("zoomIn").onclick=()=>map.zoomIn();
-document.getElementById("zoomOut").onclick=()=>map.zoomOut();
-document.getElementById("locbtn").onclick=()=>{
- if(!navigator.geolocation)return;
- navigator.geolocation.getCurrentPosition(p=>{
-  lat=p.coords.latitude;lon=p.coords.longitude;
-  updateMap();
- },()=>alert("Locatie niet beschikbaar. Geef toestemming in je browser."));
-};
-document.getElementById("reset").onclick=()=>{
- lat=51.75;lon=4.2;speed=0;heading=0;car.position.set(0,0,0);
- updateMap();
-};
-
-document.getElementById("start").onclick=()=>{
- started=true;
- document.getElementById("menu").style.display="none";
-};
-
-// Game-loop
-let last=performance.now();
-function animate(now){
- requestAnimationFrame(animate);
- const dt=Math.min((now-last)/1000,.05);last=now;
-
- if(started){
-  let gas=throttle || (keys.w||keys.arrowup?1:0);
-  let brake=braking || (keys.s||keys.arrowdown?1:0);
-  let steerInput=steer;
-  if(keys.a||keys.arrowleft)steerInput=-1;
-  if(keys.d||keys.arrowright)steerInput=1;
-  if(!pointerDown && !keys.a&&!keys.d&&!keys.arrowleft&&!keys.arrowright){
-   wheelAngle*=.88;steer=wheelAngle;
-   wheel.style.transform=`rotate(${wheelAngle*150}deg)`;
-  }
-
-  if(gas)speed+=24*dt;
-  else speed-=2.5*dt;
-  if(brake)speed-=42*dt;
-  speed=Math.max(0,Math.min(240,speed));
-
-  if(speed>1){
-   heading+=steerInput*speed/240*1.25*dt;
-   setPosition();
-   car.rotation.y=heading;
-   car.position.x+=Math.sin(heading)*speed/3.6*dt;
-   car.position.z-=Math.cos(heading)*speed/3.6*dt;
-  }
-  wheels.forEach(w=>w.rotation.x-=speed/3.6*dt*2.5);
-  rpm=850+speed*65+(gas?1000:0);
-  document.getElementById("speed").textContent=Math.round(speed);
-  document.getElementById("gear").textContent="Versnelling: "+(speed<1?"N":speed<35?"1":speed<65?"2":speed<100?"3":speed<145?"4":"5")+" · BMW M4 CSL";
-  updateDashboard();
-  updateCamera();
-  if(Math.floor(now/500)!==Math.floor((now-dt*1000)/500))updateMap();
- }else{
-  camera.position.set(0,5,10);
-  camera.lookAt(0,0,0);
- }
- renderer.render(scene,camera);
-}
-requestAnimationFrame(animate);
-
-addEventListener("resize",()=>{
- camera.aspect=innerWidth/innerHeight;
- camera.updateProjectionMatrix();
- renderer.setSize(innerWidth,innerHeight);
-});
-statusEl.textContent="Klaar om te laden. Druk op START RIJDEN.";
-</script>
-</body>
-</html>
+scene.add(new THREE.HemisphereLight(0
