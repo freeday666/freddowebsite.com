@@ -1,77 +1,941 @@
+html
 <!doctype html>
 <html lang="nl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Oranjestad Roleplay</title>
+<title>Nederland Driving RP / Sommelstad</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-*{box-sizing:border-box}html,body,#game{margin:0;width:100%;height:100%;overflow:hidden}
-body{font:14px system-ui,Arial;background:#9bc4d7;color:#fff;touch-action:none}
-#game{position:fixed;inset:0}button{font:inherit;color:white;border:1px solid #ffffff44;background:#111c2add;border-radius:12px;padding:11px;touch-action:none}
-#hud{position:fixed;inset:0;pointer-events:none}.panel{background:#101827d9;border:1px solid #ffffff25;border-radius:12px;padding:10px}
-#brand,#status,#signal,#actions,#controls,#help{position:absolute;pointer-events:auto}
-#brand{left:12px;top:12px}#brand b{letter-spacing:.08em}#status{right:12px;top:12px;text-align:right}
-#speed{font-size:24px;font-weight:800}#signal{right:12px;top:83px}
-#actions{right:12px;bottom:12px;display:flex;flex-direction:column;gap:7px}
-#controls{inset:0;display:none;pointer-events:none}.cluster{position:absolute;bottom:16px;display:flex;gap:8px;pointer-events:auto}
-#steer{left:12px}#pedals{right:150px}.control{width:64px;height:64px;border-radius:50%;font-weight:bold;background:#111c2de8}
-#gas{background:#c96820e8}#help{left:50%;bottom:15px;transform:translateX(-50%);white-space:nowrap;font-size:12px}
-#menu{position:fixed;inset:0;z-index:3;display:grid;place-items:center;padding:16px;background:#101827c9}
-#card{width:min(440px,100%);padding:22px;background:#111c2df2;border:1px solid #ffffff30;border-radius:16px}
-h1{margin:0 0 8px;font-size:32px}p{color:#c5cfdb;line-height:1.45}
-input,select{width:100%;padding:12px;border-radius:9px;background:#0b1320;color:white;border:1px solid #ffffff35;margin:5px 0}
-#start{width:100%;background:#f28b2e;color:#17120b;font-weight:900;margin-top:8px}
-#toast{position:absolute;top:20%;left:50%;transform:translateX(-50%);display:none}
-@media(max-width:650px){#help{bottom:95px;font-size:10px}.control{width:58px;height:58px}#pedals{right:125px}}
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+  * { box-sizing: border-box; font-family: 'Inter', sans-serif; user-select: none; }
+  html, body, #game { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #87ceeb; touch-action: none; }
+  #game { position: fixed; inset: 0; }
+  
+  /* Glassmorphism Panel Styling */
+  .glass {
+    background: rgba(16, 24, 39, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  
+  .control-btn {
+    background: rgba(17, 28, 45, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+    touch-action: none;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+  .control-btn:active, .control-btn.active {
+    background: rgba(242, 139, 46, 0.9);
+    transform: scale(0.94);
+  }
+  
+  /* Blinker Animation */
+  @keyframes blink {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; fill: #f59e0b; color: #f59e0b; }
+  }
+  .blinking { animation: blink 0.7s infinite; }
+
+  /* Canvas Map */
+  #minimap { border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); }
 </style>
 </head>
 <body>
+
 <div id="game"></div>
-<div id="hud">
-  <div id="brand" class="panel"><b>ORANJESTAD RP</b><br><small id="playerLabel">Dutch Driving Simulator</small></div>
-  <div id="status" class="panel"><span id="speed">0</span> km/u<br><small id="mode">Te voet</small></div>
-  <div id="signal" class="panel">🚦 <span id="signalText">Groen licht</span></div>
-  <div id="actions">
-    <button id="enter">🚗 Instappen</button>
-    <button id="pause">Ⅱ Pauze</button>
-    <button id="reset">↻ Herstart</button>
-  </div>
-  <div id="controls">
-    <div id="steer" class="cluster">
-      <button class="control" data-key="left">◀</button><button class="control" data-key="right">▶</button>
+
+<!-- HUD OVERLAY -->
+<div id="hud" class="fixed inset-0 pointer-events-none z-10 flex flex-col justify-between p-4">
+  
+  <!-- TOP BAR -->
+  <div class="flex justify-between items-start w-full">
+    <!-- Brand / Player Info -->
+    <div class="glass p-3 rounded-2xl flex items-center space-x-3 pointer-events-auto">
+      <div class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center font-black text-xl text-slate-900">
+        🇳🇱
+      </div>
+      <div>
+        <div class="font-extrabold text-white text-sm tracking-wide">SOMMELSTAD RP</div>
+        <div class="text-xs text-orange-400 font-semibold" id="playerLabel">Bestuurder</div>
+      </div>
     </div>
-    <div id="pedals" class="cluster">
-      <button class="control" data-key="brake">REM</button><button class="control" id="gas" data-key="gas">GAS</button>
+
+    <!-- Speedometer & Status -->
+    <div class="glass px-5 py-3 rounded-2xl text-center pointer-events-auto flex items-center space-x-4">
+      <!-- Turn Signal Left -->
+      <div id="signalL" class="text-xl text-slate-500 font-bold cursor-pointer">◀</div>
+      
+      <div>
+        <div class="text-4xl font-black text-white leading-none tracking-tight">
+          <span id="speed">0</span> <span class="text-xs font-normal text-slate-400">km/u</span>
+        </div>
+        <div class="flex justify-center items-center gap-2 mt-1">
+          <span id="gear" class="text-xs font-extrabold bg-orange-500 text-slate-950 px-2 py-0.5 rounded">D</span>
+          <span id="money" class="text-xs font-bold text-emerald-400">€ 500</span>
+        </div>
+      </div>
+
+      <!-- Turn Signal Right -->
+      <div id="signalR" class="text-xl text-slate-500 font-bold cursor-pointer">▶</div>
+    </div>
+
+    <!-- Traffic Signal & Speed Limit Sign -->
+    <div class="flex space-x-2 pointer-events-auto">
+      <!-- Speed Limit Sign -->
+      <div class="w-12 h-12 rounded-full bg-white border-4 border-red-600 flex items-center justify-center font-black text-slate-900 text-sm shadow-lg">
+        50
+      </div>
+      <!-- Traffic Light Indicator -->
+      <div class="glass px-3 py-2 rounded-2xl flex flex-col items-center justify-center text-xs">
+        <div id="tlDot" class="w-4 h-4 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
+        <span id="tlText" class="text-[10px] text-slate-300 mt-1 font-semibold">Groen</span>
+      </div>
     </div>
   </div>
-  <div id="help" class="panel">WASD / pijltjes · E instappen/uitstappen · Shift rennen · P pauze</div>
-  <div id="toast" class="panel"></div>
-</div>
-<div id="menu">
-  <div id="card">
-    <h1>Oranjestad <span style="color:#ff982f">Roleplay</span></h1>
-    <p>Speelbare browserprototype: Nederlandse stadswegen, verkeerslichten, eenvoudige AI-auto’s en een elektrische auto.</p>
-    <label>Spelersnaam<input id="name" value="Bestuurder" maxlength="18"></label>
-    <label>Modus<select id="modeSelect"><option>Vrij rondrijden</option><option>Verkeersregels oefenen</option></select></label>
-    <label>Grafische kwaliteit<select id="quality"><option value="normal">Normaal</option><option value="low">Laag (mobiel)</option></select></label>
-    <button id="start">START SPEL</button>
-    <p><small>Three.js wordt via CDN geladen. Dit prototype bevat geen APK en gebruikt eenvoudige zelfgemaakte 3D-modellen.</small></p>
+
+  <!-- MID-RIGHT ACTION MENU -->
+  <div class="absolute right-4 top-24 flex flex-col gap-2 pointer-events-auto">
+    <button id="camBtn" class="glass px-3 py-2 rounded-xl text-xs font-semibold text-white flex items-center gap-2 hover:bg-slate-800/80">
+      📷 <span id="camText">Camera: Volgen</span>
+    </button>
+    <button id="jobBtn" class="glass px-3 py-2 rounded-xl text-xs font-semibold text-white flex items-center gap-2 hover:bg-slate-800/80">
+      📦 <span id="jobText">Start Bezorging</span>
+    </button>
+    <button id="rainBtn" class="glass px-3 py-2 rounded-xl text-xs font-semibold text-white flex items-center gap-2 hover:bg-slate-800/80">
+      🌧 Regen: Uit
+    </button>
+    <button id="nightBtn" class="glass px-3 py-2 rounded-xl text-xs font-semibold text-white flex items-center gap-2 hover:bg-slate-800/80">
+      🌙 Nacht: Uit
+    </button>
+    <button id="resetBtn" class="glass px-3 py-2 rounded-xl text-xs font-semibold text-white flex items-center gap-2 hover:bg-slate-800/80">
+      ↻ Herstart Auto
+    </button>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="self-center glass px-6 py-3 rounded-full text-sm font-bold text-orange-300 shadow-2xl transition-all opacity-0 transform translate-y-4 pointer-events-none">
+    Welkom in Sommelstad!
+  </div>
+
+  <!-- BOTTOM BAR: CONTROLS & MINIMAP -->
+  <div class="flex justify-between items-end w-full">
+    <!-- Touch Steering Left/Right -->
+    <div id="touchSteer" class="flex gap-3 pointer-events-auto sm:hidden">
+      <button class="control-btn" id="btnLeft">◀</button>
+      <button class="control-btn" id="btnRight">▶</button>
+    </div>
+
+    <!-- Desktop Key Hints -->
+    <div class="hidden sm:block glass px-4 py-2 rounded-xl text-xs text-slate-300">
+      <b class="text-orange-400">Besturing:</b> WASD / Pijltjes · <b class="text-orange-400">Spatie:</b> Handrem · <b class="text-orange-400">C:</b> Camera · <b class="text-orange-400">L:</b> Lampen · <b class="text-orange-400">Q/E:</b> Knipperlicht
+    </div>
+
+    <!-- Minimap & Pedals -->
+    <div class="flex items-end space-x-4 pointer-events-auto">
+      <!-- Minimap Canvas -->
+      <canvas id="minimap" width="110" height="110" class="glass shadow-xl"></canvas>
+
+      <!-- Touch Pedals -->
+      <div id="touchPedals" class="flex gap-3 sm:hidden">
+        <button class="control-btn !bg-red-900/80" id="btnBrake">REM</button>
+        <button class="control-btn !bg-emerald-600/90" id="btnGas">GAS</button>
+      </div>
+    </div>
   </div>
 </div>
-<script type="module">
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-const $=id=>document.getElementById(id);
-const game=$("game"), scene=new THREE.Scene();
-scene.background=new THREE.Color(0x9bc4d7);
-scene.fog=new THREE.Fog(0x9bc4d7,100,330);
+<!-- START MENU OVERLAY -->
+<div id="menu" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+  <div class="glass max-w-md w-full p-6 rounded-3xl shadow-2xl border border-white/20 text-white">
+    <div class="flex items-center space-x-3 mb-2">
+      <span class="text-4xl">🇳🇱</span>
+      <div>
+        <h1 class="text-2xl font-black tracking-tight">NEDERLAND <span class="text-orange-500">DRIVING RP</span></h1>
+        <p class="text-xs text-slate-400">Sommelstad Realistic City Simulator</p>
+      </div>
+    </div>
 
-const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,500);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
-renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
-renderer.shadowMap.enabled=true;
-renderer.outputColorSpace=THREE.SRGBColorSpace;
-game.appendChild(renderer.domElement);
+    <p class="text-xs text-slate-300 my-4 leading-relaxed">
+      Rijd door een typisch Nederlands straatbeeld compleet met rood geasfalteerde fietspaden, grachtenpanden, verkeerslichten en fietsers.
+    </p>
 
-scene.add(new THREE.HemisphereLight(0
+    <!-- Player Name -->
+    <label class="block text-xs font-bold text-slate-300 mb-1">Spelersnaam</label>
+    <input id="nameInput" type="text" value="Bestuurder" maxlength="16" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 mb-4">
+
+    <!-- Car Color Selector -->
+    <label class="block text-xs font-bold text-slate-300 mb-2">Selecteer Kleur Tesla / Sedan</label>
+    <div class="flex gap-3 mb-6">
+      <button class="color-opt w-10 h-10 rounded-full bg-slate-100 border-2 border-orange-500 shadow-md" data-color="0xf3f4f6"></button>
+      <button class="color-opt w-10 h-10 rounded-full bg-slate-800 border-2 border-transparent hover:border-white" data-color="0x1e293b"></button>
+      <button class="color-opt w-10 h-10 rounded-full bg-blue-700 border-2 border-transparent hover:border-white" data-color="0x1d4ed8"></button>
+      <button class="color-opt w-10 h-10 rounded-full bg-red-700 border-2 border-transparent hover:border-white" data-color="0xb91c1c"></button>
+    </div>
+
+    <button id="startBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-slate-950 font-black py-4 rounded-xl text-base shadow-lg transition-transform active:scale-95">
+      START MOTOR & RIJDEN
+    </button>
+
+    <div class="mt-4 text-center text-[11px] text-slate-400">
+      Gebruikt WebGL & Three.js · Geïnspireerd op Nederlandse infrastructuur
+    </div>
+  </div>
+</div>
+
+<!-- THREE.JS & DEPENDENCIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// --- GLOBAL GAME STATE & CONSTANTS ---
+const $ = id => document.getElementById(id);
+let selectedCarColor = 0xf3f4f6;
+
+// Setup Scene, Camera, Renderer
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.FogExp2(0x87ceeb, 0.007);
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500);
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+$("game").appendChild(renderer.domElement);
+
+// Lighting
+const ambientLight = new THREE.HemisphereLight(0xffffff, 0x444455, 1.2);
+scene.add(ambientLight);
+
+const sun = new THREE.DirectionalLight(0xfff5ea, 1.8);
+sun.position.set(-60, 80, 40);
+sun.castShadow = true;
+sun.shadow.mapSize.width = 2048;
+sun.shadow.mapSize.height = 2048;
+sun.shadow.camera.near = 0.5;
+sun.shadow.camera.far = 300;
+const d = 80;
+sun.shadow.camera.left = -d;
+sun.shadow.camera.right = d;
+sun.shadow.camera.top = d;
+sun.shadow.camera.bottom = -d;
+scene.add(sun);
+
+// --- MATERIALS ---
+const mat = (col, rough = 0.7, metal = 0.1) => new THREE.MeshStandardMaterial({ color: col, roughness: rough, metalness: metal });
+const roadMat = mat(0x374151, 0.8, 0.0);
+const bikeLaneMat = mat(0x991b1b, 0.6, 0.0); // Dutch Red Asphalt
+const sidewalkMat = mat(0x9ca3af, 0.9, 0.0); // Grey Brick Sidewalk
+const whiteMarkMat = mat(0xf9fafb, 0.4, 0.0);
+const brickMats = [mat(0x7f1d1d, 0.8), mat(0x9a3412, 0.8), mat(0x451a03, 0.8), mat(0x3f3f46, 0.8)];
+const roofMat = mat(0x18181b, 0.5);
+const glassMat = mat(0x0f172a, 0.1, 0.9);
+glassMat.transparent = true; glassMat.opacity = 0.7;
+
+// --- CITY MAP GENERATOR (DUTCH STYLE) ---
+const ROAD_WIDTH = 12;
+const BIKE_LANE_WIDTH = 3.5;
+const SIDEWALK_WIDTH = 4.5;
+const BLOCK_SIZE = 120;
+const CITY_SIZE = 3; // 3x3 Grid of Blocks
+
+const trafficLights = [];
+const dynamicVehicles = [];
+const cyclists = [];
+
+// Helper Box Creator
+function createBox(w, h, d, material, x, y, z, rx=0, ry=0, rz=0, shadow=true) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
+  mesh.position.set(x, y, z);
+  mesh.rotation.set(rx, ry, rz);
+  mesh.castShadow = shadow;
+  mesh.receiveShadow = shadow;
+  scene.add(mesh);
+  return mesh;
+}
+
+// Generate Ground Base
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), mat(0x15803d, 0.9));
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.05;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Generate Bike Symbol Texture procedurally
+function createBikeSymbolTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128; canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#991b1b'; ctx.fillRect(0,0,128,128);
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 8;
+  // Wheels
+  ctx.beginPath(); ctx.arc(35, 85, 20, 0, Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(93, 85, 20, 0, Math.PI*2); ctx.stroke();
+  // Frame
+  ctx.beginPath();
+  ctx.moveTo(35, 85); ctx.lineTo(55, 55); ctx.lineTo(85, 55); ctx.lineTo(93, 85);
+  ctx.moveTo(55, 55); ctx.lineTo(72, 85); ctx.lineTo(35, 85);
+  ctx.stroke();
+  return new THREE.CanvasTexture(canvas);
+}
+const bikeTex = createBikeSymbolTexture();
+bikeTex.wrapS = THREE.RepeatWrapping; bikeTex.wrapT = THREE.RepeatWrapping;
+
+// Create Dutch Street Segment
+function buildStreetSegment(x, z, length, isHorizontal) {
+  const group = new THREE.Group();
+
+  // Main Car Road (Asphalt)
+  const rGeo = new THREE.PlaneGeometry(isHorizontal ? length : ROAD_WIDTH, isHorizontal ? ROAD_WIDTH : length);
+  const road = new THREE.Mesh(rGeo, roadMat);
+  road.rotation.x = -Math.PI / 2;
+  road.position.set(x, 0, z);
+  road.receiveShadow = true;
+  group.add(road);
+
+  // Dashed White Center Line
+  const lineCount = Math.floor(length / 8);
+  for(let i = -lineCount/2; i < lineCount/2; i++) {
+    const lx = isHorizontal ? x + i * 8 : x;
+    const lz = isHorizontal ? z : z + i * 8;
+    const line = createBox(isHorizontal ? 3 : 0.25, 0.01, isHorizontal ? 0.25 : 3, whiteMarkMat, lx, 0.01, lz, 0, 0, 0, false);
+    group.add(line);
+  }
+
+  // Red Asphalt Bike Lanes (Both sides of road)
+  [-ROAD_WIDTH/2 - BIKE_LANE_WIDTH/2, ROAD_WIDTH/2 + BIKE_LANE_WIDTH/2].forEach(offset => {
+    const bx = isHorizontal ? x : x + offset;
+    const bz = isHorizontal ? z + offset : z;
+    const bikeLane = createBox(isHorizontal ? length : BIKE_LANE_WIDTH, 0.02, isHorizontal ? BIKE_LANE_WIDTH : length, bikeLaneMat, bx, 0.01, bz, 0, 0, 0, true);
+    group.add(bikeLane);
+
+    // Bike Icons painted on red lane
+    for(let b = -length/2 + 15; b < length/2; b += 40) {
+      const ix = isHorizontal ? x + b : bx;
+      const iz = isHorizontal ? bz : z + b;
+      const iconMat = new THREE.MeshBasicMaterial({ map: bikeTex, transparent: true });
+      const icon = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 2.5), iconMat);
+      icon.rotation.x = -Math.PI/2;
+      icon.rotation.z = isHorizontal ? (offset > 0 ? Math.PI/2 : -Math.PI/2) : (offset > 0 ? 0 : Math.PI);
+      icon.position.set(ix, 0.025, iz);
+      group.add(icon);
+    }
+  });
+
+  // Brick Sidewalks
+  [-ROAD_WIDTH/2 - BIKE_LANE_WIDTH - SIDEWALK_WIDTH/2, ROAD_WIDTH/2 + BIKE_LANE_WIDTH + SIDEWALK_WIDTH/2].forEach(offset => {
+    const sx = isHorizontal ? x : x + offset;
+    const sz = isHorizontal ? z + offset : z;
+    const sw = createBox(isHorizontal ? length : SIDEWALK_WIDTH, 0.1, isHorizontal ? SIDEWALK_WIDTH : length, sidewalkMat, sx, 0.04, sz, 0, 0, 0, true);
+    group.add(sw);
+
+    // Amsterdammertjes / Black Traffic Posts ("Paaltjes")
+    for(let p = -length/2 + 5; p < length/2; p += 16) {
+      const px = isHorizontal ? x + p : sx - Math.sign(offset)*1.8;
+      const pz = isHorizontal ? sz - Math.sign(offset)*1.8 : z + p;
+      const post = createBox(0.22, 1.1, 0.22, mat(0x18181b, 0.3), px, 0.55, pz);
+      // Red/White striped top band
+      createBox(0.24, 0.15, 0.24, mat(0xef4444, 0.5), px, 0.95, pz);
+      group.add(post);
+    }
+  });
+
+  scene.add(group);
+}
+
+// Build Dutch Canal Houses (Facade style)
+function buildDutchHouseBlock(cx, cz, w, d) {
+  const houseWidth = 10;
+  const countX = Math.floor(w / houseWidth);
+  
+  for(let i = 0; i < countX; i++) {
+    const hx = (cx - w/2) + i * houseWidth + houseWidth/2;
+    const hz = cz;
+    const houseHeight = 14 + Math.random() * 8;
+    const bMat = brickMats[Math.floor(Math.random() * brickMats.length)];
+
+    // Main Building Box
+    createBox(houseWidth - 0.4, houseHeight, d - 1, bMat, hx, houseHeight/2, hz);
+
+    // Stepped / Neck Gable Top (Typical Dutch facade)
+    const gableType = Math.floor(Math.random() * 3);
+    if(gableType === 0) { // Stepped Gable
+      createBox(6, 2.5, d - 1, bMat, hx, houseHeight + 1.25, hz);
+      createBox(3.5, 2, d - 1, bMat, hx, houseHeight + 3.5, hz);
+    } else if(gableType === 1) { // Triangular Gable
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(houseWidth/2, 4, 4), bMat);
+      roof.position.set(hx, houseHeight + 2, hz);
+      roof.rotation.y = Math.PI / 4;
+      roof.castShadow = true;
+      scene.add(roof);
+    } else { // Classic Frame Top
+      createBox(houseWidth - 0.4, 1.2, d + 0.2, roofMat, hx, houseHeight + 0.6, hz);
+    }
+
+    // Windows Grid
+    for(let y = 3; y < houseHeight - 2; y += 3.2) {
+      for(let wx of [-2.4, 2.4]) {
+        // Window Frame & Glass
+        createBox(1.6, 2.2, 0.15, glassMat, hx + wx, y, hz - d/2 - 0.05);
+        createBox(1.7, 0.15, 0.2, whiteMarkMat, hx + wx, y - 1.1, hz - d/2 - 0.05);
+      }
+    }
+
+    // Front Door
+    createBox(1.8, 3, 0.2, mat(0x064e3b, 0.4), hx, 1.5, hz - d/2 - 0.05);
+
+    // Street Trees along houses
+    if(i % 2 === 0) {
+      const treeTrunk = createBox(0.4, 3.5, 0.4, mat(0x451a03), hx + 4, 1.75, hz - d/2 - 4);
+      const foliageMat = mat(0x15803d, 0.8);
+      const foliage = new THREE.Mesh(new THREE.DodecahedronGeometry(2.2, 1), foliageMat);
+      foliage.position.set(hx + 4, 4.5, hz - d/2 - 4);
+      foliage.castShadow = true;
+      scene.add(foliage);
+    }
+  }
+}
+
+// Generate City Layout
+for(let x = -CITY_SIZE * BLOCK_SIZE; x <= CITY_SIZE * BLOCK_SIZE; x += BLOCK_SIZE) {
+  buildStreetSegment(x, 0, CITY_SIZE * BLOCK_SIZE * 2, false);
+}
+for(let z = -CITY_SIZE * BLOCK_SIZE; z <= CITY_SIZE * BLOCK_SIZE; z += BLOCK_SIZE) {
+  buildStreetSegment(0, z, CITY_SIZE * BLOCK_SIZE * 2, true);
+}
+
+// Populate Building Blocks
+for(let bx = -CITY_SIZE; bx < CITY_SIZE; bx++) {
+  for(let bz = -CITY_SIZE; bz < CITY_SIZE; bz++) {
+    const cx = bx * BLOCK_SIZE + BLOCK_SIZE/2;
+    const cz = bz * BLOCK_SIZE + BLOCK_SIZE/2;
+    buildDutchHouseBlock(cx, cz - 25, BLOCK_SIZE - 30, 24);
+    buildDutchHouseBlock(cx, cz + 25, BLOCK_SIZE - 30, 24);
+  }
+}
+
+// Traffic Lights Generator at Intersections
+function buildTrafficLight(x, z) {
+  const poleMat = mat(0x374151, 0.4);
+  const boxMat = mat(0x18181b, 0.2);
+  
+  const group = new THREE.Group();
+  // Main Post
+  const post = createBox(0.2, 5, 0.2, poleMat, x, 2.5, z);
+  // Traffic Light Housing
+  const head = createBox(0.5, 1.6, 0.5, boxMat, x, 4.2, z);
+  
+  // Red, Yellow, Green Light Bulbs
+  const rMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  const gMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  const redLamp = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), rMat);
+  redLamp.position.set(x, 4.7, z + 0.26);
+  const greenLamp = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), gMat);
+  greenLamp.position.set(x, 3.7, z + 0.26);
+  
+  group.add(post, head, redLamp, greenLamp);
+  scene.add(group);
+  
+  trafficLights.push({ redLamp, greenLamp, x, z, state: 'green' });
+}
+buildTrafficLight(8, 8);
+buildTrafficLight(-8, -8);
+buildTrafficLight(BLOCK_SIZE + 8, 8);
+
+// --- PLAYER CAR MODEL (TESLA MODEL 3 / MODERN SEDAN) ---
+function createTeslaModel(bodyColorHex) {
+  const carGroup = new THREE.Group();
+  const bodyMaterial = mat(bodyColorHex, 0.2, 0.8); // Sleek metallic finish
+
+  // Lower Chassis / Main Body
+  const chassis = createBox(2.1, 0.65, 4.6, bodyMaterial, 0, 0.55, 0);
+  
+  // Aerodynamic Glass Cabin (Tesla Roof Curve)
+  const cabinGeo = new THREE.BoxGeometry(1.75, 0.75, 2.4);
+  const cabin = new THREE.Mesh(cabinGeo, glassMat);
+  cabin.position.set(0, 1.15, -0.2);
+  cabin.castShadow = true;
+  carGroup.add(cabin);
+
+  // Roof Pillars / Metallic Trim
+  const roofTop = createBox(1.6, 0.08, 2.1, bodyMaterial, 0, 1.55, -0.2);
+  carGroup.add(roofTop);
+
+  // Front Hood Slant
+  const hood = createBox(1.95, 0.25, 1.3, bodyMaterial, 0, 0.75, 1.45, -0.15, 0, 0);
+  carGroup.add(hood);
+
+  // Wheels Assembly (Detailed Rim & Rubber Tire)
+  const wheelGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.3, 24);
+  const tireMat = mat(0x111827, 0.9, 0.0);
+  const rimMat = mat(0xe5e7eb, 0.1, 0.9);
+
+  const wheels = [];
+  const wheelPositions = [
+    [-0.98, 0.38, 1.35],  // Front Left
+    [0.98, 0.38, 1.35],   // Front Right
+    [-0.98, 0.38, -1.35], // Rear Left
+    [0.98, 0.38, -1.35]   // Rear Right
+  ];
+
+  wheelPositions.forEach(([wx, wy, wz]) => {
+    const wGroup = new THREE.Group();
+    const tire = new THREE.Mesh(wheelGeo, tireMat);
+    tire.rotation.z = Math.PI / 2;
+    tire.castShadow = true;
+    wGroup.add(tire);
+
+    // Silver Rim Cap
+    const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.32, 12), rimMat);
+    rim.rotation.z = Math.PI / 2;
+    wGroup.add(rim);
+
+    wGroup.position.set(wx, wy, wz);
+    carGroup.add(wGroup);
+    wheels.push(wGroup);
+  });
+
+  // Headlights (LED White)
+  const headLightMat = new THREE.MeshBasicMaterial({ color: 0xffffed });
+  const headL = createBox(0.4, 0.12, 0.1, headLightMat, -0.75, 0.65, 2.26);
+  const headR = createBox(0.4, 0.12, 0.1, headLightMat, 0.75, 0.65, 2.26);
+  
+  // Real Headlight Spotlights
+  const spotL = new THREE.SpotLight(0xffffff, 3, 40, Math.PI / 5, 0.4);
+  spotL.position.set(-0.75, 0.65, 2.2);
+  spotL.target.position.set(-0.75, 0.2, 20);
+  carGroup.add(spotL, spotL.target);
+
+  const spotR = new THREE.SpotLight(0xffffff, 3, 40, Math.PI / 5, 0.4);
+  spotR.position.set(0.75, 0.65, 2.2);
+  spotR.target.position.set(0.75, 0.2, 20);
+  carGroup.add(spotR, spotR.target);
+
+  // Taillights (Red LED Strip + Brake Lights)
+  const tailLightMat = new THREE.MeshStandardMaterial({ color: 0x990000, emissive: 0xff0000, emissiveIntensity: 0.4 });
+  const tailStrip = createBox(1.8, 0.12, 0.1, tailLightMat, 0, 0.7, -2.26);
+  carGroup.add(tailStrip);
+
+  // License Plate (Dutch Yellow Plate "NL 701-RP")
+  const plateCanvas = document.createElement('canvas');
+  plateCanvas.width = 128; plateCanvas.height = 32;
+  const pCtx = plateCanvas.getContext('2d');
+  pCtx.fillStyle = '#f59e0b'; pCtx.fillRect(0,0,128,32);
+  pCtx.fillStyle = '#1e3a8a'; pCtx.fillRect(0,0,20,32);
+  pCtx.fillStyle = '#ffffff'; pCtx.font = 'bold 12px sans-serif'; pCtx.fillText('NL', 3, 20);
+  pCtx.fillStyle = '#000000'; pCtx.font = 'bold 18px monospace'; pCtx.fillText('701-RP', 32, 22);
+  const plateTex = new THREE.CanvasTexture(plateCanvas);
+  const plateMat = new THREE.MeshBasicMaterial({ map: plateTex });
+  
+  const plateFront = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.18), plateMat);
+  plateFront.position.set(0, 0.4, 2.31);
+  const plateRear = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.18), plateMat);
+  plateRear.position.set(0, 0.42, -2.31);
+  plateRear.rotation.y = Math.PI;
+  carGroup.add(plateFront, plateRear);
+
+  carGroup.userData = { wheels, tailLightMat, spotL, spotR, bodyMaterial };
+  return carGroup;
+}
+
+let playerCar = createTeslaModel(selectedCarColor);
+scene.add(playerCar);
+
+// --- DYNAMIC AI TRAFFIC & CYCLISTS ---
+function spawnAITraffic() {
+  for(let i = 0; i < 8; i++) {
+    const aiCar = createTeslaModel([0x3b82f6, 0xef4444, 0x10b981, 0xf59e0b, 0x6b7280][i % 5]);
+    const isHorizontal = i % 2 === 0;
+    const laneOffset = (Math.random() > 0.5 ? 1 : -1) * 3;
+    const pos = (Math.random() - 0.5) * 200;
+    
+    aiCar.position.set(isHorizontal ? pos : laneOffset, 0, isHorizontal ? laneOffset : pos);
+    aiCar.rotation.y = isHorizontal ? (laneOffset > 0 ? Math.PI/2 : -Math.PI/2) : (laneOffset > 0 ? 0 : Math.PI);
+    
+    scene.add(aiCar);
+    dynamicVehicles.push({ mesh: aiCar, speed: 6 + Math.random() * 4, isHorizontal, laneOffset });
+  }
+
+  // Dutch Cyclists on Red Bike Lanes
+  for(let c = 0; c < 6; c++) {
+    const bikeGroup = new THREE.Group();
+    // Simple Bicycle Mesh
+    const frameMat = mat(0x2563eb);
+    createBox(0.1, 0.8, 1.6, frameMat, 0, 0.5, 0);
+    // Rider / Person
+    const riderHead = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), mat(0xfbcfe8));
+    riderHead.position.set(0, 1.5, -0.2);
+    const riderBody = createBox(0.4, 0.7, 0.3, mat(0x0284c7), 0, 1.0, -0.2);
+    bikeGroup.add(riderHead, riderBody);
+
+    const isH = c % 2 === 0;
+    const bOffset = (c % 4 > 1 ? 1 : -1) * (ROAD_WIDTH/2 + BIKE_LANE_WIDTH/2);
+    const bPos = (Math.random() - 0.5) * 180;
+
+    bikeGroup.position.set(isH ? bPos : bOffset, 0, isH ? bOffset : bPos);
+    bikeGroup.rotation.y = isH ? (bOffset > 0 ? Math.PI/2 : -Math.PI/2) : (bOffset > 0 ? 0 : Math.PI);
+
+    scene.add(bikeGroup);
+    cyclists.push({ mesh: bikeGroup, speed: 3 + Math.random() * 2, isH, bOffset });
+  }
+}
+spawnAITraffic();
+
+// --- JOB / MISSION SYSTEM (DELIVERY & TAXI) ---
+let currentJob = null;
+let jobMarkerMesh = null;
+let money = 500;
+
+function createJobMarker(x, z) {
+  if(jobMarkerMesh) scene.remove(jobMarkerMesh);
+  
+  const group = new THREE.Group();
+  const cylinder = new THREE.Mesh(
+    new THREE.CylinderGeometry(3, 3, 0.2, 32),
+    new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.6 })
+  );
+  const beacon = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.1, 2, 8, 16, 1, true),
+    new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.3, side: THREE.DoubleSide })
+  );
+  beacon.position.y = 4;
+  group.add(cylinder, beacon);
+  group.position.set(x, 0.1, z);
+  scene.add(group);
+  jobMarkerMesh = group;
+}
+
+function startNewJob() {
+  const targetX = (Math.floor((Math.random() - 0.5) * 4)) * BLOCK_SIZE + (Math.random() > 0.5 ? 20 : -20);
+  const targetZ = (Math.floor((Math.random() - 0.5) * 4)) * BLOCK_SIZE + (Math.random() > 0.5 ? 20 : -20);
+  currentJob = { x: targetX, z: targetZ, reward: 120 + Math.floor(Math.random() * 80) };
+  createJobMarker(targetX, targetZ);
+  showToast(`Nieuwe bezorging! Rijd naar de gele markering.`);
+  $("jobText").textContent = "Annuleer Missie";
+}
+
+// --- CONTROLS & PHYSICS ENGINE ---
+const keys = { w: false, a: false, s: false, d: false, space: false, q: false, e: false };
+let carSpeed = 0;
+let maxSpeed = 38.0; // ~135 km/u max
+let accel = 18.0;
+let friction = 0.98;
+let steerAngle = 0;
+let carHeading = 0;
+let cameraMode = 0; // 0: Chase, 1: Cockpit, 2: Top-Down
+let isRain = false;
+let isNight = false;
+let blinkerL = false;
+let blinkerR = false;
+
+// Input Event Listeners
+window.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if(k === 'w' || k === 'arrowup') keys.w = true;
+  if(k === 's' || k === 'arrowdown') keys.s = true;
+  if(k === 'a' || k === 'arrowleft') keys.a = true;
+  if(k === 'd' || k === 'arrowright') keys.d = true;
+  if(k === ' ') keys.space = true;
+  if(k === 'c') switchCamera();
+  if(k === 'q') toggleBlinker('L');
+  if(k === 'e') toggleBlinker('R');
+});
+
+window.addEventListener('keyup', e => {
+  const k = e.key.toLowerCase();
+  if(k === 'w' || k === 'arrowup') keys.w = false;
+  if(k === 's' || k === 'arrowdown') keys.s = false;
+  if(k === 'a' || k === 'arrowleft') keys.a = false;
+  if(k === 'd' || k === 'arrowright') keys.d = false;
+  if(k === ' ') keys.space = false;
+});
+
+// Touch controls setup
+function bindTouch(id, key) {
+  const btn = $(id);
+  const start = e => { e.preventDefault(); keys[key] = true; btn.classList.add('active'); };
+  const end = e => { e.preventDefault(); keys[key] = false; btn.classList.remove('active'); };
+  btn.addEventListener('touchstart', start);
+  btn.addEventListener('touchend', end);
+  btn.addEventListener('mousedown', start);
+  btn.addEventListener('mouseup', end);
+}
+bindTouch('btnGas', 'w');
+bindTouch('btnBrake', 's');
+bindTouch('btnLeft', 'a');
+bindTouch('btnRight', 'd');
+
+function switchCamera() {
+  cameraMode = (cameraMode + 1) % 3;
+  const names = ["Volgen", "Cockpit", "Bovenaf"];
+  $("camText").textContent = `Camera: ${names[cameraMode]}`;
+  showToast(`Camera: ${names[cameraMode]}`);
+}
+
+function toggleBlinker(dir) {
+  if(dir === 'L') { blinkerL = !blinkerL; blinkerR = false; }
+  if(dir === 'R') { blinkerR = !blinkerR; blinkerL = false; }
+  $("signalL").classList.toggle('blinking', blinkerL);
+  $("signalR").classList.toggle('blinking', blinkerR);
+}
+
+function showToast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.remove('opacity-0', 'translate-y-4');
+  t.classList.add('opacity-100', 'translate-y-0');
+  clearTimeout(t.timer);
+  t.timer = setTimeout(() => {
+    t.classList.remove('opacity-100', 'translate-y-0');
+    t.classList.add('opacity-0', 'translate-y-4');
+  }, 3000);
+}
+
+// UI Buttons
+$("camBtn").onclick = switchCamera;
+$("jobBtn").onclick = () => {
+  if(currentJob) {
+    currentJob = null;
+    if(jobMarkerMesh) scene.remove(jobMarkerMesh);
+    $("jobText").textContent = "Start Bezorging";
+    showToast("Missie geannuleerd.");
+  } else {
+    startNewJob();
+  }
+};
+
+$("rainBtn").onclick = () => {
+  isRain = !isRain;
+  scene.fog.density = isRain ? 0.02 : 0.007;
+  scene.background.setHex(isRain ? 0x475569 : (isNight ? 0x0f172a : 0x87ceeb));
+  $("rainBtn").textContent = isRain ? "🌧 Regen: Aan" : "🌧 Regen: Uit";
+  showToast(isRain ? "Regen ingeschakeld" : "Regen gestopt");
+};
+
+$("nightBtn").onclick = () => {
+  isNight = !isNight;
+  sun.intensity = isNight ? 0.15 : 1.8;
+  ambientLight.intensity = isNight ? 0.3 : 1.2;
+  scene.background.setHex(isNight ? 0x0f172a : (isRain ? 0x475569 : 0x87ceeb));
+  playerCar.userData.spotL.intensity = isNight ? 4 : 2;
+  playerCar.userData.spotR.intensity = isNight ? 4 : 2;
+  $("nightBtn").textContent = isNight ? "🌙 Nacht: Aan" : "🌙 Nacht: Uit";
+};
+
+$("resetBtn").onclick = () => {
+  playerCar.position.set(0, 0, 4);
+  playerCar.rotation.set(0, 0, 0);
+  carSpeed = 0;
+  carHeading = 0;
+  showToast("Auto gereset!");
+};
+
+// Color selection in Start Menu
+document.querySelectorAll('.color-opt').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.color-opt').forEach(b => b.classList.replace('border-orange-500', 'border-transparent'));
+    btn.classList.replace('border-transparent', 'border-orange-500');
+    selectedCarColor = parseInt(btn.dataset.color);
+  };
+});
+
+$("startBtn").onclick = () => {
+  const name = $("nameInput").value.trim() || "Bestuurder";
+  $("playerLabel").textContent = name;
+  scene.remove(playerCar);
+  playerCar = createTeslaModel(selectedCarColor);
+  scene.add(playerCar);
+  $("menu").style.display = "none";
+  showToast(`Welkom ${name}! Rijd veilig in Sommelstad.`);
+};
+
+// --- MINIMAP RENDERING ---
+const miniCanvas = $("minimap");
+const mCtx = miniCanvas.getContext('2d');
+
+function updateMinimap() {
+  mCtx.clearRect(0, 0, 110, 110);
+  mCtx.fillStyle = '#1e293b';
+  mCtx.fillRect(0, 0, 110, 110);
+
+  mCtx.save();
+  mCtx.translate(55, 55);
+  mCtx.rotate(-carHeading);
+
+  // Draw Roads
+  mCtx.strokeStyle = '#64748b'; mCtx.lineWidth = 10;
+  for(let i = -2; i <= 2; i++) {
+    const rx = (i * BLOCK_SIZE - playerCar.position.x) * 0.25;
+    const rz = (i * BLOCK_SIZE - playerCar.position.z) * 0.25;
+    // Vertical
+    mCtx.beginPath(); mCtx.moveTo(rx, -100); mCtx.lineTo(rx, 100); mCtx.stroke();
+    // Horizontal
+    mCtx.beginPath(); mCtx.moveTo(-100, rz); mCtx.lineTo(100, rz); mCtx.stroke();
+  }
+
+  // Draw Job Target Marker
+  if(currentJob) {
+    const jx = (currentJob.x - playerCar.position.x) * 0.25;
+    const jz = (currentJob.z - playerCar.position.z) * 0.25;
+    mCtx.fillStyle = '#f59e0b';
+    mCtx.beginPath(); mCtx.arc(jx, jz, 5, 0, Math.PI*2); mCtx.fill();
+  }
+
+  mCtx.restore();
+
+  // Player Arrow (Always Centered)
+  mCtx.fillStyle = '#ef4444';
+  mCtx.beginPath();
+  mCtx.moveTo(55, 49);
+  mCtx.lineTo(60, 61);
+  mCtx.lineTo(55, 58);
+  mCtx.lineTo(50, 61);
+  mCtx.closePath();
+  mCtx.fill();
+}
+
+// --- MAIN ANIMATION / GAME LOOP ---
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const delta = Math.min(clock.getDelta(), 0.1);
+
+  // 1. Vehicle Physics Update
+  if(keys.w) {
+    carSpeed = Math.min(carSpeed + accel * delta, maxSpeed);
+  } else if(keys.s) {
+    carSpeed = Math.max(carSpeed - accel * 1.2 * delta, -maxSpeed * 0.35);
+  } else {
+    carSpeed *= Math.pow(friction, delta * 60);
+  }
+
+  if(keys.space) {
+    carSpeed *= Math.pow(0.85, delta * 60); // Handbrake drift/stop
+  }
+
+  // Steering Logic (Speed responsive)
+  const steerSpeed = 2.2;
+  if(keys.a) steerAngle = Math.min(steerAngle + steerSpeed * delta, 0.55);
+  else if(keys.d) steerAngle = Math.max(steerAngle - steerSpeed * delta, -0.55);
+  else steerAngle *= 0.8;
+
+  if(Math.abs(carSpeed) > 0.1) {
+    const dir = Math.sign(carSpeed);
+    carHeading += steerAngle * (carSpeed / maxSpeed) * 1.8 * delta;
+    playerCar.rotation.y = carHeading;
+  }
+
+  // Position Movement
+  playerCar.position.x += Math.sin(carHeading) * carSpeed * delta;
+  playerCar.position.z += Math.cos(carHeading) * carSpeed * delta;
+
+  // Animate Car Wheels
+  if(playerCar.userData.wheels) {
+    playerCar.userData.wheels.forEach((w, idx) => {
+      w.children[0].rotation.x += carSpeed * delta * 2; // Rotate tire
+      if(idx < 2) w.rotation.y = steerAngle * 0.7; // Front Steering
+    });
+  }
+
+  // Brake Light Emissive Glow
+  if(playerCar.userData.tailLightMat) {
+    const isBraking = keys.s || keys.space;
+    playerCar.userData.tailLightMat.emissiveIntensity = isBraking ? 2.5 : 0.4;
+  }
+
+  // 2. Camera Placement Logic
+  if(cameraMode === 0) { // 3rd Person Chase Camera (Matching Screenshot Angle)
+    const camDist = 9.0;
+    const camHeight = 4.2;
+    const targetX = playerCar.position.x - Math.sin(carHeading) * camDist;
+    const targetZ = playerCar.position.z - Math.cos(carHeading) * camDist;
+    camera.position.lerp(new THREE.Vector3(targetX, playerCar.position.y + camHeight, targetZ), 0.1);
+    camera.lookAt(playerCar.position.x, playerCar.position.y + 1.2, playerCar.position.z);
+  } else if(cameraMode === 1) { // Cockpit First-Person
+    const cp = playerCar.position.clone();
+    cp.y += 1.25;
+    cp.x += Math.sin(carHeading) * 0.2;
+    cp.z += Math.cos(carHeading) * 0.2;
+    camera.position.copy(cp);
+    const lookAtX = cp.x + Math.sin(carHeading) * 20;
+    const lookAtZ = cp.z + Math.cos(carHeading) * 20;
+    camera.lookAt(lookAtX, cp.y - 0.2, lookAtZ);
+  } else { // Top-Down Tactical
+    camera.position.set(playerCar.position.x, playerCar.position.y + 45, playerCar.position.z + 0.1);
+    camera.lookAt(playerCar.position);
+  }
+
+  // 3. AI Traffic & Cyclist Movement
+  dynamicVehicles.forEach(v => {
+    if(v.isHorizontal) {
+      v.mesh.position.x += v.speed * delta * Math.sign(v.laneOffset);
+      if(Math.abs(v.mesh.position.x) > 250) v.mesh.position.x = -v.mesh.position.x;
+    } else {
+      v.mesh.position.z += v.speed * delta * Math.sign(v.laneOffset);
+      if(Math.abs(v.mesh.position.z) > 250) v.mesh.position.z = -v.mesh.position.z;
+    }
+  });
+
+  cyclists.forEach(c => {
+    if(c.isH) {
+      c.mesh.position.x += c.speed * delta * Math.sign(c.bOffset);
+      if(Math.abs(c.mesh.position.x) > 240) c.mesh.position.x = -c.mesh.position.x;
+    } else {
+      c.mesh.position.z += c.speed * delta * Math.sign(c.bOffset);
+      if(Math.abs(c.mesh.position.z) > 240) c.mesh.position.z = -c.mesh.position.z;
+    }
+  });
+
+  // 4. Job Marker Collision Check
+  if(currentJob && jobMarkerMesh) {
+    jobMarkerMesh.rotation.y += delta * 1.5;
+    const dist = playerCar.position.distanceTo(new THREE.Vector3(currentJob.x, 0, currentJob.z));
+    if(dist < 5.0) {
+      money += currentJob.reward;
+      $("money").textContent = `€ ${money}`;
+      showToast(`Pakket bezorgd! +€${currentJob.reward} verdiend! 🎉`);
+      currentJob = null;
+      scene.remove(jobMarkerMesh);
+      $("jobText").textContent = "Start Bezorging";
+    }
+  }
+
+  // 5. Update UI HUD
+  const speedKmh = Math.round(Math.abs(carSpeed) * 3.6);
+  $("speed").textContent = speedKmh;
+  $("gear").textContent = carSpeed < -0.5 ? "R" : (Math.abs(carSpeed) < 0.2 ? "P" : "D");
+
+  // Update Traffic Light status simulation
+  const cycle = Math.floor(Date.now() / 6000) % 2;
+  const isGreen = cycle === 0;
+  $("tlDot").className = `w-4 h-4 rounded-full ${isGreen ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-red-500 shadow-[0_0_10px_#ef4444]'}`;
+  $("tlText").textContent = isGreen ? "Groen" : "Rood";
+
+  updateMinimap();
+  renderer.render(scene, camera);
+}
+
+// Window Resize Handling
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Start loop
+animate();
+</script>
+</body>
+</html>
