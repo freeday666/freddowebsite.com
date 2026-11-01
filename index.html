@@ -3,35 +3,39 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Dutch Driving Simulator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Dutch Driving Simulator Open World</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;overflow:hidden;background:#83b8dc;font-family:Arial}
+body{margin:0;overflow:hidden;background:#8bb9d6;font-family:Arial}
 canvas{display:block}
-#hud{position:fixed;top:10px;left:10px;right:10px;
-display:flex;justify-content:space-between;gap:6px;pointer-events:none}
-.info{background:#142b3ddd;color:white;padding:10px;border-radius:12px;font-weight:bold}
-#controls{position:fixed;bottom:15px;left:0;right:0;
+#hud{position:fixed;top:12px;left:12px;right:12px;display:flex;
+justify-content:space-between;gap:6px;pointer-events:none}
+.panel{background:#101d2be8;color:white;padding:10px 13px;
+border-radius:12px;font-weight:bold;border:1px solid #ffffff35}
+#controls{position:fixed;bottom:14px;left:0;right:0;
 display:flex;justify-content:space-between;padding:0 12px}
-.group{display:flex;gap:8px}
-button{background:#142b3ddd;color:white;border:1px solid #ffffff66;
-border-radius:15px;min-width:58px;height:60px;font-size:17px;
-font-weight:bold;touch-action:none}
-button:active{background:#168bc2}
+.group{display:flex;gap:8px;align-items:end}
+button{border:1px solid #ffffff55;background:#142536df;color:white;
+border-radius:15px;min-width:58px;height:60px;font-weight:bold;
+font-size:17px;touch-action:none}
+button:active{background:#159bc9}
 #menu{position:fixed;inset:0;background:#071521dd;
 display:flex;align-items:center;justify-content:center;padding:20px}
-.card{background:#19354a;color:white;padding:25px;
-border-radius:20px;text-align:center;max-width:400px}
-#start{background:#159bc9;padding:14px 25px}
+.card{background:#142c40;color:white;padding:25px;border-radius:20px;
+width:100%;max-width:420px;text-align:center}
+.card button{background:#119ed0;padding:13px 25px}
+#message{position:fixed;bottom:95px;left:50%;transform:translateX(-50%);
+background:#142536e8;color:white;padding:10px 15px;border-radius:12px;
+display:none}
 </style>
 </head>
 <body>
 
 <div id="hud">
- <div class="info" id="speed">0 km/u</div>
- <div class="info" id="mode">Auto</div>
- <div class="info" id="traffic">Groen</div>
+ <div class="panel" id="speed">0 km/u</div>
+ <div class="panel" id="mode">AUTO</div>
+ <div class="panel" id="clock">12:00</div>
 </div>
 
 <div id="controls">
@@ -40,18 +44,22 @@ border-radius:20px;text-align:center;max-width:400px}
   <button id="right">▶</button>
  </div>
  <div class="group">
-  <button id="exit">UIT/IN</button>
+  <button id="camera">CAM</button>
+  <button id="exit">UIT</button>
   <button id="brake">REM</button>
   <button id="gas">GAS</button>
  </div>
 </div>
 
+<div id="message"></div>
+
 <div id="menu">
  <div class="card">
   <h1>🇳🇱 Dutch Driving Simulator</h1>
-  <p>Rijd door een Nederlandse omgeving, volg de verkeerslichten en stap uit je auto.</p>
-  <p>Bediening: gas, rem, links, rechts en UIT/IN.</p>
-  <button id="start">START RIJDEN</button>
+  <h3>OPEN WORLD 3D</h3>
+  <p>Verken de Nederlandse stad, bestuur je auto en ontdek de open wereld.</p>
+  <p>WASD of touchscreen om te rijden.</p>
+  <button id="start">START GAME</button>
  </div>
 </div>
 
@@ -60,32 +68,37 @@ import * as THREE from
 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x91c8e9);
-scene.fog=new THREE.Fog(0x91c8e9,80,240);
+scene.background=new THREE.Color(0x8bbbdc);
+scene.fog=new THREE.Fog(0x8bbbdc,100,420);
 
 const camera=new THREE.PerspectiveCamera(
-65,innerWidth/innerHeight,0.1,500);
+65,innerWidth/innerHeight,.1,1000);
 
-const renderer=new THREE.WebGLRenderer({antialias:false});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+const renderer=new THREE.WebGLRenderer({
+ antialias:false,powerPreference:'low-power'
+});
 renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
 document.body.appendChild(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xffffff,0x667755,2));
-const sun=new THREE.DirectionalLight(0xffffff,2);
-sun.position.set(-30,50,20);
-scene.add(sun);
+scene.add(new THREE.HemisphereLight(0xffffff,0x53634b,2));
+const sunlight=new THREE.DirectionalLight(0xffffff,2.2);
+sunlight.position.set(-80,120,60);
+scene.add(sunlight);
 
-function material(color){
- return new THREE.MeshStandardMaterial({color,roughness:1});
+function mat(color,roughness=1){
+ return new THREE.MeshStandardMaterial({color,roughness});
 }
-const grass=material(0x6b9b57);
-const road=material(0x33383d);
-const white=material(0xffffff);
-const brick=material(0xc47c58);
-const roof=material(0x45474b);
-const glass=material(0x75b9d3);
-const black=material(0x15191d);
+
+const grass=mat(0x598b49);
+const asphalt=mat(0x30343a);
+const concrete=mat(0xa6a6a1);
+const white=mat(0xffffff);
+const glass=mat(0x6da9c2,.35);
+const black=mat(0x15191d);
+const brick=mat(0xb87554);
+const roof=mat(0x45474a);
+const yellow=mat(0xf0cf37);
 
 function box(x,y,z,w,h,d,m,parent=scene){
  const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
@@ -94,174 +107,303 @@ function box(x,y,z,w,h,d,m,parent=scene){
  return o;
 }
 
-// Nederlandse omgeving
-box(0,-.3,0,250,.5,250,grass);
-box(0,0,0,12,.1,250,road);
-
-for(let z=-120;z<130;z+=12){
- box(0,.07,z,.14,.02,6,white);
+function cylinder(x,y,z,r,h,m){
+ const o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,12),m);
+ o.position.set(x,y,z);
+ scene.add(o);
+ return o;
 }
 
-for(let x of [-7,7]){
- box(x,.02,0,1,.05,250,material(0xb8b8b8));
+// Open wereld
+box(0,-.4,0,900,.8,900,grass);
+
+// Wegenstructuur
+function roadX(z){
+ box(0,.02,z,850,.12,14,asphalt);
+ for(let x=-420;x<420;x+=15)
+  box(x,.09,z,7,.025,.16,white);
+}
+function roadZ(x){
+ box(x,.02,0,14,.12,850,asphalt);
+ for(let z=-420;z<420;z+=15)
+  box(x,.09,z,.16,.025,7,white);
+}
+
+for(let i=-4;i<=4;i++){
+ roadX(i*100);
+ roadZ(i*100);
+}
+
+// Voetpaden langs wegen
+for(let i=-4;i<=4;i++){
+ for(let side of [-1,1]){
+  box(0,.07,i*100+side*9,850,.12,2,concrete);
+  box(i*100+side*9,.07,0,2,.12,850,concrete);
+ }
 }
 
 // Nederlandse huizen
-for(let z=-110;z<120;z+=22){
- for(let side of [-1,1]){
-  let x=side*17;
-  box(x,3,z,9,6,10,brick);
-  box(x,6.5,z,9.5,1,10.5,roof);
-  box(x,2.5,z+5,1.5,2.5,.1,glass);
-  box(x-2,4,z+5,1.5,1.5,.1,glass);
+const houseColors=[
+ 0xc17c59,0xd9bd93,0xd3d1c5,0x9d6353,0xd5a86b
+];
+
+for(let x=-390;x<=390;x+=30){
+ for(let z=-390;z<=390;z+=30){
+
+  if(Math.abs(x%100)<20||Math.abs(z%100)<20)continue;
+
+  let col=mat(houseColors[
+   Math.floor(Math.random()*houseColors.length)
+  ]);
+
+  const w=12+Math.random()*4;
+  const d=12+Math.random()*4;
+  const h=7+Math.random()*4;
+
+  box(x,h/2,z,w,h,d,col);
+  box(x,h+.5,z,w+1,1,d+1,roof);
+
+  box(x,h*.4,z+d/2+.04,1.8,2,.1,glass);
+  box(x-3,h*.65,z+d/2+.04,1.6,1.5,.1,glass);
+  box(x+3,h*.65,z+d/2+.04,1.6,1.5,.1,glass);
  }
 }
 
-// Auto
-const car=new THREE.Group();
+// Bomen
+const treeMat=mat(0x276c37);
+const trunkMat=mat(0x76502f);
+
+for(let i=0;i<170;i++){
+ const x=(Math.random()-.5)*800;
+ const z=(Math.random()-.5)*800;
+
+ if(Math.abs(x%100)<15||Math.abs(z%100)<15)continue;
+
+ cylinder(x,2,z,.35,4,trunkMat);
+
+ const leaves=new THREE.Mesh(
+  new THREE.SphereGeometry(2.2,8,7),treeMat);
+ leaves.position.set(x,5,z);
+ scene.add(leaves);
+}
+
+// Auto bouwen
+function createCar(color){
+ const group=new THREE.Group();
+ const bodyMat=mat(color,.4);
+
+ box(0,.75,0,2.2,1,4.5,bodyMat,group);
+ box(0,1.5,-.3,1.7,.85,2.3,glass,group);
+
+ for(let x of [-1.12,1.12]){
+  for(let z of [-1.45,1.45]){
+   const wheel=new THREE.Mesh(
+    new THREE.CylinderGeometry(.4,.4,.25,16),black);
+   wheel.rotation.z=Math.PI/2;
+   wheel.position.set(x,.42,z);
+   group.add(wheel);
+  }
+ }
+
+ const headlight=mat(0xffffcc);
+ const rear=mat(0xff2222);
+
+ box(-.65,.8,-2.27,.4,.3,.08,headlight,group);
+ box(.65,.8,-2.27,.4,.3,.08,headlight,group);
+ box(-.65,.8,2.27,.4,.3,.08,rear,group);
+ box(.65,.8,2.27,.4,.3,.08,rear,group);
+
+ return group;
+}
+
+const car=createCar(0x176fbe);
 scene.add(car);
+car.position.set(0,0,15);
 
-box(0,.75,0,2,1,4,material(0x1267b2),car);
+// Andere auto's
+const traffic=[];
+const trafficColors=[0xffffff,0xd52d28,0x151c28,0xc7c7c7,0x25844b];
 
-const cabin=box(0,1.55,-.25,1.55,.75,1.9,glass,car);
+for(let i=0;i<22;i++){
+ const npc=createCar(
+  trafficColors[i%trafficColors.length]);
+ scene.add(npc);
+ npc.position.set(
+  Math.random()>.5?100:-100,
+  0,
+  -350+Math.random()*700
+ );
+ npc.userData.speed=7+Math.random()*7;
+ traffic.push(npc);
+}
 
-for(let x of [-1,1]){
- for(let z of [-1.35,1.35]){
-  const wheel=new THREE.Mesh(
-   new THREE.CylinderGeometry(.38,.38,.22,12),black);
-  wheel.rotation.z=Math.PI/2;
-  wheel.position.set(x,.42,z);
-  car.add(wheel);
+// Verkeerslichten
+const signals=[];
+for(let i=0;i<4;i++){
+ let x=(i%2===0)?8:-108;
+ let z=(i<2)?8:-108;
+
+ box(x,3,z,.2,6,.2,black);
+ box(x,6,z,1,2,.5,black);
+
+ const lamps=[];
+ for(let j=0;j<3;j++){
+  const l=new THREE.Mesh(
+   new THREE.SphereGeometry(.24,10,8),
+   mat([0xff0000,0xffaa00,0x00cc44][j])
+  );
+  l.position.set(x,6.5-j*.55,z-.3);
+  scene.add(l);
+  lamps.push(l);
  }
+ signals.push(lamps);
 }
 
-car.position.set(0,0,20);
-
-// Verkeerslicht
-box(5,2.7,-35,.22,5.4,.22,black);
-box(4.5,5.4,-35,1.2,2.5,.45,black);
-
-const lamps=[];
-const colors=[0xe52d2d,0xffb323,0x21c65b];
-
-for(let i=0;i<3;i++){
- const lamp=new THREE.Mesh(
-  new THREE.SphereGeometry(.28,12,8),
-  material(colors[i]));
- lamp.position.set(4.5,6.15-i*.75,-35.25);
- scene.add(lamp);
- lamps.push(lamp);
-}
-
-let lightState=2;
-let lightTimer=0;
-
+// Bediening
+const keys={};
 let speed=0;
 let heading=0;
 let driving=true;
-let walk=new THREE.Vector3();
-const keys={};
+let walking=new THREE.Vector3();
+let cameraMode=0;
 
-function toggle(){
- if(driving){
-  driving=false;
-  walk.copy(car.position);
-  walk.x+=2.2;
- }else{
-  if(walk.distanceTo(car.position)<5){
-   driving=true;
-  }
- }
-}
-
-document.getElementById('exit').onclick=toggle;
-document.getElementById('start').onclick=()=>{
- document.getElementById('menu').style.display='none';
-};
-
-addEventListener('keydown',e=>{
- keys[e.key.toLowerCase()]=true;
- if(e.key.toLowerCase()==='e')toggle();
-});
-addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-
-function hold(id,key){
+function bind(id,key){
  const b=document.getElementById(id);
  b.addEventListener('pointerdown',e=>{
   e.preventDefault();
   keys[key]=true;
  });
- for(const ev of ['pointerup','pointerleave','pointercancel']){
-  b.addEventListener(ev,()=>keys[key]=false);
+ for(const event of ['pointerup','pointerleave','pointercancel']){
+  b.addEventListener(event,()=>keys[key]=false);
  }
 }
-hold('left','left');
-hold('right','right');
-hold('gas','gas');
-hold('brake','brake');
+bind('left','left');
+bind('right','right');
+bind('gas','gas');
+bind('brake','brake');
 
-function update(dt){
- lightTimer+=dt;
- if(lightTimer>7){
-  lightTimer=0;
-  lightState=(lightState+1)%3;
+addEventListener('keydown',e=>{
+ keys[e.key.toLowerCase()]=true;
+ if(e.key.toLowerCase()==='e')toggleCar();
+});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+
+function notice(text){
+ const el=document.getElementById('message');
+ el.textContent=text;
+ el.style.display='block';
+ clearTimeout(notice.timer);
+ notice.timer=setTimeout(()=>el.style.display='none',1800);
+}
+
+function toggleCar(){
+ if(driving){
+  driving=false;
+  walking.copy(car.position);
+  walking.x+=2.5;
+  notice('Je bent uitgestapt!');
+ }else if(walking.distanceTo(car.position)<7){
+  driving=true;
+  notice('Je bent ingestapt!');
+ }else{
+  notice('Loop dichter bij je auto.');
  }
- lamps.forEach((lamp,i)=>{
-  lamp.material=material(i===lightState?colors[i]:0x252525);
- });
+}
+
+document.getElementById('exit').onclick=toggleCar;
+document.getElementById('camera').onclick=()=>{
+ cameraMode=(cameraMode+1)%3;
+ notice(['Camera achter auto','Cockpit camera','Hoge camera'][cameraMode]);
+};
+
+document.getElementById('start').onclick=()=>{
+ document.getElementById('menu').style.display='none';
+};
+
+// Simulatie
+let gameTime=12;
+function update(dt){
+ gameTime=(gameTime+dt*.025)%24;
+
+ document.getElementById('clock').textContent=
+  String(Math.floor(gameTime)).padStart(2,'0')+':'+
+  String(Math.floor((gameTime%1)*60)).padStart(2,'0');
+
+ // Dag/nacht
+ const daylight=Math.max(.12,Math.sin((gameTime-6)/12*Math.PI));
+ sunlight.intensity=.3+daylight*2;
+ scene.background=new THREE.Color().setHSL(
+  .56,.42,.13+daylight*.43
+ );
 
  if(driving){
-  if(keys.gas||keys.w||keys.arrowup)speed+=13*dt;
-  else speed-=5*dt;
+  if(keys.gas||keys.w||keys.arrowup)speed+=12*dt;
+  else speed-=4*dt;
 
-  if(keys.brake||keys.s||keys.arrowdown)speed-=24*dt;
-  speed=Math.max(-8,Math.min(32,speed));
+  if(keys.brake||keys.s||keys.arrowdown)speed-=22*dt;
+  speed=Math.max(-10,Math.min(48,speed));
 
-  let turn=
+  const turn=
    (keys.left||keys.a||keys.arrowleft?-1:0)+
    (keys.right||keys.d||keys.arrowright?1:0);
 
-  heading+=turn*dt*(.8+Math.abs(speed)*.035);
+  heading+=turn*dt*(.7+Math.abs(speed)*.025);
   car.rotation.y=heading;
 
   car.position.x+=Math.sin(heading)*speed*dt;
   car.position.z-=Math.cos(heading)*speed*dt;
-  car.position.x=Math.max(-4.2,Math.min(4.2,car.position.x));
 
-  camera.position.set(
-   car.position.x-Math.sin(heading)*8,
-   5.2,
-   car.position.z+Math.cos(heading)*8
-  );
-  camera.lookAt(car.position.x,1.2,car.position.z-4);
-
+  if(cameraMode===0){
+   camera.position.set(
+    car.position.x-Math.sin(heading)*9,
+    car.position.y+5,
+    car.position.z+Math.cos(heading)*9
+   );
+   camera.lookAt(car.position.x,1.2,car.position.z-4);
+  }else if(cameraMode===1){
+   camera.position.set(
+    car.position.x,
+    car.position.y+2.2,
+    car.position.z
+   );
+   camera.lookAt(
+    car.position.x+Math.sin(heading)*10,
+    1.8,
+    car.position.z-Math.cos(heading)*10
+   );
+  }else{
+   camera.position.set(car.position.x+12,18,car.position.z+12);
+   camera.lookAt(car.position);
+  }
  }else{
-  let f=(keys.w||keys.arrowup?1:0)-
-        (keys.s||keys.arrowdown?1:0);
-  let t=(keys.left?-1:0)+(keys.right?1:0);
+  const forward=(keys.w||keys.arrowup?1:0)-
+                (keys.s||keys.arrowdown?1:0);
+  const side=(keys.left||keys.a?-1:0)+
+             (keys.right||keys.d?1:0);
 
-  walk.x+=t*dt*5;
-  walk.z-=f*dt*5;
+  walking.x+=side*dt*7;
+  walking.z-=forward*dt*7;
 
-  camera.position.set(walk.x,2.2,walk.z+5);
-  camera.lookAt(walk.x,1.4,walk.z-3);
+  camera.position.set(walking.x,3,walking.z+6);
+  camera.lookAt(walking.x,1.5,walking.z-4);
   speed=0;
+ }
+
+ // NPC-verkeer
+ for(const npc of traffic){
+  npc.position.z-=npc.userData.speed*dt;
+  if(npc.position.z < -420)npc.position.z=420;
  }
 
  document.getElementById('speed').textContent=
   Math.round(Math.abs(speed)*3.6)+' km/u';
-
  document.getElementById('mode').textContent=
-  driving?'In de auto':'Te voet';
-
- document.getElementById('traffic').textContent=
-  ['Rood','Oranje','Groen'][lightState];
+  driving?'IN AUTO':'TE VOET';
 }
 
 let last=performance.now();
-
 function animate(now){
- const dt=Math.min((now-last)/1000,.04);
+ const dt=Math.min((now-last)/1000,.035);
  last=now;
  update(dt);
  renderer.render(scene,camera);
