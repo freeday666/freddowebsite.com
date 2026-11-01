@@ -1,914 +1,361 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#101820">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Oranjestad Roleplay</title>
-
 <style>
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  touch-action: none;
-}
-
-html, body, #game {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  font-family: system-ui;
-  background: #101820;
-  color: white;
-}
-
-#game {
-  position: fixed;
-  inset: 0;
-}
-
-canvas {
-  display: block;
-}
-
-.panel, .action, .pedal {
-  background: #101c29d9;
-  border: 1px solid #ffffff55;
-  color: white;
-  border-radius: 12px;
-  backdrop-filter: blur(7px);
-  box-shadow: 0 3px 12px #0006;
-}
-
-#top {
-  position: fixed;
-  top: 8px;
-  left: 9px;
-  right: 9px;
-  display: flex;
-  justify-content: space-between;
-  pointer-events: none;
-}
-
-.panel {
-  padding: 8px 11px;
-}
-
-#brand {
-  font-weight: 900;
-  font-size: 14px;
-}
-
-#speed {
-  font-size: 27px;
-  font-weight: 900;
-}
-
-#speedbox {
-  text-align: right;
-}
-
-#gear {
-  font-size: 10px;
-}
-
-#signals {
-  position: fixed;
-  top: 66px;
-  left: 9px;
-  display: flex;
-  gap: 5px;
-}
-
-.action {
-  padding: 9px 10px;
-  font-weight: 800;
-  font-size: 12px;
-}
-
-.active {
-  background: #a36b10 !important;
-  border-color: #ffdb76 !important;
-}
-
-#extras {
-  position: fixed;
-  right: 9px;
-  top: 66px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-#wheelArea {
-  position: fixed;
-  left: 12px;
-  bottom: 18px;
-  width: min(30vw,160px);
-  height: min(30vw,160px);
-  display: grid;
-  place-items: center;
-}
-
-#wheel {
-  width: 100%;
-  height: 100%;
-  border: 10px solid #d9e0e4;
-  border-radius: 50%;
-  background: radial-gradient(circle,#273c4a 0 22%,#62727b 23% 29%,transparent 30%);
-  box-shadow: 0 4px 15px #0009;
-  position: relative;
-}
-
-#wheel:before, #wheel:after {
-  content: "";
-  position: absolute;
-  left: calc(50% - 5px);
-  top: 7%;
-  height: 86%;
-  width: 10px;
-  background: #d9e0e4;
-  border-radius: 8px;
-}
-
-#wheel:after {
-  transform: rotate(90deg);
-}
-
-#hub {
-  position: absolute;
-  inset: 38%;
-  border-radius: 50%;
-  background: #263846;
-  border: 3px solid #d9e0e4;
-  z-index: 2;
-}
-
-#pedals {
-  position: fixed;
-  right: 12px;
-  bottom: 18px;
-  display: flex;
-  gap: 9px;
-}
-
-.pedal {
-  width: min(17vw,82px);
-  height: min(25vw,112px);
-  font-size: 15px;
-  font-weight: 900;
-}
-
-.pedal small {
-  display: block;
-  font-size: 10px;
-}
-
-#gas {
-  background: #155d38;
-}
-
-#brake {
-  background: #742323;
-}
-
-#dash {
-  position: fixed;
-  left: 50%;
-  bottom: 12px;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 5px;
-  pointer-events: none;
-}
-
-.dashitem {
-  text-align: center;
-  font-size: 9px;
-  min-width: 52px;
-}
-
-.dashitem b {
-  display: block;
-  font-size: 14px;
-}
-
-#start, #rotate {
-  position: fixed;
-  inset: 0;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 20px;
-  background: #091521df;
-}
-
-#startcard {
-  max-width: 370px;
-  padding: 24px;
-  border-radius: 18px;
-  background: #142536;
-  border: 1px solid #ffffff44;
-}
-
-h1 {
-  margin: 0;
-  font-size: 35px;
-}
-
-#start button {
-  width: 100%;
-  padding: 14px;
-  border: 0;
-  border-radius: 12px;
-  background: #ffca28;
-  font-size: 17px;
-  font-weight: 900;
-  margin-top: 12px;
-}
-
-#rotate {
-  display: none;
-  background: #091521ed;
-  z-index: 4;
-}
-
-#toast {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  background: #111d;
-  padding: 10px 16px;
-  border-radius: 10px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-@media(orientation:portrait) {
-  #rotate {
-    display: flex;
-  }
-
-  #wheelArea {
-    width: 125px;
-    height: 125px;
-  }
-
-  #dash {
-    bottom: 145px;
-  }
-}
-
-@media(orientation:landscape) and (max-height:500px) {
-  #wheelArea {
-    width: 115px;
-    height: 115px;
-  }
-
-  .pedal {
-    height: 88px;
-  }
-
-  #signals, #extras {
-    top: 56px;
-  }
-
-  .action {
-    padding: 6px 8px;
-  }
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden;font-family:Arial;background:#8fc7ed}
+#game{position:fixed;inset:0}
+#hud{position:fixed;inset:10px;pointer-events:none;color:white}
+.panel{background:#102033dc;padding:10px 14px;border-radius:12px;
+border:1px solid #ffffff44;text-shadow:0 2px 3px #000}
+#brand{position:absolute;top:0;left:0;font-weight:bold}
+#speed{position:absolute;right:0;top:0;text-align:center}
+#speed strong{display:block;font-size:30px}
+#message{position:absolute;top:65px;left:50%;transform:translateX(-50%)}
+#map{position:absolute;right:0;top:105px;width:110px;height:110px;
+background:#20382d;border:2px solid white;border-radius:10px}
+#map canvas{width:100%;height:100%}
+#controls{position:fixed;bottom:15px;left:10px;right:10px;
+display:flex;justify-content:space-between;align-items:end}
+button{border:1px solid #ffffff66;border-radius:13px;
+background:#102b43e8;color:white;padding:16px;font-size:17px;
+font-weight:bold;touch-action:none}
+#gas{background:#087b4c}#brake{background:#a62b35}
+#enter{position:fixed;bottom:15px;left:50%;transform:translateX(-50%)}
+#start{position:fixed;inset:0;background:#0b1828dd;color:white;
+display:flex;align-items:center;justify-content:center;text-align:center}
+#start section{max-width:420px;padding:25px}
+#start h1{font-size:30px}
+#start button{background:#078450}
+@media(orientation:portrait) and (pointer:coarse){
+ #start section:after{content:"Draai je telefoon horizontaal om te spelen";
+ display:block;margin-top:15px;color:#bde9ff}
 }
 </style>
 </head>
-
 <body>
 
 <div id="game"></div>
 
-<div id="top">
-  <div class="panel">
-    <div id="brand">🇳🇱 ORANJESTAD ROLEPLAY</div>
-    <small>Mobiele rijtest · vrije rit</small>
-  </div>
-
-  <div class="panel" id="speedbox">
-    <div>
-      <span id="speed">0</span> KM/U
-    </div>
-    <div id="gear">N · STILSTAND</div>
-  </div>
+<div id="hud">
+ <div id="brand" class="panel">🇳🇱 ORANJESTAD ROLEPLAY</div>
+ <div id="speed" class="panel">
+  <strong id="speedValue">0</strong> KM/U
+ </div>
+ <div id="message" class="panel">Welkom in Oranjestad!</div>
+ <div id="map"><canvas id="mapCanvas" width="180" height="180"></canvas></div>
 </div>
 
-<div id="signals">
-  <button class="action" id="left">◀ LINK</button>
-  <button class="action" id="right">RECHT ▶</button>
-  <button class="action" id="hazard">⚠</button>
-</div>
+<button id="enter">E — IN / UITSTAPPEN</button>
 
-<div id="extras">
-  <button class="action" id="horn">📣 Claxon</button>
-  <button class="action" id="park">🅿 Handrem UIT</button>
-  <button class="action" id="lamp">💡 Lampen UIT</button>
-  <button class="action" id="reset">↻ Reset auto</button>
-</div>
-
-<div id="wheelArea">
-  <div id="wheel">
-    <div id="hub"></div>
-  </div>
-</div>
-
-<div id="pedals">
-  <button class="pedal" id="brake">
-    REM
-    <small>vasthouden</small>
-  </button>
-
-  <button class="pedal" id="gas">
-    GAS
-    <small>vasthouden</small>
-  </button>
-</div>
-
-<div id="dash">
-  <div class="panel dashitem">
-    <b id="turn">—</b>
-    RICHTING
-  </div>
-
-  <div class="panel dashitem">
-    <b id="battery">100%</b>
-    ACCU
-  </div>
-
-  <div class="panel dashitem">
-    <b id="parking">UIT</b>
-    HANDREM
-  </div>
-</div>
-
-<div id="rotate">
-  <div>
-    <div style="font-size:48px">📱 ↻</div>
-    <b>Draai je telefoon</b>
-    <p>Oranjestad rijdt het fijnst liggend.</p>
-  </div>
+<div id="controls">
+ <div>
+  <button data-control="left">◀</button>
+  <button data-control="right">▶</button>
+ </div>
+ <div>
+  <button id="brake" data-control="brake">REM</button>
+  <button id="gas" data-control="gas">GAS ▲</button>
+ </div>
 </div>
 
 <div id="start">
-  <div id="startcard">
-    <h1>ORANJESTAD</h1>
-    <b style="color:#ffca28">ROLEPLAY · RIJTEST</b>
-
-    <p>
-      Test stuurwiel, gas, rem, knipperlichten
-      en stadswegen.
-    </p>
-
-    <p style="font-size:12px">
-      Draai je telefoon naar liggende stand.
-      Houd GAS of REM ingedrukt.
-    </p>
-
-    <button id="startbtn">START RIJTEST</button>
-  </div>
+ <section>
+  <h1>🇳🇱 Oranjestad Roleplay</h1>
+  <p>Welkom in jouw Nederlandse 3D-stad.</p>
+  <p>Rijd rond, ontdek de stad en geniet van de rit.</p>
+  <p>Computer: WASD of pijltjes. E = instappen. N = dag/nacht.</p>
+  <button id="play">START SPELEN</button>
+ </section>
 </div>
-
-<div id="toast"></div>
 
 <script type="module">
 import * as THREE from
-'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-
-const root = document.querySelector('#game');
+"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x91c7df);
-scene.fog = new THREE.Fog(0x91c7df,70,230);
+scene.background = new THREE.Color(0x91c9ed);
+scene.fog = new THREE.Fog(0x91c9ed,100,450);
 
 const camera = new THREE.PerspectiveCamera(
-  65,
-  innerWidth / innerHeight,
-  0.1,
-  400
+ 65,innerWidth/innerHeight,0.1,800
 );
 
-const renderer = new THREE.WebGLRenderer({
-  antialias: true
-});
-
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
+const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
-root.appendChild(renderer.domElement);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+document.querySelector("#game").appendChild(renderer.domElement);
 
-scene.add(
-  new THREE.HemisphereLight(0xeaf7ff,0x63775b,2)
-);
+scene.add(new THREE.HemisphereLight(0xffffff,0x53634c,2));
 
 const sun = new THREE.DirectionalLight(0xffffff,2);
-sun.position.set(-30,50,20);
+sun.position.set(-80,100,50);
 scene.add(sun);
 
-const M = c => new THREE.MeshStandardMaterial({
-  color: c,
-  roughness: .85
-});
+const material = color =>
+ new THREE.MeshStandardMaterial({color,roughness:.85});
 
-function box(w,h,d,m,x,y,z,p=scene) {
-  let o = new THREE.Mesh(
-    new THREE.BoxGeometry(w,h,d),
-    m
+function cube(w,h,d,color,x,y,z,parent=scene){
+ const obj = new THREE.Mesh(
+  new THREE.BoxGeometry(w,h,d),material(color)
+ );
+ obj.position.set(x,y,z);
+ obj.castShadow=true;
+ obj.receiveShadow=true;
+ parent.add(obj);
+ return obj;
+}
+
+// Stad en gras
+const ground = new THREE.Mesh(
+ new THREE.PlaneGeometry(600,600),
+ material(0x69a75c)
+);
+ground.rotation.x=-Math.PI/2;
+ground.position.y=-.1;
+scene.add(ground);
+
+// Wegen
+for(let i=-2;i<=2;i++){
+ cube(15,.12,420,0x343a42,i*70,0,0);
+ cube(420,.12,15,0x343a42,0,0,i*70);
+}
+
+// Wegmarkeringen
+for(let i=-200;i<200;i+=9){
+ cube(3,.03,.15,0xffffff,i,.08,0);
+ cube(.15,.03,3,0xffffff,0,.08,i);
+}
+
+// Huizen
+const buildingList=[];
+const houseColors=[0xe8d9c1,0xc9d9df,0xe8e5d8,0xd8b59c,0xb7cbd7];
+
+for(let x=-160;x<=160;x+=25){
+ for(let z=-160;z<=160;z+=25){
+  if(Math.abs(x%70)<16 || Math.abs(z%70)<16) continue;
+
+  const h=6+Math.random()*9;
+  const w=8+Math.random()*5;
+  const d=8+Math.random()*5;
+
+  cube(w,h,d,
+   houseColors[Math.floor(Math.random()*houseColors.length)],
+   x,h/2,z
   );
 
-  o.position.set(x,y,z);
-  o.castShadow = true;
-  p.add(o);
-  return o;
-}
-
-// Stad en wegen
-
-box(400,.2,400,M(0x619653),0,-.2,0);
-
-box(18,.12,260,M(0x343a40),0,-.05,0);
-box(260,.12,18,M(0x343a40),0,-.05,0);
-
-let white = M(0xf5efdb);
-let side = M(0xb9b8ad);
-
-for(let n=-120;n<=120;n+=10) {
-  box(.12,.02,7,white,0,.03,n);
-  box(7,.02,.12,white,n,.03,0);
-}
-
-for(let s of [-1,1]) {
-  box(.7,.15,260,side,s*10,-.02,0);
-  box(260,.15,.7,side,0,-.02,s*10);
-}
-
-// Gebouwen
-
-let colors = [
-  M(0xb96f52),
-  M(0xe2c99a),
-  M(0xc7d1d2),
-  M(0xd9aa70),
-  M(0xb8c5a1)
-];
-
-let glass = M(0x83b6c7);
-let dark = M(0x202a32);
-
-for(let x=-75;x<=75;x+=25) {
-  for(let z=-75;z<=75;z+=25) {
-
-    if(Math.abs(x)<18 || Math.abs(z)<18) {
-      continue;
-    }
-
-    let w=13;
-    let h=9+Math.random()*8;
-    let d=13;
-
-    box(
-      w,h,d,
-      colors[Math.floor(Math.random()*5)],
-      x,h/2,z
-    );
-
-    box(
-      w*.8,h*.4,.12,
-      glass,
-      x,h*.55,z+d/2+.08
-    );
-
-    box(
-      1,2,.15,
-      dark,
-      x-3,1,z+d/2+.15
-    );
-  }
-}
-
-// Bomen
-
-for(let n=-100;n<=100;n+=15) {
-  for(let s of [-1,1]) {
-
-    box(
-      .25,2,.25,
-      M(0x765035),
-      s*12,1,n
-    );
-
-    let crown = new THREE.Mesh(
-      new THREE.SphereGeometry(1.2,8,7),
-      M(0x397747)
-    );
-
-    crown.position.set(s*12,2.6,n);
-    scene.add(crown);
-  }
+  cube(w+1,.6,d+1,0x984c3b,x,h+.2,z);
+  buildingList.push({x,z,w:w+2,d:d+2});
+ }
 }
 
 // Auto
+const car=new THREE.Group();
 
-const car = new THREE.Group();
-scene.add(car);
+cube(2.3,.7,4.4,0xe8e8e8,0,.7,0,car);
+cube(1.65,.8,2.2,0x263a49,0,1.35,-.2,car);
 
-box(2,.65,4.2,M(0x1769aa),0,.8,0,car);
-
-box(
-  1.55,.75,2,
-  M(0x173d53),
-  0,1.48,-.15,car
-);
-
-box(1.35,.08,1,glass,0,1.55,-.2,car);
-
-let wheels=[];
-
-for(let x of [-1.05,1.05]) {
-  for(let z of [-1.35,1.35]) {
-
-    let w = new THREE.Mesh(
-      new THREE.CylinderGeometry(.42,.42,.28,16),
-      dark
-    );
-
-    w.rotation.z = Math.PI/2;
-    w.position.set(x,.45,z);
-
-    car.add(w);
-    wheels.push(w);
-  }
+for(const x of [-1.15,1.15]){
+ for(const z of [-1.35,1.35]){
+  const wheel=new THREE.Mesh(
+   new THREE.CylinderGeometry(.38,.38,.22,12),
+   material(0x202329)
+  );
+  wheel.rotation.z=Math.PI/2;
+  wheel.position.set(x,.35,z);
+  car.add(wheel);
+ }
 }
 
-// Koplampen en achterlichten
+car.position.set(0,0,8);
+scene.add(car);
 
-for(let x of [-.65,.65]) {
-  box(.35,.16,.08,M(0xfff0ae),x,.9,-2.12,car);
-  box(.35,.16,.08,M(0xc83228),x,.9,2.12,car);
+// Verkeersauto's
+const traffic=[];
+function makeTrafficCar(color,x,z){
+ const group=new THREE.Group();
+ cube(1.8,.65,3.5,color,0,.6,0,group);
+ cube(1.3,.6,1.7,0x354959,0,1,-.2,group);
+ group.position.set(x,0,z);
+ scene.add(group);
+ return group;
+}
+
+for(let i=0;i<8;i++){
+ const horizontal=i%2===0;
+ traffic.push({
+  mesh:makeTrafficCar(
+   [0x2675bd,0xd5b333,0x37945d,0xb23b3b][i%4],
+   horizontal?-160+i*35:(i%3-1)*3,
+   horizontal?(i%3-1)*3:-160+i*35
+  ),
+  horizontal,
+  direction:i%4<2?1:-1,
+  speed:5+Math.random()*4,
+  position:-160+i*35
+ });
 }
 
 // Besturing
+const keys={};
+const touch={left:false,right:false,gas:false,brake:false};
 
-let speed=0;
-let steer=0;
-let gas=0;
-let brake=false;
-let park=false;
-let battery=100;
-let turn=0;
-let hazard=false;
-let lamps=false;
+addEventListener("keydown",e=>{
+ keys[e.key.toLowerCase()]=true;
+ if(e.key.toLowerCase()==="e")toggleDriving();
+ if(e.key.toLowerCase()==="n")toggleNight();
+});
 
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+addEventListener("keyup",e=>{
+ keys[e.key.toLowerCase()]=false;
+});
 
-function say(t) {
-  let e=document.querySelector('#toast');
-  e.textContent=t;
-  e.style.opacity=1;
-
-  clearTimeout(say.t);
-
-  say.t=setTimeout(()=>{
-    e.style.opacity=0;
-  },1200);
-}
-
-// Knipperlichten
-
-function setSignals() {
-
-  document.querySelector('#left')
-    .classList.toggle('active',turn===-1);
-
-  document.querySelector('#right')
-    .classList.toggle('active',turn===1);
-
-  document.querySelector('#hazard')
-    .classList.toggle('active',hazard);
-
-  document.querySelector('#turn').textContent =
-    hazard ? '⚠' :
-    turn===-1 ? '◀' :
-    turn===1 ? '▶' : '—';
-}
-
-document.querySelector('#left').onclick=()=>{
-  turn=turn===-1?0:-1;
-  hazard=false;
-  setSignals();
-};
-
-document.querySelector('#right').onclick=()=>{
-  turn=turn===1?0:1;
-  hazard=false;
-  setSignals();
-};
-
-document.querySelector('#hazard').onclick=()=>{
-  hazard=!hazard;
-  turn=0;
-  setSignals();
-};
-
-// Handrem
-
-document.querySelector('#park').onclick=()=>{
-  park=!park;
-
-  document.querySelector('#park').textContent =
-    '🅿 Handrem '+(park?'AAN':'UIT');
-
-  document.querySelector('#parking').textContent =
-    park?'AAN':'UIT';
-
-  document.querySelector('#park')
-    .classList.toggle('active',park);
-};
-
-// Lampen
-
-document.querySelector('#lamp').onclick=()=>{
-  lamps=!lamps;
-
-  document.querySelector('#lamp').textContent =
-    '💡 Lampen '+(lamps?'AAN':'UIT');
-
-  say(lamps?'Lampen aan':'Lampen uit');
-};
-
-// Claxon
-
-document.querySelector('#horn').onclick=()=>{
-  say('📣 TOET!');
-
-  try {
-    let A=new AudioContext();
-    let o=A.createOscillator();
-    let g=A.createGain();
-
-    o.frequency.value=390;
-    g.gain.value=.07;
-
-    o.connect(g);
-    g.connect(A.destination);
-
-    o.start();
-    o.stop(A.currentTime+.2);
-
-    o.onended=()=>A.close();
-  } catch(e) {}
-};
-
-// Gaspedaal en rempedaal
-
-function hold(el,down,up) {
-
-  el.addEventListener('pointerdown',e=>{
-    e.preventDefault();
-    el.setPointerCapture(e.pointerId);
-    down();
-  });
-
-  ['pointerup','pointercancel','lostpointercapture']
-    .forEach(ev=>el.addEventListener(ev,up));
-}
-
-hold(
-  document.querySelector('#gas'),
-  ()=>gas=1,
-  ()=>gas=0
-);
-
-hold(
-  document.querySelector('#brake'),
-  ()=>brake=true,
-  ()=>brake=false
-);
-
-// Stuurwiel
-
-let wheel=document.querySelector('#wheel');
-let pid=null;
-let px=0;
-let sv=0;
-
-wheel.addEventListener('pointerdown',e=>{
+document.querySelectorAll("[data-control]").forEach(button=>{
+ const name=button.dataset.control;
+ button.addEventListener("pointerdown",e=>{
   e.preventDefault();
-
-  pid=e.pointerId;
-  wheel.setPointerCapture(pid);
-
-  px=e.clientX;
-  sv=steer;
+  touch[name]=true;
+ });
+ ["pointerup","pointercancel","pointerleave"].forEach(event=>{
+  button.addEventListener(event,()=>{
+   touch[name]=false;
+  });
+ });
 });
 
-wheel.addEventListener('pointermove',e=>{
-  if(e.pointerId===pid) {
+let driving=true;
+let speed=0;
+let rotation=0;
+let night=false;
 
-    steer=clamp(
-      sv+(e.clientX-px)/85,
-      -1,
-      1
-    );
+function toggleDriving(){
+ driving=!driving;
+ speed=0;
+ document.querySelector("#message").textContent=
+ driving?"Je zit in de auto.":"Je bent uitgestapt.";
+}
 
-    wheel.style.transform=
-      `rotate(${steer*135}deg)`;
+document.querySelector("#enter").onclick=toggleDriving;
+
+function toggleNight(){
+ night=!night;
+ scene.background.set(night?0x101b35:0x91c9ed);
+ scene.fog.color.copy(scene.background);
+ sun.intensity=night?.25:2;
+}
+
+document.querySelector("#play").onclick=()=>{
+ document.querySelector("#start").style.display="none";
+};
+
+function collision(x,z){
+ return buildingList.some(b=>
+  Math.abs(x-b.x)<b.w/2+1.5 &&
+  Math.abs(z-b.z)<b.d/2+2
+ );
+}
+
+// Minimap
+const map=document.querySelector("#mapCanvas").getContext("2d");
+
+function drawMap(){
+ map.clearRect(0,0,180,180);
+ map.fillStyle="#31533b";
+ map.fillRect(0,0,180,180);
+ map.strokeStyle="#9ba5aa";
+ map.lineWidth=5;
+
+ for(let i=-2;i<=2;i++){
+  let p=90+i*18;
+  map.beginPath();map.moveTo(p,0);map.lineTo(p,180);map.stroke();
+  map.beginPath();map.moveTo(0,p);map.lineTo(180,p);map.stroke();
+ }
+
+ map.fillStyle="white";
+ map.beginPath();
+ map.arc(90+car.position.x*.23,90+car.position.z*.23,5,0,Math.PI*2);
+ map.fill();
+}
+
+let previous=performance.now();
+
+function animate(now){
+ requestAnimationFrame(animate);
+ const dt=Math.min((now-previous)/1000,.04);
+ previous=now;
+
+ const forward=keys.w||keys.arrowup||touch.gas;
+ const backward=keys.s||keys.arrowdown||touch.brake;
+ const left=keys.a||keys.arrowleft||touch.left;
+ const right=keys.d||keys.arrowright||touch.right;
+
+ if(driving){
+  if(forward)speed+=17*dt;
+  else if(backward)speed-=13*dt;
+  else speed*=Math.pow(.985,dt*60);
+
+  speed=THREE.MathUtils.clamp(speed,-9,32);
+
+  const steer=(left?1:0)-(right?1:0);
+  rotation+=steer*dt*(.8+Math.abs(speed)/20)*(speed<0?-1:1);
+
+  const nextX=car.position.x+Math.sin(rotation)*speed*dt;
+  const nextZ=car.position.z+Math.cos(rotation)*speed*dt;
+
+  if(Math.abs(nextX)<195 && Math.abs(nextZ)<195 &&
+     !collision(nextX,nextZ)){
+   car.position.x=nextX;
+   car.position.z=nextZ;
+  }else{
+   speed=0;
   }
+
+  car.rotation.y=rotation;
+ }
+
+ // Verkeer bewegen
+ traffic.forEach(t=>{
+  t.position+=t.speed*t.direction*dt;
+  if(Math.abs(t.position)>190)t.position=-190*Math.sign(t.position);
+
+  if(t.horizontal){
+   t.mesh.position.set(t.position,0,t.mesh.position.z);
+   t.mesh.rotation.y=t.direction>0?Math.PI/2:-Math.PI/2;
+  }else{
+   t.mesh.position.set(t.mesh.position.x,0,t.position);
+   t.mesh.rotation.y=t.direction>0?0:Math.PI;
+  }
+ });
+
+ // Camera achter de auto
+ const target=new THREE.Vector3(
+  car.position.x-Math.sin(rotation)*9,
+  5.5,
+  car.position.z-Math.cos(rotation)*9
+ );
+
+ camera.position.lerp(target,.12);
+ camera.lookAt(car.position.x,1,car.position.z);
+
+ document.querySelector("#speedValue").textContent=
+  Math.round(Math.abs(speed)*3.6);
+
+ drawMap();
+ renderer.render(scene,camera);
+}
+
+camera.position.set(0,8,18);
+animate(performance.now());
+
+addEventListener("resize",()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
 });
-
-function endwheel() {
-  pid=null;
-}
-
-wheel.addEventListener('pointerup',endwheel);
-wheel.addEventListener('pointercancel',endwheel);
-wheel.addEventListener('lostpointercapture',endwheel);
-
-// Toetsenbordbesturing
-
-let keys={};
-
-onkeydown=e=>{
-  keys[e.key.toLowerCase()]=true;
-};
-
-onkeyup=e=>{
-  keys[e.key.toLowerCase()]=false;
-};
-
-// Auto reset
-
-document.querySelector('#reset').onclick=()=>{
-  car.position.set(0,0,0);
-  car.rotation.y=0;
-  speed=0;
-  say('Auto terug op de weg');
-};
-
-// Knipperende lampjes
-
-let blink=true;
-
-setInterval(()=>{
-  blink=!blink;
-
-  car.children.forEach(o=>{
-    if(o.userData.sig) {
-      o.material.emissive.setHex(
-        (blink && (hazard || turn!==0))
-          ? 0xff9900
-          : 0x000000
-      );
-    }
-  });
-},450);
-
-for(let x of [-.7,.7]) {
-  for(let z of [-2.14,2.14]) {
-
-    let o=box(
-      .18,.13,.06,
-      new THREE.MeshStandardMaterial({
-        color:0x442200,
-        emissive:0x000000
-      }),
-      x,1,z,car
-    );
-
-    o.userData.sig=true;
-  }
-}
-
-// Scherm aanpassen
-
-function resize() {
-  camera.aspect=innerWidth/innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth,innerHeight);
-}
-
-addEventListener('resize',resize);
-
-// Startknop
-
-document.querySelector('#startbtn').onclick=async()=>{
-  document.querySelector('#start').style.display='none';
-
-  try {
-    await screen.orientation.lock('landscape');
-  } catch(e) {}
-
-  say('Veel rijplezier!');
-};
-
-// Rijgame
-
-let last=performance.now();
-
-function loop(now) {
-
-  requestAnimationFrame(loop);
-
-  let dt=Math.min((now-last)/1000,.04);
-  last=now;
-
-  let g=gas || keys.w || keys.arrowup;
-  let b=brake || keys.s || keys.arrowdown;
-
-  let s =
-    keys.a || keys.arrowleft ? -1 :
-    keys.d || keys.arrowright ? 1 :
-    steer;
-
-  if(g && !park) {
-    speed+=16*dt;
-  } else {
-    speed-=2.2*dt;
-  }
-
-  if(b || park) {
-    speed-=25*dt;
-  }
-
-  speed=clamp(speed,0,115);
-
-  // Auto draaien
-
-  car.rotation.y -= s*1.05*(speed/115)*dt;
-
-  // Auto vooruit rijden
-
-  let f=new THREE.Vector3(
-    Math.sin(car.rotation.y),
-    0,
-    -Math.cos(car.rotation.y)
-  );
-
-  car.position.addScaledVector(
-    f,
-    speed/3.6*dt
-  );
-
-  car.position.x=clamp(car.position.x,-115,115);
-  car.position.z=clamp(car.position.z,-115,115);
-
-  // Wielen draaien
-
-  wheels.forEach(w=>{
-    w.rotation.x-=speed/3.6*dt/.42;
-  });
-
-  // Camera volgt auto
-
-  let target=new THREE.Vector3(
-    car.position.x+Math.sin(car.rotation.y)*8,
-    5.1,
-    car.position.z+Math.cos(car.rotation.y)*8
-  );
-
-  camera.position.lerp(
-    target,
-    1-Math.pow(.001,dt)
-  );
-
-  camera.lookAt(
-    car.position.x,
-    1,
-    car.position.z
-  );
-
-  // Dashboard
-
-  document.querySelector('#speed').textContent=
-    Math.round(speed);
-
-  document.querySelector('#gear').textContent=
-    speed<1 ? 'N · STILSTAND' : 'D · RIJDEN';
-
-  battery=Math.max(
-    0,
-    battery-(g?.001:0)*dt*60
-  );
-
-  document.querySelector('#battery').textContent=
-    Math.round(battery)+'%';
-
-  renderer.render(scene,camera);
-}
-
-camera.position.set(0,5,8);
-camera.lookAt(0,1,0);
-
-requestAnimationFrame(loop);
-
 </script>
 </body>
 </html>
