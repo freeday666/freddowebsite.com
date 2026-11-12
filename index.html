@@ -1,91 +1,289 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Oranjestad Roleplay</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netherlands Driving Simulator</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;overflow:hidden;background:#9fc9df;font-family:Arial,sans-serif}
-canvas{display:block}
-#hud{position:fixed;top:12px;left:12px;background:#101820e8;color:white;
-padding:14px;border-radius:12px;z-index:3;line-height:1.8;min-width:205px}
-#phoneButton{position:fixed;right:15px;bottom:20px;width:66px;height:66px;
-border:0;border-radius:20px;background:#182c45;color:white;font-size:25px;z-index:5}
-#phone{display:none;position:fixed;right:18px;bottom:96px;width:310px;height:490px;
-background:#101820;color:white;border:5px solid #283747;border-radius:28px;
-z-index:4;padding:15px;overflow:auto;box-shadow:0 10px 40px #0008}
-#phone h2{margin:5px 0 15px}
-.tabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
-button{cursor:pointer}
-.tabs button,.action{background:#176a9a;color:white;border:0;border-radius:8px;padding:9px}
-.panel{display:none}
-.panel.active{display:block}
-.field{width:100%;padding:10px;margin:5px 0;border:0;border-radius:7px}
-.job{background:#253b50;padding:10px;margin:7px 0;border-radius:8px}
-.job button{float:right}
-#notice{position:fixed;bottom:15px;left:15px;color:white;background:#101820cc;
-padding:10px;border-radius:8px;z-index:3}
-#help{position:fixed;top:12px;right:12px;color:white;background:#101820cc;
-padding:10px;border-radius:8px;z-index:3;font-size:12px}
+* { box-sizing:border-box; }
+body {
+  margin:0; overflow:hidden; background:#111;
+  font-family:Arial,sans-serif; color:white;
+}
+#game { position:fixed; inset:0; }
+#hud {
+  position:fixed; top:15px; left:15px;
+  padding:15px 20px; border-radius:14px;
+  background:#101827dd; min-width:210px;
+  box-shadow:0 5px 25px #0008;
+}
+#hud h2 { margin:0 0 10px; font-size:17px; }
+.stat { margin:7px 0; font-size:15px; }
+#speed { font-size:30px; font-weight:bold; color:#55edaa; }
+#help {
+  position:fixed; bottom:15px; left:15px;
+  background:#101827dd; padding:12px 16px;
+  border-radius:12px; font-size:13px;
+}
+#mobile {
+  position:fixed; bottom:20px; right:20px;
+  display:flex; gap:10px; align-items:end;
+}
+#mobile button {
+  width:65px; height:65px; border:0;
+  border-radius:16px; background:#ffffffdd;
+  font-size:22px; font-weight:bold;
+}
+#mobile button:active { background:#55edaa; }
+#camera {
+  position:fixed; top:15px; right:15px;
+  border:0; padding:12px 16px; border-radius:10px;
+  background:#101827dd; color:white; font-weight:bold;
+}
 </style>
 </head>
 <body>
+<div id="game"></div>
+
 <div id="hud">
-<b>ORANJESTAD ROLEPLAY</b><br>
-Stad: Den Haag<br>
-Snelheid: <span id="speed">0</span> km/u<br>
-Versnelling: <span id="gear">N</span><br>
-Brandstof: <span id="fuel">100</span>%<br>
-Geld: €<span id="money">2500</span><br>
-Baan: <span id="jobName">Burger</span>
-</div>
-<div id="help">WASD / pijltjes rijden · Spatie rem · C camera · M telefoon · R reset</div>
-<div id="notice">Welkom in Den Haag!</div>
-
-<button id="phoneButton" title="Telefoon (M)">M</button>
-<div id="phone">
-  <h2>📱 Oranjestad Mobiel</h2>
-  <div class="tabs">
-    <button data-tab="home">Home</button>
-    <button data-tab="jobs">Banen</button>
-    <button data-tab="contacts">Contacten</button>
-    <button data-tab="messages">Berichten</button>
-    <button data-tab="map">Navigatie</button>
-  </div>
-  <section id="home" class="panel active">
-    <p>Welkom in Den Haag.</p>
-    <p>Je saldo: €<b id="phoneMoney">2500</b></p>
-    <p>Je brandstof: <b id="phoneFuel">100</b>%</p>
-    <button class="action" id="closePhone">Telefoon sluiten</button>
-  </section>
-  <section id="jobs" class="panel">
-    <h3>Werken</h3>
-    <div id="jobList"></div>
-  </section>
-  <section id="contacts" class="panel">
-    <h3>Contacten</h3>
-    <input id="contactName" class="field" placeholder="Naam speler">
-    <input id="contactNumber" class="field" placeholder="In-game nummer">
-    <button class="action" id="addContact">Contact opslaan</button>
-    <div id="contactList"></div>
-  </section>
-  <section id="messages" class="panel">
-    <h3>Berichten</h3>
-    <input id="messageTo" class="field" placeholder="Naam ontvanger">
-    <textarea id="messageText" class="field" placeholder="Typ een bericht"></textarea>
-    <button class="action" id="sendMessage">Bericht versturen</button>
-    <div id="messageList"></div>
-  </section>
-  <section id="map" class="panel">
-    <h3>Navigatie</h3>
-    <input id="destination" class="field" placeholder="Bestemming, bijvoorbeeld Scheveningen">
-    <button class="action" id="navigate">Zoek bestemming</button>
-    <p id="routeInfo">Start: Den Haag centrum</p>
-  </section>
+  <h2>🇳🇱 NETHERLANDS DRIVING</h2>
+  <div class="stat">Locatie: <span id="location">Amsterdam</span></div>
+  <div id="speed">0 KM/U</div>
+  <div class="stat">Accu: <span id="battery">100%</span></div>
+  <div class="stat">Voertuig: Elektrische sedan</div>
 </div>
 
-<script type="module" src="./game.js"></script>
+<button id="camera">Camera wisselen</button>
+
+<div id="help">
+  W / ↑ = Gas · S / ↓ = Remmen<br>
+  A / ← = Links · D / → = Rechts<br>
+  C = Camera wisselen
+</div>
+
+<div id="mobile">
+  <button data-key="a">◀</button>
+  <button data-key="s">▼</button>
+  <button data-key="w">▲</button>
+  <button data-key="d">▶</button>
+</div>
+
+<script type="module">
+import * as THREE from
+'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87c8ef);
+scene.fog = new THREE.Fog(0x87c8ef, 100, 650);
+
+const camera = new THREE.PerspectiveCamera(
+  70, innerWidth / innerHeight, 0.1, 1000
+);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+document.getElementById("game").appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x56704b, 2));
+
+const sun = new THREE.DirectionalLight(0xffffff, 2);
+sun.position.set(80,120,50);
+sun.castShadow = true;
+scene.add(sun);
+
+// Materialen
+const grassMat = new THREE.MeshStandardMaterial({color:0x57934c});
+const roadMat = new THREE.MeshStandardMaterial({color:0x30343a});
+const lineMat = new THREE.MeshStandardMaterial({color:0xffffff});
+const buildingColors = [0xc78f68,0xd7c19a,0x9caebc,0xb76f60];
+
+// Grond
+function box(w,h,d,mat,x,y,z) {
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(w,h,d),mat
+  );
+  mesh.position.set(x,y,z);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+  return mesh;
+}
+
+box(2000,1,2000,grassMat,0,-1,0);
+box(2000,0.2,18,roadMat,0,0,0);
+
+// Wegstrepen
+for(let z=-950;z<1000;z+=24) {
+  box(0.35,0.08,10,lineMat,0,0.15,z);
+}
+
+// Gebouwen langs de weg
+for(let i=0;i<100;i++) {
+  const side = i%2===0 ? -1:1;
+  const z = -950 + i*20;
+  const height = 12 + Math.random()*35;
+  const color = buildingColors[
+    Math.floor(Math.random()*buildingColors.length)
+  ];
+  const mat = new THREE.MeshStandardMaterial({color});
+  box(14,height,14,mat,side*(18+Math.random()*8),
+      height/2,z);
+}
+
+// Auto
+const car = new THREE.Group();
+scene.add(car);
+
+const bodyMat = new THREE.MeshStandardMaterial({
+  color:0xdce4ed, metalness:0.65, roughness:0.25
+});
+const glassMat = new THREE.MeshStandardMaterial({
+  color:0x24475c, metalness:0.4, roughness:0.15
+});
+
+const body = new THREE.Mesh(
+  new THREE.BoxGeometry(2.2,0.65,4.5),bodyMat
+);
+body.position.y=0.9;
+car.add(body);
+
+const roof = new THREE.Mesh(
+  new THREE.BoxGeometry(1.8,0.65,2.1),glassMat
+);
+roof.position.set(0,1.48,-0.1);
+car.add(roof);
+
+// Wielen
+const wheels=[];
+for(const x of [-1.15,1.15]) {
+  for(const z of [-1.45,1.45]) {
+    const wheel = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.43,0.43,0.28,24),
+      new THREE.MeshStandardMaterial({color:0x151515})
+    );
+    wheel.rotation.z=Math.PI/2;
+    wheel.position.set(x,0.45,z);
+    car.add(wheel);
+    wheels.push(wheel);
+  }
+}
+
+car.position.set(0,0,0);
+
+// Camera
+let firstPerson=false;
+function updateCamera() {
+  if(firstPerson) {
+    camera.position.copy(car.position).add(
+      new THREE.Vector3(0,1.7,-0.1).applyQuaternion(car.quaternion)
+    );
+    camera.lookAt(
+      car.position.clone().add(
+        new THREE.Vector3(0,1.4,15).applyQuaternion(car.quaternion)
+      )
+    );
+  } else {
+    const offset = new THREE.Vector3(0,5,-10)
+      .applyQuaternion(car.quaternion);
+    camera.position.copy(car.position).add(offset);
+    camera.lookAt(car.position.clone().add(
+      new THREE.Vector3(0,1,4).applyQuaternion(car.quaternion)
+    ));
+  }
+}
+
+document.getElementById("camera").onclick=()=>{
+  firstPerson=!firstPerson;
+};
+
+// Besturing
+const keys={w:false,a:false,s:false,d:false};
+addEventListener("keydown",e=>{
+  const k=e.key.toLowerCase();
+  if(k in keys) keys[k]=true;
+  if(k==="c") firstPerson=!firstPerson;
+});
+addEventListener("keyup",e=>{
+  const k=e.key.toLowerCase();
+  if(k in keys) keys[k]=false;
+});
+
+// Mobiele knoppen
+document.querySelectorAll("#mobile button").forEach(button=>{
+  const key=button.dataset.key;
+  button.addEventListener("pointerdown",e=>{
+    e.preventDefault(); keys[key]=true;
+  });
+  ["pointerup","pointerleave","pointercancel"].forEach(event=>{
+    button.addEventListener(event,()=>keys[key]=false);
+  });
+});
+
+let velocity=0;
+let steering=0;
+let battery=100;
+let lastTime=performance.now();
+
+function animate(now) {
+  requestAnimationFrame(animate);
+  const dt=Math.min((now-lastTime)/1000,0.04);
+  lastTime=now;
+
+  // Accelereren en remmen
+  if(keys.w) velocity+=18*dt;
+  if(keys.s) velocity-=30*dt;
+  if(!keys.w && !keys.s) velocity*=Math.pow(0.985,dt*60);
+  velocity=THREE.MathUtils.clamp(velocity,-12,48);
+
+  // Sturen
+  const direction=(keys.a?1:0)-(keys.d?1:0);
+  steering=THREE.MathUtils.lerp(steering,direction,dt*5);
+
+  if(Math.abs(velocity)>0.2) {
+    car.rotation.y += steering * dt *
+      Math.min(Math.abs(velocity)/8,2) *
+      Math.sign(velocity);
+  }
+
+  const forward=new THREE.Vector3(0,0,1)
+    .applyQuaternion(car.quaternion);
+
+  car.position.addScaledVector(forward,velocity*dt);
+
+  wheels.forEach(w=>{
+    w.rotation.x += velocity*dt;
+  });
+
+  battery=Math.max(0,battery-Math.abs(velocity)*dt*0.0005);
+
+  document.getElementById("speed").textContent=
+    Math.round(Math.abs(velocity)*3.6)+" KM/U";
+  document.getElementById("battery").textContent=
+    Math.round(battery)+"%";
+
+  // Eenvoudige plaatsnamen op basis van de route
+  const z=car.position.z;
+  let city="Amsterdam";
+  if(z>150) city="Utrecht";
+  if(z>350) city="Arnhem";
+  if(z < -150) city="Den Haag";
+  if(z < -350) city="Rotterdam";
+  document.getElementById("location").textContent=city;
+
+  updateCamera();
+  renderer.render(scene,camera);
+}
+
+requestAnimationFrame(animate);
+
+addEventListener("resize",()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+</script>
 </body>
 </html>
