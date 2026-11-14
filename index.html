@@ -4,286 +4,379 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Netherlands Driving Simulator</title>
+<title>Netherlands Roleplay - Oranjestad</title>
 <style>
-* { box-sizing:border-box; }
-body {
-  margin:0; overflow:hidden; background:#111;
-  font-family:Arial,sans-serif; color:white;
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ background:#101827;
+ color:white;
 }
-#game { position:fixed; inset:0; }
-#hud {
-  position:fixed; top:15px; left:15px;
-  padding:15px 20px; border-radius:14px;
-  background:#101827dd; min-width:210px;
-  box-shadow:0 5px 25px #0008;
+header{
+ background:#09111f;
+ padding:18px;
+ position:sticky;
+ top:0;
+ z-index:10;
+ border-bottom:2px solid #e9a52c;
 }
-#hud h2 { margin:0 0 10px; font-size:17px; }
-.stat { margin:7px 0; font-size:15px; }
-#speed { font-size:30px; font-weight:bold; color:#55edaa; }
-#help {
-  position:fixed; bottom:15px; left:15px;
-  background:#101827dd; padding:12px 16px;
-  border-radius:12px; font-size:13px;
+nav{
+ max-width:1200px;
+ margin:auto;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:15px;
+ flex-wrap:wrap;
 }
-#mobile {
-  position:fixed; bottom:20px; right:20px;
-  display:flex; gap:10px; align-items:end;
+.logo{font-size:21px;font-weight:bold}
+.logo span{color:#f5ad32}
+nav a{
+ color:white;
+ text-decoration:none;
+ padding:9px;
+ font-size:14px;
 }
-#mobile button {
-  width:65px; height:65px; border:0;
-  border-radius:16px; background:#ffffffdd;
-  font-size:22px; font-weight:bold;
+nav a:hover{color:#f5ad32}
+.hero{
+ min-height:440px;
+ padding:80px 8%;
+ display:flex;
+ align-items:center;
+ background:linear-gradient(90deg,#101827 20%,#173b52 100%);
 }
-#mobile button:active { background:#55edaa; }
-#camera {
-  position:fixed; top:15px; right:15px;
-  border:0; padding:12px 16px; border-radius:10px;
-  background:#101827dd; color:white; font-weight:bold;
+.hero-content{max-width:750px}
+.hero h1{font-size:55px;margin:10px 0}
+.hero h1 span{color:#f5ad32}
+.hero p{color:#c2d0df;line-height:1.7}
+.btn{
+ display:inline-block;
+ padding:13px 20px;
+ background:#f5ad32;
+ color:#171717;
+ border:0;
+ border-radius:8px;
+ font-weight:bold;
+ cursor:pointer;
+ text-decoration:none;
+ margin-top:12px;
+}
+.container{max-width:1200px;margin:auto;padding:30px 20px}
+section{scroll-margin-top:85px}
+h2{font-size:29px;margin-bottom:20px}
+.subtitle{color:#f5ad32;font-size:12px;font-weight:bold;letter-spacing:2px}
+.grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+ gap:15px;
+}
+.card{
+ background:#1a2940;
+ border:1px solid #30435d;
+ border-radius:13px;
+ padding:20px;
+}
+.card .icon{font-size:32px}
+.card h3{margin:10px 0}
+.card p{color:#b9c7d8;line-height:1.6;font-size:14px}
+.stats{
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:12px;
+ margin:25px 0;
+}
+.stat{
+ background:#1a2940;
+ padding:18px;
+ border-radius:12px;
+ text-align:center;
+}
+.stat strong{display:block;color:#f5ad32;font-size:27px}
+.stat span{color:#b9c7d8;font-size:13px}
+.panel{
+ background:#1a2940;
+ border:1px solid #30435d;
+ border-radius:14px;
+ padding:22px;
+}
+.two{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:18px;
+}
+select,input{
+ display:block;
+ width:100%;
+ padding:12px;
+ margin:8px 0 15px;
+ border:1px solid #40536d;
+ border-radius:8px;
+ background:#101827;
+ color:white;
+}
+label{font-size:14px;color:#d5e1ef}
+#result{
+ background:#101827;
+ border:1px solid #40536d;
+ border-radius:9px;
+ padding:15px;
+ margin-top:15px;
+ color:#c9d8e8;
+ min-height:60px;
+}
+.map{
+ min-height:260px;
+ border-radius:12px;
+ padding:20px;
+ display:flex;
+ flex-wrap:wrap;
+ align-items:center;
+ justify-content:center;
+ gap:12px;
+ background:
+ linear-gradient(90deg,transparent 48%,#e5dfca 49%,#e5dfca 52%,transparent 53%),
+ linear-gradient(0deg,transparent 48%,#e5dfca 49%,#e5dfca 52%,transparent 53%),
+ #719c78;
+}
+.map span{
+ background:#13243a;
+ padding:10px;
+ border-radius:8px;
+}
+footer{
+ text-align:center;
+ padding:30px;
+ background:#09111f;
+ color:#9eafc5;
+ margin-top:45px;
+}
+@media(max-width:700px){
+ .hero{padding:55px 22px}
+ .hero h1{font-size:39px}
+ .stats{grid-template-columns:repeat(2,1fr)}
+ .two{grid-template-columns:1fr}
+ nav{justify-content:center}
 }
 </style>
 </head>
+
 <body>
-<div id="game"></div>
 
-<div id="hud">
-  <h2>🇳🇱 NETHERLANDS DRIVING</h2>
-  <div class="stat">Locatie: <span id="location">Amsterdam</span></div>
-  <div id="speed">0 KM/U</div>
-  <div class="stat">Accu: <span id="battery">100%</span></div>
-  <div class="stat">Voertuig: Elektrische sedan</div>
+<header>
+<nav>
+ <div class="logo">🇳🇱 NETHERLANDS ROLEPLAY <span>ORANJESTAD</span></div>
+ <div>
+  <a href="#wereld">Wereld</a>
+  <a href="#jobs">Jobs</a>
+  <a href="#systemen">Systemen</a>
+  <a href="#politiek">Politiek</a>
+  <a href="#bouwen">Bouwen</a>
+  <a href="#demo">Demo</a>
+ </div>
+</nav>
+</header>
+
+<div class="hero">
+<div class="hero-content">
+ <div class="subtitle">DE ULTIEME NEDERLANDSE ROLEPLAYWERELD</div>
+ <h1>Jouw leven.<br><span>Jouw Oranjestad.</span></h1>
+ <p>
+  Ontdek een enorme Nederlandse open wereld.
+  Word politieagent, burgemeester, ondernemer of crimineel.
+  Bouw je eigen huis, start bedrijven en speel samen met vrienden.
+ </p>
+ <a class="btn" href="#demo">Ontdek de demo</a>
+</div>
 </div>
 
-<button id="camera">Camera wisselen</button>
+<main class="container">
 
-<div id="help">
-  W / ↑ = Gas · S / ↓ = Remmen<br>
-  A / ← = Links · D / → = Rechts<br>
-  C = Camera wisselen
+<div class="stats">
+ <div class="stat"><strong>12</strong><span>Beroepsrichtingen</span></div>
+ <div class="stat"><strong>5</strong><span>Inspiratiesteden</span></div>
+ <div class="stat"><strong>100</strong><span>Spelers per server als doel</span></div>
+ <div class="stat"><strong>4</strong><span>Seizoenen</span></div>
 </div>
 
-<div id="mobile">
-  <button data-key="a">◀</button>
-  <button data-key="s">▼</button>
-  <button data-key="w">▲</button>
-  <button data-key="d">▶</button>
+<section id="wereld">
+<div class="subtitle">ONTDEK DE WERELD</div>
+<h2>De wereld van Oranjestad 🏙️</h2>
+<div class="grid">
+ <div class="card"><div class="icon">🏙️</div><h3>Steden</h3><p>Amsterdam, Rotterdam, Den Haag, Gouda en Amersfoort als inspiratie voor een grote fictieve Nederlandse wereld.</p></div>
+ <div class="card"><div class="icon">🚦</div><h3>Verkeer</h3><p>Wegen, snelwegen, fietspaden, verkeerslichten, rotondes en parkeerplaatsen.</p></div>
+ <div class="card"><div class="icon">🌦️</div><h3>Weersysteem</h3><p>Regen, sneeuw, storm, mist, hagel, bliksem en vier seizoenen.</p></div>
+ <div class="card"><div class="icon">⚓</div><h3>Havens en stranden</h3><p>Havens, stranden, boulevards, boten en veerboten.</p></div>
+ <div class="card"><div class="icon">✈️</div><h3>Luchthaven</h3><p>Vliegtuigen, helikopters en luchthavenpersoneel.</p></div>
+ <div class="card"><div class="icon">🌳</div><h3>Natuur</h3><p>Bossen, natuurgebieden, wilde dieren en parken.</p></div>
 </div>
+</section>
 
-<script type="module">
-import * as THREE from
-'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+<section id="jobs">
+<div class="subtitle">KIES JE CARRIÈRE</div>
+<h2>Alle beroepen 👷</h2>
+<div class="grid">
+ <div class="card"><div class="icon">👮</div><h3>Politieagent</h3><p>Surveillance, achtervolgingen, arrestaties en recherche.</p></div>
+ <div class="card"><div class="icon">🚑</div><h3>Ambulance</h3><p>112-meldingen, spoedritten en ziekenhuiszorg.</p></div>
+ <div class="card"><div class="icon">🚒</div><h3>Brandweer</h3><p>Brandbestrijding, reddingen en ongelukken.</p></div>
+ <div class="card"><div class="icon">🚌</div><h3>Buschauffeur</h3><p>Openbaar vervoer en buslijnen.</p></div>
+ <div class="card"><div class="icon">🚕</div><h3>Taxichauffeur</h3><p>Passagiers vervoeren en een taxibedrijf runnen.</p></div>
+ <div class="card"><div class="icon">🚛</div><h3>Vrachtwagenchauffeur</h3><p>Transport, vracht en logistiek.</p></div>
+ <div class="card"><div class="icon">🛒</div><h3>Winkelmedewerker</h3><p>Werken in supermarkten en winkels.</p></div>
+ <div class="card"><div class="icon">🔧</div><h3>Monteur</h3><p>Auto's repareren en onderhouden.</p></div>
+ <div class="card"><div class="icon">🏗️</div><h3>Bouwvakker</h3><p>Huizen, gebouwen en wegen bouwen.</p></div>
+ <div class="card"><div class="icon">📦</div><h3>Bezorger</h3><p>Pakketten en eten bezorgen.</p></div>
+ <div class="card"><div class="icon">🕶️</div><h3>Crimineel</h3><p>Fictieve missies, bendes en illegale roleplay.</p></div>
+ <div class="card"><div class="icon">🏪</div><h3>Ondernemer</h3><p>Eigen bedrijven starten en personeel aannemen.</p></div>
+</div>
+</section>
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87c8ef);
-scene.fog = new THREE.Fog(0x87c8ef, 100, 650);
+<section id="systemen">
+<div class="subtitle">EEN COMPLETE SAMENLEVING</div>
+<h2>Alle spelsystemen ⚙️</h2>
+<div class="grid">
+ <div class="card"><div class="icon">🚨</div><h3>112 en hulpdiensten</h3><p>Politie, ambulance, brandweer, meldkamer en ziekenhuis.</p></div>
+ <div class="card"><div class="icon">⚖️</div><h3>Rechtspraak</h3><p>Rechters, advocaten, rechtbank, gevangenis en bewaking.</p></div>
+ <div class="card"><div class="icon">🚘</div><h3>Verkeersregels</h3><p>Rijbewijzen, APK, flitspalen, boetes en verzekeringen.</p></div>
+ <div class="card"><div class="icon">💳</div><h3>Economie</h3><p>Bankrekening, salaris, pinpas, leningen en belastingen.</p></div>
+ <div class="card"><div class="icon">🏠</div><h3>Vastgoed</h3><p>Huizen kopen, huren, verkopen en inrichten.</p></div>
+ <div class="card"><div class="icon">🛍️</div><h3>Winkels</h3><p>Supermarkten, kledingzaken, garages en restaurants.</p></div>
+ <div class="card"><div class="icon">🎓</div><h3>Onderwijs</h3><p>Basisschool, middelbare school, MBO, HBO en universiteit.</p></div>
+ <div class="card"><div class="icon">🎡</div><h3>Vrije tijd</h3><p>Sport, bioscopen, festivals, pretparken en uitgaan.</p></div>
+ <div class="card"><div class="icon">🐾</div><h3>Dierenwereld</h3><p>Huisdieren, wilde dieren, dierentuinen, boerderijen, asielen en dierenartsen.</p></div>
+ <div class="card"><div class="icon">👨‍👩‍👧</div><h3>Leven en familie</h3><p>Relaties, trouwen, kinderen, eten, drinken en slapen.</p></div>
+ <div class="card"><div class="icon">🚁</div><h3>Voertuigen</h3><p>Auto's, motoren, fietsen, scooters, boten en helikopters.</p></div>
+ <div class="card"><div class="icon">💬</div><h3>Multiplayer</h3><p>Openbare en privéservers, vrienden, groepen en chat.</p></div>
+</div>
+</section>
 
-const camera = new THREE.PerspectiveCamera(
-  70, innerWidth / innerHeight, 0.1, 1000
-);
+<section id="politiek">
+<div class="subtitle">BESTUUR DE STAD</div>
+<h2>Politiek en onderwereld 🏛️</h2>
+<div class="grid">
+ <div class="card"><div class="icon">🏛️</div><h3>Politiek</h3><p>Spelers kunnen burgemeester, wethouder, raadslid, minister, politicus of premier worden. Inclusief verkiezingen, partijen en wetten.</p></div>
+ <div class="card"><div class="icon">🕵️</div><h3>Onderwereld</h3><p>Fictieve bendes, missies, illegale handel, politieonderzoek en recherche.</p></div>
+ <div class="card"><div class="icon">⛓️</div><h3>Gevangenis</h3><p>Arrestaties, rechtszaken, straffen, bewaking en gevangenistransport.</p></div>
+</div>
+</section>
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-document.getElementById("game").appendChild(renderer.domElement);
+<section id="bouwen">
+<div class="subtitle">MAAK JE EIGEN WERELD</div>
+<h2>Bouwsysteem 🏗️</h2>
+<div class="grid">
+ <div class="card"><div class="icon">🏡</div><h3>Huizen bouwen</h3><p>Eigen huizen, villa's en appartementen ontwerpen en inrichten.</p></div>
+ <div class="card"><div class="icon">🏢</div><h3>Gebouwen bouwen</h3><p>Winkels, kantoren, garages en bedrijven bouwen.</p></div>
+ <div class="card"><div class="icon">🛣️</div><h3>Wegen bouwen</h3><p>Wegen, bruggen, fietspaden en rotondes aanleggen.</p></div>
+ <div class="card"><div class="icon">🗺️</div><h3>Steden bouwen</h3><p>Eigen buurten, dorpen en complete steden ontwerpen.</p></div>
+</div>
+</section>
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0x56704b, 2));
+<section id="demo">
+<div class="subtitle">INTERACTIEVE DEMO</div>
+<h2>Maak je eigen personage 👤</h2>
+<div class="two">
+ <div class="panel">
+  <h3>Jouw personage</h3>
+  <label>Naam</label>
+  <input id="name" placeholder="Typ je personagenaam">
+  <label>Beroep</label>
+  <select id="job">
+   <option>Politieagent</option>
+   <option>Ambulancepersoneel</option>
+   <option>Brandweerman</option>
+   <option>Buschauffeur</option>
+   <option>Taxichauffeur</option>
+   <option>Vrachtwagenchauffeur</option>
+   <option>Winkelmedewerker</option>
+   <option>Monteur</option>
+   <option>Bouwvakker</option>
+   <option>Bezorger</option>
+   <option>Ondernemer</option>
+   <option>Burgemeester</option>
+   <option>Premier</option>
+   <option>Vrije speler</option>
+  </select>
+  <label>Vervoer</label>
+  <select id="vehicle">
+   <option>Personenauto</option>
+   <option>Fiets</option>
+   <option>Scooter</option>
+   <option>Motor</option>
+   <option>Bus</option>
+   <option>Vrachtwagen</option>
+   <option>Boot</option>
+   <option>Helikopter</option>
+  </select>
+  <label>Weer</label>
+  <select id="weather">
+   <option>Zonnig</option>
+   <option>Regenachtig</option>
+   <option>Mistig</option>
+   <option>Sneeuw</option>
+   <option>Storm</option>
+  </select>
+  <label>Camera</label>
+  <select id="camera">
+   <option>Derde persoon</option>
+   <option>Eerste persoon</option>
+  </select>
+  <button class="btn" onclick="createCharacter()">Start mijn roleplay</button>
+  <div id="result">Vul je keuzes in en maak je personage.</div>
+ </div>
+ <div class="panel">
+  <h3>Oranjestad – kaartconcept</h3>
+  <p>Een eenvoudige schematische weergave van de stad.</p>
+  <div class="map">
+   <span>🏘️ Centrum</span>
+   <span>🏥 Ziekenhuis</span>
+   <span>🚓 Politiebureau</span>
+   <span>⚓ Haven</span>
+   <span>🏖️ Strand</span>
+   <span>🏫 School</span>
+   <span>🏪 Winkelcentrum</span>
+  </div>
+ </div>
+</div>
+</section>
 
-const sun = new THREE.DirectionalLight(0xffffff, 2);
-sun.position.set(80,120,50);
-sun.castShadow = true;
-scene.add(sun);
+<section>
+<div class="panel">
+<h2>Belangrijk over deze demo</h2>
+<p>
+Dit is een interactieve HTML-website en conceptpresentatie.
+Het is nog geen volledige 3D-game. Online multiplayer,
+accounts, echte voertuigen, een live wereld, databases en
+het volledige bouwsysteem moeten nog worden ontwikkeld.
+De genoemde 100 spelers per server is een ontwerpdoel.
+</p>
+</div>
+</section>
 
-// Materialen
-const grassMat = new THREE.MeshStandardMaterial({color:0x57934c});
-const roadMat = new THREE.MeshStandardMaterial({color:0x30343a});
-const lineMat = new THREE.MeshStandardMaterial({color:0xffffff});
-const buildingColors = [0xc78f68,0xd7c19a,0x9caebc,0xb76f60];
+</main>
 
-// Grond
-function box(w,h,d,mat,x,y,z) {
-  const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(w,h,d),mat
-  );
-  mesh.position.set(x,y,z);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  scene.add(mesh);
-  return mesh;
+<footer>
+🇳🇱 Netherlands Roleplay – Oranjestad<br>
+HTML-conceptdemo
+</footer>
+
+<script>
+function createCharacter(){
+ const name=document.getElementById("name").value.trim()||"Nieuwe speler";
+ const job=document.getElementById("job").value;
+ const vehicle=document.getElementById("vehicle").value;
+ const weather=document.getElementById("weather").value;
+ const camera=document.getElementById("camera").value;
+
+ document.getElementById("result").innerHTML=
+ "<strong style='color:#f5ad32'>Welkom in Oranjestad, "+name+"!</strong><br><br>"+
+ "Jouw beroep: "+job+"<br>"+
+ "Jouw vervoer: "+vehicle+"<br>"+
+ "Het weer: "+weather+"<br>"+
+ "Camerastandpunt: "+camera+"<br><br>"+
+ "Veel plezier in Netherlands Roleplay!";
 }
-
-box(2000,1,2000,grassMat,0,-1,0);
-box(2000,0.2,18,roadMat,0,0,0);
-
-// Wegstrepen
-for(let z=-950;z<1000;z+=24) {
-  box(0.35,0.08,10,lineMat,0,0.15,z);
-}
-
-// Gebouwen langs de weg
-for(let i=0;i<100;i++) {
-  const side = i%2===0 ? -1:1;
-  const z = -950 + i*20;
-  const height = 12 + Math.random()*35;
-  const color = buildingColors[
-    Math.floor(Math.random()*buildingColors.length)
-  ];
-  const mat = new THREE.MeshStandardMaterial({color});
-  box(14,height,14,mat,side*(18+Math.random()*8),
-      height/2,z);
-}
-
-// Auto
-const car = new THREE.Group();
-scene.add(car);
-
-const bodyMat = new THREE.MeshStandardMaterial({
-  color:0xdce4ed, metalness:0.65, roughness:0.25
-});
-const glassMat = new THREE.MeshStandardMaterial({
-  color:0x24475c, metalness:0.4, roughness:0.15
-});
-
-const body = new THREE.Mesh(
-  new THREE.BoxGeometry(2.2,0.65,4.5),bodyMat
-);
-body.position.y=0.9;
-car.add(body);
-
-const roof = new THREE.Mesh(
-  new THREE.BoxGeometry(1.8,0.65,2.1),glassMat
-);
-roof.position.set(0,1.48,-0.1);
-car.add(roof);
-
-// Wielen
-const wheels=[];
-for(const x of [-1.15,1.15]) {
-  for(const z of [-1.45,1.45]) {
-    const wheel = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.43,0.43,0.28,24),
-      new THREE.MeshStandardMaterial({color:0x151515})
-    );
-    wheel.rotation.z=Math.PI/2;
-    wheel.position.set(x,0.45,z);
-    car.add(wheel);
-    wheels.push(wheel);
-  }
-}
-
-car.position.set(0,0,0);
-
-// Camera
-let firstPerson=false;
-function updateCamera() {
-  if(firstPerson) {
-    camera.position.copy(car.position).add(
-      new THREE.Vector3(0,1.7,-0.1).applyQuaternion(car.quaternion)
-    );
-    camera.lookAt(
-      car.position.clone().add(
-        new THREE.Vector3(0,1.4,15).applyQuaternion(car.quaternion)
-      )
-    );
-  } else {
-    const offset = new THREE.Vector3(0,5,-10)
-      .applyQuaternion(car.quaternion);
-    camera.position.copy(car.position).add(offset);
-    camera.lookAt(car.position.clone().add(
-      new THREE.Vector3(0,1,4).applyQuaternion(car.quaternion)
-    ));
-  }
-}
-
-document.getElementById("camera").onclick=()=>{
-  firstPerson=!firstPerson;
-};
-
-// Besturing
-const keys={w:false,a:false,s:false,d:false};
-addEventListener("keydown",e=>{
-  const k=e.key.toLowerCase();
-  if(k in keys) keys[k]=true;
-  if(k==="c") firstPerson=!firstPerson;
-});
-addEventListener("keyup",e=>{
-  const k=e.key.toLowerCase();
-  if(k in keys) keys[k]=false;
-});
-
-// Mobiele knoppen
-document.querySelectorAll("#mobile button").forEach(button=>{
-  const key=button.dataset.key;
-  button.addEventListener("pointerdown",e=>{
-    e.preventDefault(); keys[key]=true;
-  });
-  ["pointerup","pointerleave","pointercancel"].forEach(event=>{
-    button.addEventListener(event,()=>keys[key]=false);
-  });
-});
-
-let velocity=0;
-let steering=0;
-let battery=100;
-let lastTime=performance.now();
-
-function animate(now) {
-  requestAnimationFrame(animate);
-  const dt=Math.min((now-lastTime)/1000,0.04);
-  lastTime=now;
-
-  // Accelereren en remmen
-  if(keys.w) velocity+=18*dt;
-  if(keys.s) velocity-=30*dt;
-  if(!keys.w && !keys.s) velocity*=Math.pow(0.985,dt*60);
-  velocity=THREE.MathUtils.clamp(velocity,-12,48);
-
-  // Sturen
-  const direction=(keys.a?1:0)-(keys.d?1:0);
-  steering=THREE.MathUtils.lerp(steering,direction,dt*5);
-
-  if(Math.abs(velocity)>0.2) {
-    car.rotation.y += steering * dt *
-      Math.min(Math.abs(velocity)/8,2) *
-      Math.sign(velocity);
-  }
-
-  const forward=new THREE.Vector3(0,0,1)
-    .applyQuaternion(car.quaternion);
-
-  car.position.addScaledVector(forward,velocity*dt);
-
-  wheels.forEach(w=>{
-    w.rotation.x += velocity*dt;
-  });
-
-  battery=Math.max(0,battery-Math.abs(velocity)*dt*0.0005);
-
-  document.getElementById("speed").textContent=
-    Math.round(Math.abs(velocity)*3.6)+" KM/U";
-  document.getElementById("battery").textContent=
-    Math.round(battery)+"%";
-
-  // Eenvoudige plaatsnamen op basis van de route
-  const z=car.position.z;
-  let city="Amsterdam";
-  if(z>150) city="Utrecht";
-  if(z>350) city="Arnhem";
-  if(z < -150) city="Den Haag";
-  if(z < -350) city="Rotterdam";
-  document.getElementById("location").textContent=city;
-
-  updateCamera();
-  renderer.render(scene,camera);
-}
-
-requestAnimationFrame(animate);
-
-addEventListener("resize",()=>{
-  camera.aspect=innerWidth/innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth,innerHeight);
-});
 </script>
+
 </body>
 </html>
