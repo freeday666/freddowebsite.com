@@ -1,382 +1,186 @@
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Netherlands Roleplay - Oranjestad</title>
-<style>
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
- margin:0;
- font-family:Arial,sans-serif;
- background:#101827;
- color:white;
-}
-header{
- background:#09111f;
- padding:18px;
- position:sticky;
- top:0;
- z-index:10;
- border-bottom:2px solid #e9a52c;
-}
-nav{
- max-width:1200px;
- margin:auto;
- display:flex;
- justify-content:space-between;
- align-items:center;
- gap:15px;
- flex-wrap:wrap;
-}
-.logo{font-size:21px;font-weight:bold}
-.logo span{color:#f5ad32}
-nav a{
- color:white;
- text-decoration:none;
- padding:9px;
- font-size:14px;
-}
-nav a:hover{color:#f5ad32}
-.hero{
- min-height:440px;
- padding:80px 8%;
- display:flex;
- align-items:center;
- background:linear-gradient(90deg,#101827 20%,#173b52 100%);
-}
-.hero-content{max-width:750px}
-.hero h1{font-size:55px;margin:10px 0}
-.hero h1 span{color:#f5ad32}
-.hero p{color:#c2d0df;line-height:1.7}
-.btn{
- display:inline-block;
- padding:13px 20px;
- background:#f5ad32;
- color:#171717;
- border:0;
- border-radius:8px;
- font-weight:bold;
- cursor:pointer;
- text-decoration:none;
- margin-top:12px;
-}
-.container{max-width:1200px;margin:auto;padding:30px 20px}
-section{scroll-margin-top:85px}
-h2{font-size:29px;margin-bottom:20px}
-.subtitle{color:#f5ad32;font-size:12px;font-weight:bold;letter-spacing:2px}
-.grid{
- display:grid;
- grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
- gap:15px;
-}
-.card{
- background:#1a2940;
- border:1px solid #30435d;
- border-radius:13px;
- padding:20px;
-}
-.card .icon{font-size:32px}
-.card h3{margin:10px 0}
-.card p{color:#b9c7d8;line-height:1.6;font-size:14px}
-.stats{
- display:grid;
- grid-template-columns:repeat(4,1fr);
- gap:12px;
- margin:25px 0;
-}
-.stat{
- background:#1a2940;
- padding:18px;
- border-radius:12px;
- text-align:center;
-}
-.stat strong{display:block;color:#f5ad32;font-size:27px}
-.stat span{color:#b9c7d8;font-size:13px}
-.panel{
- background:#1a2940;
- border:1px solid #30435d;
- border-radius:14px;
- padding:22px;
-}
-.two{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:18px;
-}
-select,input{
- display:block;
- width:100%;
- padding:12px;
- margin:8px 0 15px;
- border:1px solid #40536d;
- border-radius:8px;
- background:#101827;
- color:white;
-}
-label{font-size:14px;color:#d5e1ef}
-#result{
- background:#101827;
- border:1px solid #40536d;
- border-radius:9px;
- padding:15px;
- margin-top:15px;
- color:#c9d8e8;
- min-height:60px;
-}
-.map{
- min-height:260px;
- border-radius:12px;
- padding:20px;
- display:flex;
- flex-wrap:wrap;
- align-items:center;
- justify-content:center;
- gap:12px;
- background:
- linear-gradient(90deg,transparent 48%,#e5dfca 49%,#e5dfca 52%,transparent 53%),
- linear-gradient(0deg,transparent 48%,#e5dfca 49%,#e5dfca 52%,transparent 53%),
- #719c78;
-}
-.map span{
- background:#13243a;
- padding:10px;
- border-radius:8px;
-}
-footer{
- text-align:center;
- padding:30px;
- background:#09111f;
- color:#9eafc5;
- margin-top:45px;
-}
-@media(max-width:700px){
- .hero{padding:55px 22px}
- .hero h1{font-size:39px}
- .stats{grid-template-columns:repeat(2,1fr)}
- .two{grid-template-columns:1fr}
- nav{justify-content:center}
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Mobiele stadsrit</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #263238;
+      font-family: Arial, sans-serif;
+      touch-action: none;
+    }
+    canvas { display: block; width: 100vw; height: 100vh; }
+    .controls {
+      position: fixed;
+      inset: auto 0 20px;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 22px;
+      pointer-events: none;
+    }
+    .group { display: flex; gap: 14px; }
+    button {
+      width: 68px;
+      height: 68px;
+      border: 2px solid #fff9;
+      border-radius: 50%;
+      background: #111b;
+      color: white;
+      font-size: 27px;
+      font-weight: bold;
+      pointer-events: auto;
+      touch-action: none;
+      user-select: none;
+    }
+    button:active { background: #398aeecc; }
+    #status {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: #111b;
+      color: white;
+      font-size: 15px;
+    }
+  </style>
 </head>
-
 <body>
-
-<header>
-<nav>
- <div class="logo">🇳🇱 NETHERLANDS ROLEPLAY <span>ORANJESTAD</span></div>
- <div>
-  <a href="#wereld">Wereld</a>
-  <a href="#jobs">Jobs</a>
-  <a href="#systemen">Systemen</a>
-  <a href="#politiek">Politiek</a>
-  <a href="#bouwen">Bouwen</a>
-  <a href="#demo">Demo</a>
- </div>
-</nav>
-</header>
-
-<div class="hero">
-<div class="hero-content">
- <div class="subtitle">DE ULTIEME NEDERLANDSE ROLEPLAYWERELD</div>
- <h1>Jouw leven.<br><span>Jouw Oranjestad.</span></h1>
- <p>
-  Ontdek een enorme Nederlandse open wereld.
-  Word politieagent, burgemeester, ondernemer of crimineel.
-  Bouw je eigen huis, start bedrijven en speel samen met vrienden.
- </p>
- <a class="btn" href="#demo">Ontdek de demo</a>
-</div>
-</div>
-
-<main class="container">
-
-<div class="stats">
- <div class="stat"><strong>12</strong><span>Beroepsrichtingen</span></div>
- <div class="stat"><strong>5</strong><span>Inspiratiesteden</span></div>
- <div class="stat"><strong>100</strong><span>Spelers per server als doel</span></div>
- <div class="stat"><strong>4</strong><span>Seizoenen</span></div>
-</div>
-
-<section id="wereld">
-<div class="subtitle">ONTDEK DE WERELD</div>
-<h2>De wereld van Oranjestad 🏙️</h2>
-<div class="grid">
- <div class="card"><div class="icon">🏙️</div><h3>Steden</h3><p>Amsterdam, Rotterdam, Den Haag, Gouda en Amersfoort als inspiratie voor een grote fictieve Nederlandse wereld.</p></div>
- <div class="card"><div class="icon">🚦</div><h3>Verkeer</h3><p>Wegen, snelwegen, fietspaden, verkeerslichten, rotondes en parkeerplaatsen.</p></div>
- <div class="card"><div class="icon">🌦️</div><h3>Weersysteem</h3><p>Regen, sneeuw, storm, mist, hagel, bliksem en vier seizoenen.</p></div>
- <div class="card"><div class="icon">⚓</div><h3>Havens en stranden</h3><p>Havens, stranden, boulevards, boten en veerboten.</p></div>
- <div class="card"><div class="icon">✈️</div><h3>Luchthaven</h3><p>Vliegtuigen, helikopters en luchthavenpersoneel.</p></div>
- <div class="card"><div class="icon">🌳</div><h3>Natuur</h3><p>Bossen, natuurgebieden, wilde dieren en parken.</p></div>
-</div>
-</section>
-
-<section id="jobs">
-<div class="subtitle">KIES JE CARRIÈRE</div>
-<h2>Alle beroepen 👷</h2>
-<div class="grid">
- <div class="card"><div class="icon">👮</div><h3>Politieagent</h3><p>Surveillance, achtervolgingen, arrestaties en recherche.</p></div>
- <div class="card"><div class="icon">🚑</div><h3>Ambulance</h3><p>112-meldingen, spoedritten en ziekenhuiszorg.</p></div>
- <div class="card"><div class="icon">🚒</div><h3>Brandweer</h3><p>Brandbestrijding, reddingen en ongelukken.</p></div>
- <div class="card"><div class="icon">🚌</div><h3>Buschauffeur</h3><p>Openbaar vervoer en buslijnen.</p></div>
- <div class="card"><div class="icon">🚕</div><h3>Taxichauffeur</h3><p>Passagiers vervoeren en een taxibedrijf runnen.</p></div>
- <div class="card"><div class="icon">🚛</div><h3>Vrachtwagenchauffeur</h3><p>Transport, vracht en logistiek.</p></div>
- <div class="card"><div class="icon">🛒</div><h3>Winkelmedewerker</h3><p>Werken in supermarkten en winkels.</p></div>
- <div class="card"><div class="icon">🔧</div><h3>Monteur</h3><p>Auto's repareren en onderhouden.</p></div>
- <div class="card"><div class="icon">🏗️</div><h3>Bouwvakker</h3><p>Huizen, gebouwen en wegen bouwen.</p></div>
- <div class="card"><div class="icon">📦</div><h3>Bezorger</h3><p>Pakketten en eten bezorgen.</p></div>
- <div class="card"><div class="icon">🕶️</div><h3>Crimineel</h3><p>Fictieve missies, bendes en illegale roleplay.</p></div>
- <div class="card"><div class="icon">🏪</div><h3>Ondernemer</h3><p>Eigen bedrijven starten en personeel aannemen.</p></div>
-</div>
-</section>
-
-<section id="systemen">
-<div class="subtitle">EEN COMPLETE SAMENLEVING</div>
-<h2>Alle spelsystemen ⚙️</h2>
-<div class="grid">
- <div class="card"><div class="icon">🚨</div><h3>112 en hulpdiensten</h3><p>Politie, ambulance, brandweer, meldkamer en ziekenhuis.</p></div>
- <div class="card"><div class="icon">⚖️</div><h3>Rechtspraak</h3><p>Rechters, advocaten, rechtbank, gevangenis en bewaking.</p></div>
- <div class="card"><div class="icon">🚘</div><h3>Verkeersregels</h3><p>Rijbewijzen, APK, flitspalen, boetes en verzekeringen.</p></div>
- <div class="card"><div class="icon">💳</div><h3>Economie</h3><p>Bankrekening, salaris, pinpas, leningen en belastingen.</p></div>
- <div class="card"><div class="icon">🏠</div><h3>Vastgoed</h3><p>Huizen kopen, huren, verkopen en inrichten.</p></div>
- <div class="card"><div class="icon">🛍️</div><h3>Winkels</h3><p>Supermarkten, kledingzaken, garages en restaurants.</p></div>
- <div class="card"><div class="icon">🎓</div><h3>Onderwijs</h3><p>Basisschool, middelbare school, MBO, HBO en universiteit.</p></div>
- <div class="card"><div class="icon">🎡</div><h3>Vrije tijd</h3><p>Sport, bioscopen, festivals, pretparken en uitgaan.</p></div>
- <div class="card"><div class="icon">🐾</div><h3>Dierenwereld</h3><p>Huisdieren, wilde dieren, dierentuinen, boerderijen, asielen en dierenartsen.</p></div>
- <div class="card"><div class="icon">👨‍👩‍👧</div><h3>Leven en familie</h3><p>Relaties, trouwen, kinderen, eten, drinken en slapen.</p></div>
- <div class="card"><div class="icon">🚁</div><h3>Voertuigen</h3><p>Auto's, motoren, fietsen, scooters, boten en helikopters.</p></div>
- <div class="card"><div class="icon">💬</div><h3>Multiplayer</h3><p>Openbare en privéservers, vrienden, groepen en chat.</p></div>
-</div>
-</section>
-
-<section id="politiek">
-<div class="subtitle">BESTUUR DE STAD</div>
-<h2>Politiek en onderwereld 🏛️</h2>
-<div class="grid">
- <div class="card"><div class="icon">🏛️</div><h3>Politiek</h3><p>Spelers kunnen burgemeester, wethouder, raadslid, minister, politicus of premier worden. Inclusief verkiezingen, partijen en wetten.</p></div>
- <div class="card"><div class="icon">🕵️</div><h3>Onderwereld</h3><p>Fictieve bendes, missies, illegale handel, politieonderzoek en recherche.</p></div>
- <div class="card"><div class="icon">⛓️</div><h3>Gevangenis</h3><p>Arrestaties, rechtszaken, straffen, bewaking en gevangenistransport.</p></div>
-</div>
-</section>
-
-<section id="bouwen">
-<div class="subtitle">MAAK JE EIGEN WERELD</div>
-<h2>Bouwsysteem 🏗️</h2>
-<div class="grid">
- <div class="card"><div class="icon">🏡</div><h3>Huizen bouwen</h3><p>Eigen huizen, villa's en appartementen ontwerpen en inrichten.</p></div>
- <div class="card"><div class="icon">🏢</div><h3>Gebouwen bouwen</h3><p>Winkels, kantoren, garages en bedrijven bouwen.</p></div>
- <div class="card"><div class="icon">🛣️</div><h3>Wegen bouwen</h3><p>Wegen, bruggen, fietspaden en rotondes aanleggen.</p></div>
- <div class="card"><div class="icon">🗺️</div><h3>Steden bouwen</h3><p>Eigen buurten, dorpen en complete steden ontwerpen.</p></div>
-</div>
-</section>
-
-<section id="demo">
-<div class="subtitle">INTERACTIEVE DEMO</div>
-<h2>Maak je eigen personage 👤</h2>
-<div class="two">
- <div class="panel">
-  <h3>Jouw personage</h3>
-  <label>Naam</label>
-  <input id="name" placeholder="Typ je personagenaam">
-  <label>Beroep</label>
-  <select id="job">
-   <option>Politieagent</option>
-   <option>Ambulancepersoneel</option>
-   <option>Brandweerman</option>
-   <option>Buschauffeur</option>
-   <option>Taxichauffeur</option>
-   <option>Vrachtwagenchauffeur</option>
-   <option>Winkelmedewerker</option>
-   <option>Monteur</option>
-   <option>Bouwvakker</option>
-   <option>Bezorger</option>
-   <option>Ondernemer</option>
-   <option>Burgemeester</option>
-   <option>Premier</option>
-   <option>Vrije speler</option>
-  </select>
-  <label>Vervoer</label>
-  <select id="vehicle">
-   <option>Personenauto</option>
-   <option>Fiets</option>
-   <option>Scooter</option>
-   <option>Motor</option>
-   <option>Bus</option>
-   <option>Vrachtwagen</option>
-   <option>Boot</option>
-   <option>Helikopter</option>
-  </select>
-  <label>Weer</label>
-  <select id="weather">
-   <option>Zonnig</option>
-   <option>Regenachtig</option>
-   <option>Mistig</option>
-   <option>Sneeuw</option>
-   <option>Storm</option>
-  </select>
-  <label>Camera</label>
-  <select id="camera">
-   <option>Derde persoon</option>
-   <option>Eerste persoon</option>
-  </select>
-  <button class="btn" onclick="createCharacter()">Start mijn roleplay</button>
-  <div id="result">Vul je keuzes in en maak je personage.</div>
- </div>
- <div class="panel">
-  <h3>Oranjestad – kaartconcept</h3>
-  <p>Een eenvoudige schematische weergave van de stad.</p>
-  <div class="map">
-   <span>🏘️ Centrum</span>
-   <span>🏥 Ziekenhuis</span>
-   <span>🚓 Politiebureau</span>
-   <span>⚓ Haven</span>
-   <span>🏖️ Strand</span>
-   <span>🏫 School</span>
-   <span>🏪 Winkelcentrum</span>
+<canvas id="game"></canvas>
+<div id="status">🚗 Stadsrit</div>
+<div class="controls">
+  <div class="group">
+    <button data-key="left" aria-label="Links">◀</button>
+    <button data-key="right" aria-label="Rechts">▶</button>
   </div>
- </div>
+  <div class="group">
+    <button data-key="brake" aria-label="Rem">▼</button>
+    <button data-key="gas" aria-label="Gas">▲</button>
+  </div>
 </div>
-</section>
-
-<section>
-<div class="panel">
-<h2>Belangrijk over deze demo</h2>
-<p>
-Dit is een interactieve HTML-website en conceptpresentatie.
-Het is nog geen volledige 3D-game. Online multiplayer,
-accounts, echte voertuigen, een live wereld, databases en
-het volledige bouwsysteem moeten nog worden ontwikkeld.
-De genoemde 100 spelers per server is een ontwerpdoel.
-</p>
-</div>
-</section>
-
-</main>
-
-<footer>
-🇳🇱 Netherlands Roleplay – Oranjestad<br>
-HTML-conceptdemo
-</footer>
 
 <script>
-function createCharacter(){
- const name=document.getElementById("name").value.trim()||"Nieuwe speler";
- const job=document.getElementById("job").value;
- const vehicle=document.getElementById("vehicle").value;
- const weather=document.getElementById("weather").value;
- const camera=document.getElementById("camera").value;
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
- document.getElementById("result").innerHTML=
- "<strong style='color:#f5ad32'>Welkom in Oranjestad, "+name+"!</strong><br><br>"+
- "Jouw beroep: "+job+"<br>"+
- "Jouw vervoer: "+vehicle+"<br>"+
- "Het weer: "+weather+"<br>"+
- "Camerastandpunt: "+camera+"<br><br>"+
- "Veel plezier in Netherlands Roleplay!";
+let W, H, dpr;
+function resize() {
+  dpr = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
-</script>
+addEventListener("resize", resize);
+resize();
 
+const keys = { left:false, right:false, gas:false, brake:false };
+document.querySelectorAll("button").forEach(btn => {
+  const key = btn.dataset.key;
+  const on = e => { e.preventDefault(); keys[key] = true; };
+  const off = e => { e.preventDefault(); keys[key] = false; };
+  btn.addEventListener("pointerdown", on);
+  btn.addEventListener("pointerup", off);
+  btn.addEventListener("pointercancel", off);
+  btn.addEventListener("pointerleave", off);
+});
+
+const car = { x:0, y:0, angle:0, speed:0 };
+const road = 112;
+let distance = 0;
+
+function draw() {
+  const scale = Math.max(0.7, Math.min(W, H) / 650);
+  ctx.save();
+  ctx.translate(W/2, H/2);
+  ctx.scale(scale, scale);
+  ctx.rotate(-car.angle);
+  ctx.translate(-car.x, -car.y);
+
+  // Gras
+  ctx.fillStyle = "#568b4e";
+  ctx.fillRect(car.x-W, car.y-H, 2*W, 2*H);
+
+  // Stadsblokken
+  const grid = 270;
+  const startX = Math.floor((car.x-W)/grid)*grid;
+  const startY = Math.floor((car.y-H)/grid)*grid;
+  for (let x=startX; x<car.x+W; x+=grid) {
+    for (let y=startY; y<car.y+H; y+=grid) {
+      ctx.fillStyle = "#73816d";
+      ctx.fillRect(x+road/2+8, y+road/2+8, grid-road-16, grid-road-16);
+      ctx.fillStyle = "#9b927e";
+      ctx.fillRect(x+road/2+22, y+road/2+22, grid-road-44, grid-road-44);
+      // Kleine daken/huizen
+      ctx.fillStyle = "#c9b995";
+      ctx.fillRect(x+road/2+42, y+road/2+42, 54, 42);
+      ctx.fillStyle = "#5d7f91";
+      ctx.fillRect(x+road/2+118, y+road/2+58, 48, 54);
+      ctx.fillStyle = "#78965d";
+      ctx.beginPath();
+      ctx.arc(x+road/2+190, y+road/2+190, 13, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // Straten
+  ctx.fillStyle = "#42474a";
+  for (let x=startX; x<car.x+W; x+=grid) ctx.fillRect(x-road/2, car.y-H, road, 2*H);
+  for (let y=startY; y<car.y+H; y+=grid) ctx.fillRect(car.x-W, y-road/2, 2*W, road);
+
+  // Wegmarkeringen
+  ctx.strokeStyle = "#e8d994";
+  ctx.lineWidth = 3;
+  ctx.setLineDash([18, 17]);
+  for (let x=startX; x<car.x+W; x+=grid) {
+    ctx.beginPath(); ctx.moveTo(x, car.y-H); ctx.lineTo(x, car.y+H); ctx.stroke();
+  }
+  for (let y=startY; y<car.y+H; y+=grid) {
+    ctx.beginPath(); ctx.moveTo(car.x-W, y); ctx.lineTo(car.x+W, y); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // Auto
+  ctx.save();
+  ctx.translate(car.x, car.y);
+  ctx.fillStyle = "#111";
+  ctx.fillRect(-18, -12, 9, 8); ctx.fillRect(9, -12, 9, 8);
+  ctx.fillRect(-18, 5, 9, 8); ctx.fillRect(9, 5, 9, 8);
+  ctx.fillStyle = "#e53935";
+  ctx.fillRect(-22, -10, 44, 20);
+  ctx.fillStyle = "#bde6f2";
+  ctx.fillRect(-10, -8, 19, 16);
+  ctx.fillStyle = "#fff4b0";
+  ctx.fillRect(17, -8, 5, 5); ctx.fillRect(17, 3, 5, 5);
+  ctx.restore();
+
+  ctx.restore();
+
+  // HUD
+  document.getElementById("status").textContent =
+    `🚗 Snelheid: ${Math.round(Math.abs(car.speed)*18)} km/u`;
+}
+
+function update() {
+  if (keys.gas) car.speed = Math.min(car.speed + 0.12, 7);
+  else if (keys.brake) car.speed = Math.max(car.speed - 0.16, -3);
+  else car.speed *= 0.985;
+
+  if (keys.left) car.angle -= 0.045 * (car.speed < 0 ? -1 : 1);
+  if (keys.right) car.angle += 0.045 * (car.speed < 0 ? -1 : 1);
+
+  car.x += Math.sin(car.angle) * car.speed;
+  car.y -= Math.cos(car.angle) * car.speed;
+  distance += Math.abs(car.speed);
+
+  draw();
+  requestAnimationFrame(update);
+}
+update();
+</script>
 </body>
 </html>
