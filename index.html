@@ -2,602 +2,858 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090814">
   <title>Freddo Porto</title>
+
   <style>
     :root {
-      color-scheme: dark;
-      --bg: #080b1b;
-      --card: #151a35;
-      --card2: #1b2143;
-      --purple: #773cff;
-      --purple2: #a477ff;
-      --text: #f7f7ff;
-      --muted: #9da4c8;
-      --green: #52e3a1;
-      --red: #ff5268;
+      --bg: #090814;
+      --screen: #090719;
+      --purple: #7628fa;
+      --purple-light: #a178ff;
+      --white: #f8f5ff;
+      --muted: #918ba9;
+      --red: #f33c46;
+      --green: #48dfa2;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     * { box-sizing: border-box; }
 
     body {
-      margin: 0;
       min-height: 100vh;
-      color: var(--text);
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: var(--white);
       background:
-        radial-gradient(ellipse at 80% 0%, #26205c 0, transparent 45%),
-        linear-gradient(145deg, #11152c, var(--bg) 68%);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        radial-gradient(ellipse at 50% 60%, #29213f 0, transparent 55%),
+        linear-gradient(145deg, #100f19, #080710);
     }
 
     button, input { font: inherit; }
 
-    .app {
-      width: min(100%, 480px);
-      min-height: 100vh;
-      margin: 0 auto;
-      padding: 26px 20px 34px;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 8px 2px 24px;
-    }
-
-    .brand { font-size: 24px; font-weight: 800; letter-spacing: -.7px; }
-    .brand span { color: var(--purple2); }
-
-    .status {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 12px #52e3a188;
-    }
-
-    .card {
-      background: linear-gradient(145deg, #1b2041ee, #11152eee);
-      border: 1px solid #ffffff12;
-      border-radius: 24px;
-      padding: 20px;
-      box-shadow: 0 16px 45px #0003;
-      margin-bottom: 16px;
-    }
-
-    .join-card { padding: 18px; }
-
-    .join-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    input {
-      min-width: 0;
-      flex: 1;
-      color: var(--text);
-      background: #090d20;
-      border: 1px solid #ffffff1c;
-      border-radius: 14px;
-      padding: 13px 14px;
-      outline: none;
-    }
-
-    input:focus { border-color: var(--purple2); }
-
     button {
-      color: var(--text);
+      color: inherit;
       border: 0;
       cursor: pointer;
-      transition: transform .12s, filter .12s, opacity .12s;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    button:hover { filter: brightness(1.12); }
-    button:active { transform: scale(.97); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
 
-    .primary {
-      background: linear-gradient(135deg, #8f50ff, #6728ed);
-      border-radius: 14px;
-      padding: 0 18px;
+    /* Desktop: telefoonbehuizing */
+    .phone {
+      position: relative;
+      width: min(390px, 100%);
+      height: min(844px, calc(100dvh - 36px));
+      min-height: 620px;
+      padding: 9px;
+      overflow: hidden;
+      border: 2px solid #777783;
+      border-radius: 54px;
+      background: linear-gradient(115deg, #383841, #07070b 18%, #282833 85%, #55555c);
+      box-shadow:
+        0 34px 90px #0009,
+        inset 2px 0 3px #ffffff4a,
+        inset -2px 0 4px #000;
+    }
+
+    .phone::before,
+    .phone::after {
+      content: "";
+      position: absolute;
+      left: -4px;
+      width: 3px;
+      border-radius: 4px 0 0 4px;
+      background: linear-gradient(#aaa, #32323a, #777);
+    }
+
+    .phone::before { top: 145px; height: 74px; }
+    .phone::after { top: 238px; height: 94px; }
+
+    .screen {
+      position: relative;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0 24px;
+      border: 1px solid #ffffff0d;
+      border-radius: 45px;
+      background:
+        radial-gradient(ellipse at 50% 18%, #1c1150 0, transparent 40%),
+        linear-gradient(180deg, #090719, #0a071a 70%, #0d0920);
+    }
+
+    .status {
+      height: 64px;
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 14px 2px 0;
+      font-size: 13px;
       font-weight: 700;
     }
 
-    button:disabled { opacity: .45; cursor: not-allowed; }
+    .status-time { z-index: 2; }
 
-    .you {
-      display: flex;
-      align-items: center;
-      gap: 14px;
+    .island {
+      position: absolute;
+      z-index: 1;
+      top: 14px;
+      left: 50%;
+      width: 112px;
+      height: 28px;
+      transform: translateX(-50%);
+      border-radius: 20px;
+      background: #020207;
+      box-shadow: inset 0 1px 2px #ffffff12;
     }
 
-    .avatar {
-      display: grid;
-      flex: 0 0 auto;
-      width: 48px;
-      height: 48px;
-      place-items: center;
+    .island::after {
+      content: "";
+      position: absolute;
+      top: 9px;
+      right: 14px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #9b70ff, #4d36b9);
-      font-size: 22px;
+      background: #111a4c;
+      box-shadow: 0 0 6px #454cff;
     }
 
-    .you-name { font-size: 17px; font-weight: 750; }
-    .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
-
-    .section-title {
+    .status-icons {
+      z-index: 2;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-      font-size: 18px;
-      font-weight: 750;
+      gap: 5px;
     }
 
-    .channels {
+    .signal {
+      display: flex;
+      height: 13px;
+      align-items: end;
+      gap: 2px;
+    }
+
+    .signal i {
+      display: block;
+      width: 3px;
+      border-radius: 2px;
+      background: white;
+    }
+
+    .signal i:nth-child(1) { height: 5px; }
+    .signal i:nth-child(2) { height: 7px; }
+    .signal i:nth-child(3) { height: 10px; }
+    .signal i:nth-child(4) { height: 12px; }
+
+    .wifi { font-size: 13px; line-height: 1; }
+
+    .battery {
+      width: 19px;
+      height: 10px;
+      border: 1.5px solid white;
+      border-radius: 3px;
+      position: relative;
+    }
+
+    .battery::before {
+      content: "";
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      width: 12px;
+      height: 5px;
+      border-radius: 1px;
+      background: white;
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      right: -4px;
+      width: 2px;
+      height: 4px;
+      border-radius: 0 2px 2px 0;
+      background: white;
+    }
+
+    .app-header {
+      flex: 0 0 auto;
+      text-align: center;
+      padding: 20px 0 0;
+    }
+
+    .app-title {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -.45px;
+    }
+
+    .connection {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      margin-top: 9px;
+      color: #f0ecff;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .online-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 9px #48dfa288;
+    }
+
+    .channel-row {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 9px;
+      gap: 8px;
+      margin-top: 27px;
     }
 
     .channel {
-      min-height: 66px;
-      border: 1px solid #ffffff12;
-      border-radius: 18px;
-      background: #ffffff08;
-      color: var(--muted);
-      font-size: 22px;
-      font-weight: 800;
-    }
-
-    .channel small {
-      display: block;
-      margin-top: 3px;
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: .7px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #ffffff08;
+      border-radius: 15px;
+      color: #c9c2e3;
+      background: #211a3e;
+      font-size: 17px;
+      font-weight: 750;
+      transition: .18s ease;
     }
 
     .channel.active {
       color: white;
-      border-color: #a477ff99;
-      background: linear-gradient(145deg, #8145f5, #4d2bb3);
-      box-shadow: 0 7px 22px #773cff44;
+      background: linear-gradient(145deg, #8141ff, #4d19c2);
+      box-shadow: 0 5px 18px #712bfa55;
     }
 
-    .talk {
-      width: 100%;
-      min-height: 116px;
-      margin-top: 16px;
-      border-radius: 22px;
-      background: linear-gradient(145deg, #252b50, #171c39);
-      border: 1px solid #ffffff14;
-      font-size: 17px;
-      font-weight: 750;
-      user-select: none;
+    .channel.emergency-channel {
+      color: #ff827f;
+      font-size: 19px;
+    }
+
+    .channel.emergency-channel.active {
+      color: white;
+      background: linear-gradient(145deg, #ff5757, #bd1834);
+    }
+
+    .talk-wrap {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      padding: 20px 0 19px;
+    }
+
+    .talk-button {
+      width: 102px;
+      height: 102px;
+      display: grid;
+      place-items: center;
+      border: 9px solid #382071;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #852dff, #5d13dd);
+      box-shadow: 0 0 28px #722eff36;
       touch-action: none;
+      user-select: none;
     }
 
-    .talk .mic { display: block; font-size: 29px; margin-bottom: 7px; }
-    .talk.active-talk {
-      background: linear-gradient(145deg, #ff5c73, #cb244e);
-      box-shadow: 0 0 28px #ff526855;
+    .talk-button svg { width: 36px; height: 36px; }
+    .talk-button.recording {
+      border-color: #67182c;
+      background: linear-gradient(145deg, #ff6475, #ce234c);
+      box-shadow: 0 0 28px #ff3b594a;
       animation: pulse .8s infinite alternate;
     }
 
-    @keyframes pulse { to { transform: scale(1.015); } }
+    @keyframes pulse { to { transform: scale(1.05); } }
 
-    .hint {
-      margin: 10px 2px 0;
-      text-align: center;
+    .talk-caption {
+      min-height: 16px;
+      margin-top: 8px;
       color: var(--muted);
-      font-size: 12px;
+      text-align: center;
+      font-size: 10px;
     }
 
-    .people { display: grid; gap: 3px; }
+    .users-card {
+      min-height: 0;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      padding: 13px 11px 7px;
+      overflow: hidden;
+      border: 1px solid #ffffff0a;
+      border-radius: 21px;
+      background: linear-gradient(145deg, #17132bdf, #100d20ed);
+      box-shadow: inset 0 1px 0 #ffffff07;
+    }
 
-    .person {
+    .users-heading {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 11px 2px;
-      border-bottom: 1px solid #ffffff0c;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 0 2px 8px;
     }
 
-    .person:last-child { border-bottom: 0; }
-    .person-info { flex: 1; min-width: 0; }
-    .person-name { font-weight: 650; overflow-wrap: anywhere; }
-    .person-state { color: var(--muted); font-size: 12px; margin-top: 4px; }
-    .online { color: var(--green); }
+    .users-heading strong { font-size: 13px; }
 
-    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .action-btn {
+    .users-count {
+      color: var(--muted);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .users-list {
+      min-height: 0;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #4a3b72 transparent;
+    }
+
+    .user {
       min-height: 48px;
-      border-radius: 15px;
-      background: #ffffff0d;
-      border: 1px solid #ffffff18;
-      font-weight: 700;
-    }
-    .emergency {
-      color: white;
-      background: linear-gradient(135deg, #ff5268, #d92346);
-      border: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 2px;
     }
 
-    .messages {
-      max-height: 190px;
-      overflow: auto;
+    .avatar {
+      width: 31px;
+      height: 31px;
+      flex: 0 0 auto;
       display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid #ffffff1a;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #f7d9c7, #8a739e);
+      font-size: 16px;
+    }
+
+    .avatar.me { background: linear-gradient(145deg, #f5bbcc, #a35492); }
+    .avatar.bot { background: linear-gradient(145deg, #cabafa, #493483); }
+
+    .user-info { min-width: 0; flex: 1; }
+
+    .user-name {
+      overflow: hidden;
+      color: #f1edfa;
+      font-size: 12px;
+      font-weight: 650;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-subtitle {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .user-arrow {
+      color: #655b80;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .bottom-area {
+      flex: 0 0 auto;
+      padding: 11px 0 19px;
+    }
+
+    .message-form {
+      display: flex;
+      align-items: center;
       gap: 8px;
     }
 
-    .message {
-      padding: 10px 12px;
-      border-radius: 13px;
-      background: #ffffff0b;
-      overflow-wrap: anywhere;
+    .message-input {
+      min-width: 0;
+      height: 43px;
+      flex: 1;
+      padding: 0 13px;
+      outline: none;
+      color: var(--white);
+      border: 1px solid #ffffff08;
+      border-radius: 25px;
+      background: #211a3d;
+      font-size: 11px;
     }
 
-    .message strong { color: var(--purple2); }
-    .message time { color: var(--muted); font-size: 10px; float: right; }
+    .message-input::placeholder { color: #756d8c; }
+    .message-input:focus { border-color: #8b55ff99; }
 
-    .compose { display: flex; gap: 8px; margin-top: 12px; }
-    .compose button { min-width: 52px; }
-
-    .log {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.7;
-      max-height: 100px;
-      overflow: auto;
-    }
-
-    .empty { color: var(--muted); font-size: 13px; padding: 7px 0; }
-    .notice {
-      display: none;
-      padding: 13px;
-      margin-bottom: 14px;
-      border-radius: 14px;
+    .send-button {
+      width: 35px;
+      height: 35px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
       color: white;
-      font-weight: 750;
-      background: linear-gradient(135deg, #ff5268, #a91e48);
-      animation: pulse .7s infinite alternate;
+      background: #332657;
+      font-size: 15px;
+    }
+
+    .emergency-button {
+      width: 43px;
+      height: 43px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #ff5457, #d41d36);
+      box-shadow: 0 4px 13px #ef334144;
+      font-size: 19px;
+    }
+
+    .messages {
+      display: none;
+      max-height: 120px;
+      overflow-y: auto;
+      margin: 0 0 9px;
+      padding: 7px 10px;
+      border: 1px solid #ffffff0a;
+      border-radius: 14px;
+      background: #ffffff08;
+      font-size: 11px;
+    }
+
+    .messages.open { display: block; }
+
+    .message {
+      padding: 5px 0;
+      overflow-wrap: anywhere;
+      border-bottom: 1px solid #ffffff0a;
+    }
+
+    .message:last-child { border-bottom: 0; }
+    .message b { color: #ba9bff; }
+    .message small { color: var(--muted); }
+
+    .home-indicator {
+      position: absolute;
+      z-index: 5;
+      left: 50%;
+      bottom: 8px;
+      width: 108px;
+      height: 4px;
+      transform: translateX(-50%);
+      border-radius: 5px;
+      background: white;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 20;
+      left: 50%;
+      bottom: 22px;
+      max-width: min(90vw, 430px);
+      padding: 12px 16px;
+      transform: translate(-50%, 20px);
+      border: 1px solid #ffffff22;
+      border-radius: 14px;
+      opacity: 0;
+      pointer-events: none;
+      color: white;
+      background: #211a36;
+      box-shadow: 0 8px 28px #0008;
+      text-align: center;
+      font-size: 13px;
+      transition: .22s ease;
+    }
+
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* Op echte smalle telefoons vult de interface het scherm */
+    @media (max-width: 500px) {
+      body {
+        display: block;
+        min-height: 100dvh;
+        padding: 0;
+        background: #090719;
+      }
+
+      .phone {
+        width: 100%;
+        height: 100dvh;
+        min-height: 620px;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: var(--screen);
+        box-shadow: none;
+      }
+
+      .phone::before, .phone::after { display: none; }
+
+      .screen {
+        padding:
+          env(safe-area-inset-top, 0px)
+          max(24px, env(safe-area-inset-right, 0px))
+          env(safe-area-inset-bottom, 0px)
+          max(24px, env(safe-area-inset-left, 0px));
+        border: 0;
+        border-radius: 0;
+      }
+
+      .status { height: 54px; }
+      .island { top: 11px; }
+      .app-header { padding-top: 13px; }
+      .channel-row { margin-top: 24px; }
+      .talk-wrap { padding-top: 19px; padding-bottom: 16px; }
+      .bottom-area { padding-bottom: max(25px, env(safe-area-inset-bottom, 0px)); }
+      .home-indicator { bottom: max(7px, env(safe-area-inset-bottom, 0px)); }
+    }
+
+    @media (max-height: 700px) {
+      .status { height: 50px; }
+      .app-header { padding-top: 6px; }
+      .channel-row { margin-top: 16px; }
+      .talk-wrap { padding: 12px 0; }
+      .talk-button { width: 88px; height: 88px; }
+      .users-card { min-height: 180px; }
+      .user { min-height: 42px; }
+      .bottom-area { padding-top: 8px; padding-bottom: 15px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
     }
   </style>
 </head>
+
 <body>
-  <main class="app">
-    <header>
-      <div class="brand">freddo <span>porto</span></div>
-      <div class="status"><span class="dot"></span><span id="connectionLabel">Niet verbonden</span></div>
-    </header>
-
-    <div class="notice" id="emergencyNotice" role="alert"></div>
-
-    <section class="card join-card">
-      <strong>Welkom bij Freddo Porto</strong>
-      <div class="sub">Kies een gebruikersnaam om mee te doen.</div>
-      <form class="join-row" id="joinForm">
-        <input id="nameInput" maxlength="24" placeholder="Jouw gebruikersnaam" autocomplete="nickname" required>
-        <button class="primary" type="submit" id="joinButton">Meedoen</button>
-      </form>
-    </section>
-
-    <section class="card">
-      <div class="you">
-        <div class="avatar">🎙️</div>
-        <div>
-          <div class="you-name" id="yourName">Niet ingelogd</div>
-          <div class="sub" id="channelLabel">Selecteer een porto-kanaal</div>
+  <main class="phone" aria-label="Freddo Porto">
+    <div class="screen">
+      <div class="status" aria-label="Statusbalk">
+        <span class="status-time" id="statusTime">9:41</span>
+        <div class="island" aria-hidden="true"></div>
+        <div class="status-icons" aria-hidden="true">
+          <span class="signal"><i></i><i></i><i></i><i></i></span>
+          <span class="wifi">⌁</span>
+          <span class="battery"></span>
         </div>
       </div>
-    </section>
 
-    <section class="card">
-      <div class="section-title">Porto kanalen <span class="sub">1–5</span></div>
-      <div class="channels" id="channels">
-        <button class="channel" data-channel="1">1<small>PORTO</small></button>
-        <button class="channel" data-channel="2">2<small>PORTO</small></button>
-        <button class="channel" data-channel="3">3<small>PORTO</small></button>
-        <button class="channel" data-channel="4">4<small>PORTO</small></button>
-        <button class="channel" data-channel="5">5<small>PORTO</small></button>
-      </div>
+      <header class="app-header">
+        <h1 class="app-title">freddo porto</h1>
+        <div class="connection">
+          <span class="online-dot" id="onlineDot"></span>
+          <span id="connectionText">Verbonden</span>
+        </div>
+      </header>
 
-      <button class="talk" id="talkButton" disabled>
-        <span class="mic">🎙️</span>
-        <span id="talkLabel">Houd ingedrukt om te praten</span>
-      </button>
-      <div class="hint">Houd de knop ingedrukt tijdens het praten</div>
-    </section>
+      <nav class="channel-row" aria-label="Kies porto-kanaal">
+        <button class="channel active" data-channel="1" aria-label="Kanaal 1">♧</button>
+        <button class="channel" data-channel="2" aria-label="Kanaal 2">1</button>
+        <button class="channel" data-channel="3" aria-label="Kanaal 3">2</button>
+        <button class="channel" data-channel="4" aria-label="Kanaal 4">5</button>
+        <button class="channel emergency-channel" id="quickEmergency" aria-label="Noodoproep">●</button>
+      </nav>
 
-    <section class="card">
-      <div class="section-title">Gebruikers <span class="sub" id="peopleCount">0 online</span></div>
-      <div class="people" id="peopleList"><div class="empty">Log in om de gebruikerslijst te bekijken.</div></div>
-    </section>
+      <section class="talk-wrap">
+        <button class="talk-button" id="talkButton" aria-label="Houd ingedrukt om te spreken">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="9" y="2" width="6" height="13" rx="3" fill="white"/>
+            <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v4m-4 0h8"
+              stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="talk-caption" id="talkCaption">Houd ingedrukt om te spreken</div>
+      </section>
 
-    <section class="card">
-      <div class="section-title">Berichten</div>
-      <div class="messages" id="messages"><div class="empty">Nog geen berichten.</div></div>
-      <form class="compose" id="messageForm">
-        <input id="messageInput" maxlength="300" placeholder="Typ een bericht..." disabled>
-        <button class="primary" type="submit" id="sendButton" disabled>Stuur</button>
-      </form>
-    </section>
+      <section class="users-card">
+        <div class="users-heading">
+          <strong>Online users</strong>
+          <span class="users-count" id="usersCount">0 online ◉</span>
+        </div>
+        <div class="users-list" id="usersList"></div>
+      </section>
 
-    <section class="card">
-      <div class="actions">
-        <button class="action-btn" id="callButton" disabled>📞 Bellen</button>
-        <button class="action-btn emergency" id="emergencyButton" disabled>🚨 Noodoproep</button>
-      </div>
-      <div class="hint">Noodoproep verstuurt een melding in deze app.</div>
-    </section>
+      <footer class="bottom-area">
+        <div class="messages" id="messages" aria-live="polite"></div>
 
-    <section class="card">
-      <div class="section-title">Activiteit</div>
-      <div class="log" id="activityLog">Welkom! Meld je aan om te beginnen.</div>
-    </section>
+        <form class="message-form" id="messageForm">
+          <input
+            class="message-input"
+            id="messageInput"
+            maxlength="240"
+            autocomplete="off"
+            placeholder="Typ een bericht…"
+            aria-label="Typ een bericht"
+          >
+          <button class="send-button" type="submit" aria-label="Bericht versturen">➤</button>
+          <button class="emergency-button" id="emergencyButton" type="button" aria-label="Noodoproep">♟</button>
+        </form>
+      </footer>
+
+      <div class="home-indicator" aria-hidden="true"></div>
+    </div>
   </main>
+
+  <div class="toast" id="toast" role="status"></div>
 
   <script>
     (() => {
       const $ = id => document.getElementById(id);
-      const STORAGE_KEY = "freddo-porto-state-v1";
-      const PRESENCE_KEY = "freddo-porto-presence-v1";
-      const PRESENCE_TTL = 15000;
+      const USERS_KEY = "freddo-iphone-users-v1";
+      const MESSAGES_KEY = "freddo-iphone-messages-v1";
+      const USER_TTL = 18000;
 
-      let username = "";
+      let name = localStorage.getItem("freddo-iphone-name") || "";
       let channel = 1;
-      let isTalking = false;
-      let state = loadState();
+      let recording = false;
+      let recorder = null;
+      let stream = null;
+      let chunks = [];
+      let toastTimer;
 
-      function loadState() {
-        try {
-          return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { messages: [], events: [] };
-        } catch {
-          return { messages: [], events: [] };
-        }
+      const sessionId = sessionStorage.getItem("freddo-iphone-session") ||
+        (crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`);
+      sessionStorage.setItem("freddo-iphone-session", sessionId);
+
+      function getJSON(key, fallback) {
+        try { return JSON.parse(localStorage.getItem(key)) || fallback; }
+        catch { return fallback; }
       }
 
-      function saveState() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      }
-
-      function escapeHtml(value) {
+      function escapeHTML(value) {
         return String(value).replace(/[&<>"']/g, char => ({
           "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
         })[char]);
       }
 
-      function timeNow() {
-        return new Date().toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
+      function showToast(text) {
+        $("toast").textContent = text;
+        $("toast").classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2800);
       }
 
-      function logEvent(text) {
-        state.events.unshift({ text, time: timeNow() });
-        state.events = state.events.slice(0, 30);
-        saveState();
-        renderEvents();
+      function updateClock() {
+        $("statusTime").textContent = new Intl.DateTimeFormat("nl-NL", {
+          hour: "2-digit",
+          minute: "2-digit"
+        }).format(new Date());
       }
 
-      function getPresence() {
-        try {
-          const data = JSON.parse(localStorage.getItem(PRESENCE_KEY)) || {};
-          const now = Date.now();
-          for (const [key, person] of Object.entries(data)) {
-            if (now - person.updated > PRESENCE_TTL) delete data[key];
-          }
-          localStorage.setItem(PRESENCE_KEY, JSON.stringify(data));
-          return data;
-        } catch {
-          return {};
+      function getUsers() {
+        const users = getJSON(USERS_KEY, {});
+        const now = Date.now();
+        for (const id of Object.keys(users)) {
+          if (now - users[id].updated > USER_TTL) delete users[id];
         }
+        return users;
       }
 
       function updatePresence() {
-        if (!username) return;
-        const people = getPresence();
-        const id = sessionStorage.getItem("freddo-session-id");
-        people[id] = { name: username, channel, updated: Date.now(), talking: isTalking };
-        localStorage.setItem(PRESENCE_KEY, JSON.stringify(people));
-        renderPeople();
+        if (!name) return;
+        const users = getUsers();
+        users[sessionId] = {
+          name,
+          channel,
+          recording,
+          updated: Date.now()
+        };
+        try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch {}
+        renderUsers();
       }
 
-      function removePresence() {
-        if (!username) return;
-        const people = getPresence();
-        delete people[sessionStorage.getItem("freddo-session-id")];
-        localStorage.setItem(PRESENCE_KEY, JSON.stringify(people));
-      }
+      function renderUsers() {
+        const users = Object.values(getUsers());
+        $("usersCount").textContent = `${users.length} online ◉`;
 
-      function renderPeople() {
-        const people = Object.values(getPresence());
-        $("peopleCount").textContent = `${people.length} online`;
-        if (!people.length) {
-          $("peopleList").innerHTML = '<div class="empty">Er zijn nu geen andere gebruikers online.</div>';
-          return;
-        }
+        const examples = [
+          { name: "freddo porto", emoji: "👤", subtitle: `Kanaal ${channel}` },
+          { name: "Thomasbeest", emoji: "🏙️", subtitle: "Online" },
+          { name: "Ohio cruiser", emoji: "👨🏻", subtitle: "Online" },
+          { name: "Freddo polore", emoji: "👨🏽", subtitle: "Online" }
+        ];
 
-        $("peopleList").innerHTML = people.map(person => `
-          <div class="person">
-            <div class="avatar">👤</div>
-            <div class="person-info">
-              <div class="person-name">${escapeHtml(person.name)}${person.name === username ? " (jij)" : ""}</div>
-              <div class="person-state">
-                ${person.talking ? "🎙️ Praat nu" : "Online"} · Kanaal ${person.channel}
-              </div>
+        const actual = users.map(user => ({
+          name: user.name + (user.name === name ? " (jij)" : ""),
+          emoji: user.recording ? "🎙️" : "👤",
+          subtitle: user.recording ? "Spreekt nu" : `Kanaal ${user.channel}`
+        }));
+
+        const list = actual.length ? actual : examples;
+        $("usersList").innerHTML = list.map((user, index) => `
+          <div class="user">
+            <div class="avatar ${index === 0 ? "me" : ""}">${escapeHTML(user.emoji)}</div>
+            <div class="user-info">
+              <div class="user-name">${escapeHTML(user.name)}</div>
+              <div class="user-subtitle">${escapeHTML(user.subtitle)}</div>
             </div>
-            <span class="online">●</span>
+            <span class="user-arrow">›</span>
           </div>
         `).join("");
       }
 
       function renderMessages() {
-        const messages = state.messages.slice(-60);
-        if (!messages.length) {
-          $("messages").innerHTML = '<div class="empty">Nog geen berichten.</div>';
-          return;
-        }
-        $("messages").innerHTML = messages.map(message => `
+        const messages = getJSON(MESSAGES_KEY, []);
+        $("messages").innerHTML = messages.slice(-15).map(message => `
           <div class="message">
-            <strong>${escapeHtml(message.name)}</strong>
-            <time>${escapeHtml(message.time)}</time><br>
-            ${escapeHtml(message.text)}
+            <b>${escapeHTML(message.name)}</b>
+            <small>${escapeHTML(message.time)} · K${message.channel}</small><br>
+            ${escapeHTML(message.text)}
           </div>
         `).join("");
+        $("messages").classList.toggle("open", messages.length > 0);
         $("messages").scrollTop = $("messages").scrollHeight;
       }
 
-      function renderEvents() {
-        $("activityLog").innerHTML = state.events.length
-          ? state.events.map(event => `• ${escapeHtml(event.time)} — ${escapeHtml(event.text)}`).join("<br>")
-          : "Nog geen activiteit.";
-      }
-
-      function setJoined(name) {
-        username = name;
-        $("yourName").textContent = name;
-        $("connectionLabel").textContent = "Verbonden";
-        $("joinButton").textContent = "Aangemeld";
-        $("nameInput").value = name;
-        $("nameInput").disabled = true;
-        $("joinButton").disabled = true;
-        $("talkButton").disabled = false;
-        $("messageInput").disabled = false;
-        $("sendButton").disabled = false;
-        $("callButton").disabled = false;
-        $("emergencyButton").disabled = false;
-        $("channelLabel").textContent = `Verbonden met porto-kanaal ${channel}`;
+      function setChannel(nextChannel) {
+        channel = nextChannel;
+        document.querySelectorAll(".channel[data-channel]").forEach(button => {
+          button.classList.toggle("active", Number(button.dataset.channel) === channel);
+        });
         updatePresence();
-        logEvent(`${name} is gejoint`);
+        showToast(`Verbonden met kanaal ${channel}`);
       }
 
-      $("joinForm").addEventListener("submit", event => {
-        event.preventDefault();
-        const name = $("nameInput").value.trim().replace(/\s+/g, " ");
-        if (!name) return;
-        setJoined(name.slice(0, 24));
+      document.querySelectorAll(".channel[data-channel]").forEach(button => {
+        button.addEventListener("click", () => setChannel(Number(button.dataset.channel)));
       });
 
-      $("channels").addEventListener("click", event => {
-        const button = event.target.closest("[data-channel]");
-        if (!button) return;
-        channel = Number(button.dataset.channel);
-        document.querySelectorAll(".channel").forEach(item =>
-          item.classList.toggle("active", item === button)
-        );
-        $("channelLabel").textContent = username
-          ? `Verbonden met porto-kanaal ${channel}`
-          : `Geselecteerd: porto-kanaal ${channel}`;
-        updatePresence();
-      });
-
-      function talkStart(event) {
-        if (!username || isTalking) return;
+      async function startRecording(event) {
         event.preventDefault();
-        isTalking = true;
-        $("talkButton").classList.add("active-talk");
-        $("talkLabel").textContent = `Je praat op kanaal ${channel}…`;
+        if (recording) return;
+
+        if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+          showToast("Microfoonopname vereist een moderne browser via HTTPS of localhost.");
+          return;
+        }
+
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          chunks = [];
+          recorder = new MediaRecorder(stream);
+
+          recorder.addEventListener("dataavailable", event => {
+            if (event.data?.size) chunks.push(event.data);
+          });
+
+          recorder.addEventListener("stop", () => {
+            stream?.getTracks().forEach(track => track.stop());
+            stream = null;
+
+            if (chunks.length) {
+              const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+              const audioURL = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.href = audioURL;
+              link.download = `freddo-kanaal-${channel}-${Date.now()}.webm`;
+              link.click();
+              setTimeout(() => URL.revokeObjectURL(audioURL), 1500);
+              showToast("Opname opgeslagen. Live-audio vereist een serververbinding.");
+            }
+          });
+
+          recorder.start();
+          recording = true;
+          $("talkButton").classList.add("recording");
+          $("talkCaption").textContent = `Opnemen op kanaal ${channel}…`;
+          updatePresence();
+        } catch (error) {
+          showToast(error.name === "NotAllowedError"
+            ? "Microfoontoegang is geweigerd."
+            : "Microfoon niet beschikbaar.");
+        }
+      }
+
+      function stopRecording() {
+        if (!recording) return;
+        recording = false;
+        $("talkButton").classList.remove("recording");
+        $("talkCaption").textContent = "Houd ingedrukt om te spreken";
+
+        if (recorder && recorder.state !== "inactive") recorder.stop();
+        else stream?.getTracks().forEach(track => track.stop());
+
         updatePresence();
       }
 
-      function talkEnd() {
-        if (!isTalking) return;
-        isTalking = false;
-        $("talkButton").classList.remove("active-talk");
-        $("talkLabel").textContent = "Houd ingedrukt om te praten";
-        updatePresence();
-      }
-
-      $("talkButton").addEventListener("pointerdown", talkStart);
-      $("talkButton").addEventListener("pointerup", talkEnd);
-      $("talkButton").addEventListener("pointercancel", talkEnd);
-      $("talkButton").addEventListener("pointerleave", talkEnd);
-      window.addEventListener("blur", talkEnd);
+      const talkButton = $("talkButton");
+      talkButton.addEventListener("pointerdown", startRecording);
+      talkButton.addEventListener("pointerup", stopRecording);
+      talkButton.addEventListener("pointercancel", stopRecording);
+      talkButton.addEventListener("pointerleave", stopRecording);
+      window.addEventListener("blur", stopRecording);
 
       $("messageForm").addEventListener("submit", event => {
         event.preventDefault();
-        const text = $("messageInput").value.trim();
-        if (!username || !text) return;
-        state.messages.push({ name: username, text, time: timeNow(), channel });
-        state.messages = state.messages.slice(-100);
-        saveState();
-        $("messageInput").value = "";
+        const input = $("messageInput");
+        const text = input.value.trim();
+        if (!text) return;
+
+        const messages = getJSON(MESSAGES_KEY, []);
+        messages.push({
+          name: name || "Gast",
+          text,
+          channel,
+          time: new Intl.DateTimeFormat("nl-NL", {
+            hour: "2-digit", minute: "2-digit"
+          }).format(new Date())
+        });
+
+        try { localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages.slice(-50))); }
+        catch {}
+        input.value = "";
         renderMessages();
       });
 
-      $("callButton").addEventListener("click", () => {
-        if (!username) return;
-        alert("Bellen werkt alleen wanneer een telefonie- of voice-server is gekoppeld. Deze HTML-demo kan geen echte telefoongesprekken voeren.");
-        logEvent(`${username} probeerde te bellen`);
-      });
-
-      $("emergencyButton").addEventListener("click", () => {
-        if (!username) return;
-        const ok = confirm("Noodoproep sturen? Iedereen die deze gedeelde app gebruikt krijgt een melding.");
-        if (!ok) return;
-        state.emergency = { name: username, time: Date.now() };
-        saveState();
-        showEmergency();
-        logEvent(`🚨 NOODOPROEP van ${username}`);
-        if ("Notification" in window && Notification.permission === "granted") {
-          new Notification("Freddo Porto — NOODOPROEP", { body: `${username} heeft een noodoproep gemaakt.` });
-        }
-      });
-
-      function showEmergency() {
-        const emergency = state.emergency;
-        const box = $("emergencyNotice");
-        if (!emergency || Date.now() - emergency.time > 60000) {
-          box.style.display = "none";
-          return;
-        }
-        box.textContent = `🚨 NOODOPROEP — ${emergency.name} heeft hulp nodig!`;
-        box.style.display = "block";
+      function sendEmergency() {
+        if (!confirm("Noodoproep versturen?")) return;
+        showToast("🚨 Noodoproepmelding verstuurd");
+        $("connectionText").textContent = "Noodoproep actief";
+        $("onlineDot").style.background = "#ff4b55";
+        setTimeout(() => {
+          $("connectionText").textContent = "Verbonden";
+          $("onlineDot").style.background = "";
+        }, 5000);
       }
+
+      $("emergencyButton").addEventListener("click", sendEmergency);
+      $("quickEmergency").addEventListener("click", sendEmergency);
 
       window.addEventListener("storage", event => {
-        if (event.key === STORAGE_KEY) {
-          state = loadState();
-          renderMessages();
-          renderEvents();
-          showEmergency();
-        }
-        if (event.key === PRESENCE_KEY) renderPeople();
+        if (event.key === USERS_KEY) renderUsers();
+        if (event.key === MESSAGES_KEY) renderMessages();
       });
 
-      window.addEventListener("beforeunload", removePresence);
+      window.addEventListener("pagehide", () => {
+        const users = getUsers();
+        delete users[sessionId];
+        try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch {}
+      });
 
-      if (!sessionStorage.getItem("freddo-session-id")) {
-        sessionStorage.setItem("freddo-session-id", crypto.randomUUID
-          ? crypto.randomUUID()
-          : String(Date.now()) + Math.random());
-      }
-
+      updateClock();
+      setInterval(updateClock, 15000);
+      renderUsers();
       renderMessages();
-      renderEvents();
-      renderPeople();
-      showEmergency();
-
-      setInterval(() => {
-        updatePresence();
-        renderPeople();
-        showEmergency();
-      }, 4000);
-
-      // Optioneel: browsermeldingen vragen na de eerste klik op noodoproep is niet nodig.
-      $("emergencyButton").addEventListener("contextmenu", event => {
-        event.preventDefault();
-        if ("Notification" in window) Notification.requestPermission();
-      });
+      updatePresence();
+      setInterval(updatePresence, 5000);
     })();
   </script>
 </body>
