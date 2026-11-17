@@ -3,20 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#090814">
+  <meta name="theme-color" content="#090719">
   <title>Freddo Porto</title>
 
   <style>
     :root {
-      --bg: #090814;
-      --screen: #090719;
-      --purple: #7628fa;
-      --purple-light: #a178ff;
-      --white: #f8f5ff;
-      --muted: #918ba9;
-      --red: #f33c46;
-      --green: #48dfa2;
+      color-scheme: dark;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg: #090719;
+      --card: #17132b;
+      --purple: #7628fa;
+      --muted: #918ba9;
+      --white: #f8f5ff;
     }
 
     * { box-sizing: border-box; }
@@ -26,7 +24,7 @@
       margin: 0;
       display: grid;
       place-items: center;
-      padding: 24px;
+      padding: 20px;
       color: var(--white);
       background:
         radial-gradient(ellipse at 50% 60%, #29213f 0, transparent 55%),
@@ -34,45 +32,19 @@
     }
 
     button, input { font: inherit; }
+    button { color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
-    button {
-      color: inherit;
-      border: 0;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    button:disabled { opacity: .55; cursor: not-allowed; }
-
-    /* Desktop: telefoonbehuizing */
     .phone {
-      position: relative;
       width: min(390px, 100%);
-      height: min(844px, calc(100dvh - 36px));
+      height: min(844px, calc(100dvh - 24px));
       min-height: 620px;
       padding: 9px;
-      overflow: hidden;
       border: 2px solid #777783;
       border-radius: 54px;
       background: linear-gradient(115deg, #383841, #07070b 18%, #282833 85%, #55555c);
-      box-shadow:
-        0 34px 90px #0009,
-        inset 2px 0 3px #ffffff4a,
-        inset -2px 0 4px #000;
+      box-shadow: 0 34px 90px #0009, inset 2px 0 3px #ffffff4a;
+      overflow: hidden;
     }
-
-    .phone::before,
-    .phone::after {
-      content: "";
-      position: absolute;
-      left: -4px;
-      width: 3px;
-      border-radius: 4px 0 0 4px;
-      background: linear-gradient(#aaa, #32323a, #777);
-    }
-
-    .phone::before { top: 145px; height: 74px; }
-    .phone::after { top: 238px; height: 94px; }
 
     .screen {
       position: relative;
@@ -80,8 +52,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      padding: 0 24px;
-      border: 1px solid #ffffff0d;
+      padding: 0 23px;
       border-radius: 45px;
       background:
         radial-gradient(ellipse at 50% 18%, #1c1150 0, transparent 40%),
@@ -89,94 +60,47 @@
     }
 
     .status {
-      height: 64px;
+      height: 59px;
       flex: 0 0 auto;
       display: flex;
-      justify-content: space-between;
       align-items: flex-start;
-      padding: 14px 2px 0;
+      justify-content: space-between;
+      padding-top: 14px;
       font-size: 13px;
       font-weight: 700;
     }
 
-    .status-time { z-index: 2; }
-
     .island {
       position: absolute;
       z-index: 1;
-      top: 14px;
+      top: 13px;
       left: 50%;
       width: 112px;
       height: 28px;
       transform: translateX(-50%);
       border-radius: 20px;
       background: #020207;
-      box-shadow: inset 0 1px 2px #ffffff12;
     }
 
-    .island::after {
-      content: "";
-      position: absolute;
-      top: 9px;
-      right: 14px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #111a4c;
-      box-shadow: 0 0 6px #454cff;
-    }
+    .status-time, .status-icons { z-index: 2; }
+    .status-icons { display: flex; align-items: center; gap: 6px; }
+    .status-icons.off { opacity: .35; }
 
-    .status-icons {
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .signal {
-      display: flex;
-      height: 13px;
-      align-items: end;
-      gap: 2px;
-    }
-
-    .signal i {
-      display: block;
-      width: 3px;
-      border-radius: 2px;
-      background: white;
-    }
-
-    .signal i:nth-child(1) { height: 5px; }
-    .signal i:nth-child(2) { height: 7px; }
-    .signal i:nth-child(3) { height: 10px; }
-    .signal i:nth-child(4) { height: 12px; }
-
-    .wifi { font-size: 13px; line-height: 1; }
+    .wifi-icon { font-size: 14px; line-height: 1; }
 
     .battery {
-      width: 19px;
-      height: 10px;
-      border: 1.5px solid white;
-      border-radius: 3px;
       position: relative;
-    }
-
-    .battery::before {
-      content: "";
-      position: absolute;
-      top: 1px;
-      left: 1px;
-      width: 12px;
-      height: 5px;
-      border-radius: 1px;
-      background: white;
+      width: 25px;
+      height: 12px;
+      padding: 1px;
+      border: 1px solid white;
+      border-radius: 3px;
     }
 
     .battery::after {
       content: "";
       position: absolute;
-      top: 2px;
+      top: 3px;
       right: -4px;
       width: 2px;
       height: 4px;
@@ -184,275 +108,134 @@
       background: white;
     }
 
-    .app-header {
-      flex: 0 0 auto;
-      text-align: center;
-      padding: 20px 0 0;
+    .battery-fill {
+      width: 76%;
+      height: 100%;
+      border-radius: 1px;
+      background: #55df91;
+      transition: width .3s;
     }
 
-    .app-title {
-      margin: 0;
-      font-size: 21px;
-      font-weight: 800;
-      letter-spacing: -.45px;
-    }
+    .header { text-align: center; padding: 13px 0 0; }
+    h1 { margin: 0; font-size: 21px; }
+    .connection { margin-top: 7px; color: #e9e3fa; font-size: 13px; }
+    .dot { color: #48dfa2; }
 
-    .connection {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 7px;
-      margin-top: 9px;
-      color: #f0ecff;
-      font-size: 14px;
-      font-weight: 650;
-    }
-
-    .online-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 9px #48dfa288;
-    }
-
-    .channel-row {
+    .channels {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 8px;
-      margin-top: 27px;
+      margin-top: 20px;
     }
 
     .channel {
-      height: 52px;
-      display: grid;
-      place-items: center;
-      border: 1px solid #ffffff08;
-      border-radius: 15px;
-      color: #c9c2e3;
+      height: 47px;
+      border: 0;
+      border-radius: 14px;
+      color: #d6cfee;
       background: #211a3e;
-      font-size: 17px;
-      font-weight: 750;
-      transition: .18s ease;
+      font-size: 16px;
+      font-weight: 700;
     }
 
     .channel.active {
       color: white;
       background: linear-gradient(145deg, #8141ff, #4d19c2);
-      box-shadow: 0 5px 18px #712bfa55;
     }
 
-    .channel.emergency-channel {
-      color: #ff827f;
-      font-size: 19px;
-    }
-
-    .channel.emergency-channel.active {
-      color: white;
-      background: linear-gradient(145deg, #ff5757, #bd1834);
-    }
+    .channel.emergency { color: #ff797b; }
 
     .talk-wrap {
       flex: 0 0 auto;
       display: grid;
-      place-items: center;
-      padding: 20px 0 19px;
+      justify-items: center;
+      padding: 16px 0;
     }
 
-    .talk-button {
-      width: 102px;
-      height: 102px;
-      display: grid;
-      place-items: center;
-      border: 9px solid #382071;
+    .talk {
+      width: 91px;
+      height: 91px;
+      border: 8px solid #382071;
       border-radius: 50%;
       background: linear-gradient(145deg, #852dff, #5d13dd);
-      box-shadow: 0 0 28px #722eff36;
+      font-size: 31px;
       touch-action: none;
-      user-select: none;
     }
 
-    .talk-button svg { width: 36px; height: 36px; }
-    .talk-button.recording {
+    .talk.recording {
       border-color: #67182c;
       background: linear-gradient(145deg, #ff6475, #ce234c);
-      box-shadow: 0 0 28px #ff3b594a;
-      animation: pulse .8s infinite alternate;
     }
 
-    @keyframes pulse { to { transform: scale(1.05); } }
+    .caption { margin-top: 7px; color: var(--muted); font-size: 10px; }
 
-    .talk-caption {
-      min-height: 16px;
-      margin-top: 8px;
-      color: var(--muted);
-      text-align: center;
-      font-size: 10px;
-    }
-
-    .users-card {
-      min-height: 0;
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      padding: 13px 11px 7px;
-      overflow: hidden;
+    .users {
+      min-height: 100px;
+      flex: 1;
+      overflow: auto;
+      padding: 12px;
       border: 1px solid #ffffff0a;
-      border-radius: 21px;
+      border-radius: 19px;
       background: linear-gradient(145deg, #17132bdf, #100d20ed);
-      box-shadow: inset 0 1px 0 #ffffff07;
     }
 
-    .users-heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 0 2px 8px;
-    }
+    .users-title { margin-bottom: 8px; font-size: 13px; font-weight: 700; }
+    .user { display: flex; align-items: center; gap: 9px; min-height: 40px; font-size: 12px; }
+    .avatar { display: grid; place-items: center; width: 29px; height: 29px; border-radius: 50%; background: #654a8b; }
+    .user small { display: block; margin-top: 2px; color: var(--muted); }
 
-    .users-heading strong { font-size: 13px; }
-
-    .users-count {
-      color: var(--muted);
-      font-size: 10px;
-      white-space: nowrap;
-    }
-
-    .users-list {
-      min-height: 0;
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: #4a3b72 transparent;
-    }
-
-    .user {
-      min-height: 48px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 5px 2px;
-    }
-
-    .avatar {
-      width: 31px;
-      height: 31px;
-      flex: 0 0 auto;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      border: 1px solid #ffffff1a;
-      border-radius: 50%;
-      background: linear-gradient(145deg, #f7d9c7, #8a739e);
-      font-size: 16px;
-    }
-
-    .avatar.me { background: linear-gradient(145deg, #f5bbcc, #a35492); }
-    .avatar.bot { background: linear-gradient(145deg, #cabafa, #493483); }
-
-    .user-info { min-width: 0; flex: 1; }
-
-    .user-name {
-      overflow: hidden;
-      color: #f1edfa;
-      font-size: 12px;
-      font-weight: 650;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .user-subtitle {
-      margin-top: 2px;
-      color: var(--muted);
-      font-size: 9px;
-    }
-
-    .user-arrow {
-      color: #655b80;
-      font-size: 20px;
-      line-height: 1;
-    }
-
-    .bottom-area {
-      flex: 0 0 auto;
-      padding: 11px 0 19px;
-    }
-
-    .message-form {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
+    .bottom { flex: 0 0 auto; padding: 10px 0 17px; }
+    .message-form { display: flex; align-items: center; gap: 7px; }
     .message-input {
       min-width: 0;
-      height: 43px;
+      height: 40px;
       flex: 1;
-      padding: 0 13px;
+      padding: 0 12px;
+      border: 1px solid #ffffff0b;
+      border-radius: 24px;
       outline: none;
-      color: var(--white);
-      border: 1px solid #ffffff08;
-      border-radius: 25px;
+      color: white;
       background: #211a3d;
       font-size: 11px;
     }
 
-    .message-input::placeholder { color: #756d8c; }
-    .message-input:focus { border-color: #8b55ff99; }
-
-    .send-button {
-      width: 35px;
-      height: 35px;
+    .message-input::placeholder { color: #9086a8; }
+    .send, .emergency {
+      width: 38px;
+      height: 38px;
       flex: 0 0 auto;
-      display: grid;
-      place-items: center;
+      border: 0;
       border-radius: 50%;
-      color: white;
       background: #332657;
-      font-size: 15px;
     }
 
-    .emergency-button {
-      width: 43px;
-      height: 43px;
-      flex: 0 0 auto;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      background: linear-gradient(145deg, #ff5457, #d41d36);
-      box-shadow: 0 4px 13px #ef334144;
-      font-size: 19px;
+    .emergency { background: #e72c44; font-size: 17px; }
+
+    .tools {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
     }
 
-    .messages {
-      display: none;
-      max-height: 120px;
-      overflow-y: auto;
-      margin: 0 0 9px;
+    .tool {
       padding: 7px 10px;
-      border: 1px solid #ffffff0a;
+      border: 1px solid #ffffff12;
       border-radius: 14px;
-      background: #ffffff08;
+      background: #211a3d;
       font-size: 11px;
     }
 
+    .tool.off { opacity: .5; }
+    .messages { display: none; max-height: 95px; overflow: auto; margin-bottom: 8px; font-size: 11px; }
     .messages.open { display: block; }
-
-    .message {
-      padding: 5px 0;
-      overflow-wrap: anywhere;
-      border-bottom: 1px solid #ffffff0a;
-    }
-
-    .message:last-child { border-bottom: 0; }
+    .message { padding: 5px 2px; overflow-wrap: anywhere; color: #eee8ff; }
     .message b { color: #ba9bff; }
-    .message small { color: var(--muted); }
 
     .home-indicator {
       position: absolute;
-      z-index: 5;
+      bottom: 7px;
       left: 50%;
-      bottom: 8px;
       width: 108px;
       height: 4px;
       transform: translateX(-50%);
@@ -460,155 +243,210 @@
       background: white;
     }
 
+    .overlay {
+      position: absolute;
+      z-index: 10;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 25px;
+      text-align: center;
+      background: #090719f5;
+      backdrop-filter: blur(16px);
+    }
+
+    .overlay.show { display: flex; }
+    .lock-card { width: 100%; }
+    .lock-icon { font-size: 42px; }
+    .lock-card h2 { margin: 12px 0 7px; }
+    .lock-card p { color: var(--muted); font-size: 13px; }
+
+    .pin-input {
+      width: 100%;
+      height: 48px;
+      margin: 12px 0;
+      padding: 0 14px;
+      border: 1px solid #ffffff20;
+      border-radius: 14px;
+      outline: none;
+      color: white;
+      background: #1a1530;
+      text-align: center;
+      letter-spacing: 8px;
+      font-size: 20px;
+    }
+
+    .primary, .secondary {
+      width: 100%;
+      min-height: 43px;
+      margin-top: 7px;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(145deg, #8141ff, #591ddb);
+      font-weight: 700;
+    }
+
+    .secondary { background: #29223d; }
+    .error { min-height: 18px; color: #ff777e; font-size: 12px; }
+    .settings { text-align: left; }
+    .settings h2 { text-align: center; }
+
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 0;
+      border-bottom: 1px solid #ffffff12;
+      font-size: 13px;
+    }
+
+    .setting-row input[type="checkbox"] { width: 19px; height: 19px; accent-color: #874fff; }
+    .tel-input {
+      width: 120px;
+      padding: 7px 9px;
+      border: 1px solid #ffffff22;
+      border-radius: 9px;
+      outline: none;
+      color: white;
+      background: #1a1530;
+    }
+
     .toast {
       position: fixed;
       z-index: 20;
       left: 50%;
-      bottom: 22px;
-      max-width: min(90vw, 430px);
-      padding: 12px 16px;
-      transform: translate(-50%, 20px);
+      bottom: 20px;
+      max-width: 90vw;
+      padding: 11px 15px;
+      transform: translate(-50%, 15px);
       border: 1px solid #ffffff22;
-      border-radius: 14px;
+      border-radius: 13px;
       opacity: 0;
-      pointer-events: none;
-      color: white;
       background: #211a36;
-      box-shadow: 0 8px 28px #0008;
       text-align: center;
-      font-size: 13px;
-      transition: .22s ease;
+      font-size: 12px;
+      pointer-events: none;
+      transition: .2s;
     }
 
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-    /* Op echte smalle telefoons vult de interface het scherm */
     @media (max-width: 500px) {
-      body {
-        display: block;
-        min-height: 100dvh;
-        padding: 0;
-        background: #090719;
-      }
-
-      .phone {
-        width: 100%;
-        height: 100dvh;
-        min-height: 620px;
-        padding: 0;
-        border: 0;
-        border-radius: 0;
-        background: var(--screen);
-        box-shadow: none;
-      }
-
-      .phone::before, .phone::after { display: none; }
-
+      body { display: block; min-height: 100dvh; padding: 0; background: var(--bg); }
+      .phone { width: 100%; height: 100dvh; min-height: 590px; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
       .screen {
-        padding:
-          env(safe-area-inset-top, 0px)
-          max(24px, env(safe-area-inset-right, 0px))
-          env(safe-area-inset-bottom, 0px)
-          max(24px, env(safe-area-inset-left, 0px));
-        border: 0;
+        padding: env(safe-area-inset-top, 0) max(23px, env(safe-area-inset-right, 0))
+          env(safe-area-inset-bottom, 0) max(23px, env(safe-area-inset-left, 0));
         border-radius: 0;
       }
-
-      .status { height: 54px; }
-      .island { top: 11px; }
-      .app-header { padding-top: 13px; }
-      .channel-row { margin-top: 24px; }
-      .talk-wrap { padding-top: 19px; padding-bottom: 16px; }
-      .bottom-area { padding-bottom: max(25px, env(safe-area-inset-bottom, 0px)); }
-      .home-indicator { bottom: max(7px, env(safe-area-inset-bottom, 0px)); }
+      .home-indicator { bottom: max(7px, env(safe-area-inset-bottom, 0)); }
     }
 
     @media (max-height: 700px) {
-      .status { height: 50px; }
-      .app-header { padding-top: 6px; }
-      .channel-row { margin-top: 16px; }
-      .talk-wrap { padding: 12px 0; }
-      .talk-button { width: 88px; height: 88px; }
-      .users-card { min-height: 180px; }
-      .user { min-height: 42px; }
-      .bottom-area { padding-top: 8px; padding-bottom: 15px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: .01ms !important;
-        transition-duration: .01ms !important;
-      }
+      .status { height: 49px; }
+      .header { padding-top: 5px; }
+      .channels { margin-top: 13px; }
+      .talk-wrap { padding: 10px 0; }
+      .talk { width: 78px; height: 78px; }
+      .users { min-height: 90px; }
     }
   </style>
 </head>
 
 <body>
-  <main class="phone" aria-label="Freddo Porto">
+  <main class="phone">
     <div class="screen">
-      <div class="status" aria-label="Statusbalk">
-        <span class="status-time" id="statusTime">9:41</span>
+      <div class="status">
+        <span id="clock">9:41</span>
         <div class="island" aria-hidden="true"></div>
-        <div class="status-icons" aria-hidden="true">
-          <span class="signal"><i></i><i></i><i></i><i></i></span>
-          <span class="wifi">⌁</span>
-          <span class="battery"></span>
+        <div class="status-icons" id="statusIcons">
+          <span id="wifiStatus" aria-label="Wifi aan">⌁</span>
+          <span id="bluetoothStatus" aria-label="Bluetooth aan">ᛒ</span>
+          <span class="battery" title="Batterij (gesimuleerd)">
+            <span class="battery-fill" id="batteryFill"></span>
+          </span>
+          <span id="batteryText">76%</span>
         </div>
       </div>
 
-      <header class="app-header">
-        <h1 class="app-title">freddo porto</h1>
-        <div class="connection">
-          <span class="online-dot" id="onlineDot"></span>
-          <span id="connectionText">Verbonden</span>
-        </div>
+      <header class="header">
+        <h1>freddo porto</h1>
+        <div class="connection"><span class="dot">●</span> Verbonden</div>
       </header>
 
-      <nav class="channel-row" aria-label="Kies porto-kanaal">
-        <button class="channel active" data-channel="1" aria-label="Kanaal 1">♧</button>
-        <button class="channel" data-channel="2" aria-label="Kanaal 2">1</button>
-        <button class="channel" data-channel="3" aria-label="Kanaal 3">2</button>
-        <button class="channel" data-channel="4" aria-label="Kanaal 4">5</button>
-        <button class="channel emergency-channel" id="quickEmergency" aria-label="Noodoproep">●</button>
+      <nav class="channels" aria-label="Kanalen">
+        <button class="channel active" data-channel="1">♧</button>
+        <button class="channel" data-channel="2">1</button>
+        <button class="channel" data-channel="3">2</button>
+        <button class="channel" data-channel="4">5</button>
+        <button class="channel emergency" id="quickEmergency">●</button>
       </nav>
 
       <section class="talk-wrap">
-        <button class="talk-button" id="talkButton" aria-label="Houd ingedrukt om te spreken">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="9" y="2" width="6" height="13" rx="3" fill="white"/>
-            <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v4m-4 0h8"
-              stroke="white" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <div class="talk-caption" id="talkCaption">Houd ingedrukt om te spreken</div>
+        <button class="talk" id="talk" aria-label="Houd ingedrukt om te spreken">🎙</button>
+        <div class="caption" id="caption">Houd ingedrukt om op te nemen</div>
       </section>
 
-      <section class="users-card">
-        <div class="users-heading">
-          <strong>Online users</strong>
-          <span class="users-count" id="usersCount">0 online ◉</span>
-        </div>
-        <div class="users-list" id="usersList"></div>
+      <section class="users">
+        <div class="users-title">Online users <span id="userCount">4 online ◉</span></div>
+        <div class="user"><span class="avatar">👤</span><span>freddo porto<small>Online</small></span></div>
+        <div class="user"><span class="avatar">🏙️</span><span>Thomasbeest<small>Online</small></span></div>
+        <div class="user"><span class="avatar">👨🏻</span><span>Ohio cruiser<small>Online</small></span></div>
+        <div class="user"><span class="avatar">👨🏽</span><span>Freddo polore<small>Online</small></span></div>
       </section>
 
-      <footer class="bottom-area">
-        <div class="messages" id="messages" aria-live="polite"></div>
-
+      <footer class="bottom">
+        <div class="messages" id="messages"></div>
         <form class="message-form" id="messageForm">
-          <input
-            class="message-input"
-            id="messageInput"
-            maxlength="240"
-            autocomplete="off"
-            placeholder="Typ een bericht…"
-            aria-label="Typ een bericht"
-          >
-          <button class="send-button" type="submit" aria-label="Bericht versturen">➤</button>
-          <button class="emergency-button" id="emergencyButton" type="button" aria-label="Noodoproep">♟</button>
+          <input class="message-input" id="messageInput" placeholder="Typ een bericht…" maxlength="240">
+          <button class="send" aria-label="Bericht versturen">➤</button>
+          <button class="emergency" id="emergency" type="button" aria-label="Noodoproep">♟</button>
         </form>
+
+        <div class="tools">
+          <button class="tool" id="callButton">📞 Bellen</button>
+          <button class="tool" id="smsButton">✉️ Sms</button>
+          <button class="tool" id="lockButton">🔒 Vergrendel</button>
+          <button class="tool" id="settingsButton">⚙️</button>
+        </div>
       </footer>
 
-      <div class="home-indicator" aria-hidden="true"></div>
+      <div class="home-indicator"></div>
+
+      <!-- App-vergrendeling: dit vergrendelt alleen deze webapp -->
+      <section class="overlay" id="lockOverlay">
+        <div class="lock-card">
+          <div class="lock-icon">🔒</div>
+          <h2 id="lockTitle">App vergrendeld</h2>
+          <p id="lockHint">Voer je pincode in om verder te gaan.</p>
+          <form id="pinForm">
+            <input class="pin-input" id="pinInput" type="password" inputmode="numeric"
+              autocomplete="off" maxlength="8" placeholder="••••" aria-label="Pincode">
+            <div class="error" id="pinError"></div>
+            <button class="primary" id="pinSubmit" type="submit">Ontgrendelen</button>
+          </form>
+          <button class="secondary" id="cancelSetup" type="button" hidden>Annuleren</button>
+        </div>
+      </section>
+
+      <!-- Instellingenoverlay -->
+      <section class="overlay" id="settingsOverlay">
+        <div class="lock-card settings">
+          <h2>Instellingen</h2>
+          <label class="setting-row">Wifi <input type="checkbox" id="wifiToggle" checked></label>
+          <label class="setting-row">Bluetooth <input type="checkbox" id="bluetoothToggle" checked></label>
+          <label class="setting-row">Batterij simuleren
+            <input type="checkbox" id="batteryToggle">
+          </label>
+          <label class="setting-row">Telefoonnummer
+            <input class="tel-input" id="phoneNumber" type="tel" placeholder="+31…">
+          </label>
+          <button class="secondary" id="changePinButton">Pincode instellen/wijzigen</button>
+          <button class="secondary" id="closeSettings">Sluiten</button>
+        </div>
+      </section>
     </div>
   </main>
 
@@ -617,244 +455,165 @@
   <script>
     (() => {
       const $ = id => document.getElementById(id);
-      const USERS_KEY = "freddo-iphone-users-v1";
-      const MESSAGES_KEY = "freddo-iphone-messages-v1";
-      const USER_TTL = 18000;
+      const storage = {
+        get(key, fallback = "") {
+          try { return localStorage.getItem("freddo-" + key) ?? fallback; }
+          catch { return fallback; }
+        },
+        set(key, value) {
+          try { localStorage.setItem("freddo-" + key, value); } catch {}
+        }
+      };
 
-      let name = localStorage.getItem("freddo-iphone-name") || "";
       let channel = 1;
-      let recording = false;
-      let recorder = null;
-      let stream = null;
-      let chunks = [];
+      let setupMode = false;
+      let firstPin = "";
       let toastTimer;
 
-      const sessionId = sessionStorage.getItem("freddo-iphone-session") ||
-        (crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`);
-      sessionStorage.setItem("freddo-iphone-session", sessionId);
-
-      function getJSON(key, fallback) {
-        try { return JSON.parse(localStorage.getItem(key)) || fallback; }
-        catch { return fallback; }
-      }
-
-      function escapeHTML(value) {
-        return String(value).replace(/[&<>"']/g, char => ({
-          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-        })[char]);
-      }
-
-      function showToast(text) {
+      function toast(text) {
         $("toast").textContent = text;
         $("toast").classList.add("show");
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2800);
+        toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2600);
       }
 
       function updateClock() {
-        $("statusTime").textContent = new Intl.DateTimeFormat("nl-NL", {
-          hour: "2-digit",
-          minute: "2-digit"
+        $("clock").textContent = new Intl.DateTimeFormat("nl-NL", {
+          hour: "2-digit", minute: "2-digit"
         }).format(new Date());
       }
 
-      function getUsers() {
-        const users = getJSON(USERS_KEY, {});
-        const now = Date.now();
-        for (const id of Object.keys(users)) {
-          if (now - users[id].updated > USER_TTL) delete users[id];
+      function updateConnectivity() {
+        const wifi = $("wifiToggle").checked;
+        const bluetooth = $("bluetoothToggle").checked;
+        $("wifiStatus").style.opacity = wifi ? "1" : ".3";
+        $("bluetoothStatus").style.opacity = bluetooth ? "1" : ".3";
+        $("wifiStatus").title = wifi ? "Wifi aan (weergave)" : "Wifi uit (weergave)";
+        $("bluetoothStatus").title = bluetooth ? "Bluetooth aan (weergave)" : "Bluetooth uit (weergave)";
+        storage.set("wifi", String(wifi));
+        storage.set("bluetooth", String(bluetooth));
+      }
+
+      $("wifiToggle").checked = storage.get("wifi", "true") !== "false";
+      $("bluetoothToggle").checked = storage.get("bluetooth", "true") !== "false";
+      $("wifiToggle").addEventListener("change", updateConnectivity);
+      $("bluetoothToggle").addEventListener("change", updateConnectivity);
+
+      $("batteryToggle").addEventListener("change", async () => {
+        if (!$("batteryToggle").checked) {
+          toast("Batterijniveau is nu een voorbeeldwaarde.");
+          return;
         }
-        return users;
-      }
-
-      function updatePresence() {
-        if (!name) return;
-        const users = getUsers();
-        users[sessionId] = {
-          name,
-          channel,
-          recording,
-          updated: Date.now()
-        };
-        try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch {}
-        renderUsers();
-      }
-
-      function renderUsers() {
-        const users = Object.values(getUsers());
-        $("usersCount").textContent = `${users.length} online ◉`;
-
-        const examples = [
-          { name: "freddo porto", emoji: "👤", subtitle: `Kanaal ${channel}` },
-          { name: "Thomasbeest", emoji: "🏙️", subtitle: "Online" },
-          { name: "Ohio cruiser", emoji: "👨🏻", subtitle: "Online" },
-          { name: "Freddo polore", emoji: "👨🏽", subtitle: "Online" }
-        ];
-
-        const actual = users.map(user => ({
-          name: user.name + (user.name === name ? " (jij)" : ""),
-          emoji: user.recording ? "🎙️" : "👤",
-          subtitle: user.recording ? "Spreekt nu" : `Kanaal ${user.channel}`
-        }));
-
-        const list = actual.length ? actual : examples;
-        $("usersList").innerHTML = list.map((user, index) => `
-          <div class="user">
-            <div class="avatar ${index === 0 ? "me" : ""}">${escapeHTML(user.emoji)}</div>
-            <div class="user-info">
-              <div class="user-name">${escapeHTML(user.name)}</div>
-              <div class="user-subtitle">${escapeHTML(user.subtitle)}</div>
-            </div>
-            <span class="user-arrow">›</span>
-          </div>
-        `).join("");
-      }
-
-      function renderMessages() {
-        const messages = getJSON(MESSAGES_KEY, []);
-        $("messages").innerHTML = messages.slice(-15).map(message => `
-          <div class="message">
-            <b>${escapeHTML(message.name)}</b>
-            <small>${escapeHTML(message.time)} · K${message.channel}</small><br>
-            ${escapeHTML(message.text)}
-          </div>
-        `).join("");
-        $("messages").classList.toggle("open", messages.length > 0);
-        $("messages").scrollTop = $("messages").scrollHeight;
-      }
-
-      function setChannel(nextChannel) {
-        channel = nextChannel;
-        document.querySelectorAll(".channel[data-channel]").forEach(button => {
-          button.classList.toggle("active", Number(button.dataset.channel) === channel);
-        });
-        updatePresence();
-        showToast(`Verbonden met kanaal ${channel}`);
-      }
-
-      document.querySelectorAll(".channel[data-channel]").forEach(button => {
-        button.addEventListener("click", () => setChannel(Number(button.dataset.channel)));
+        try {
+          if (!navigator.getBattery) throw new Error();
+          const battery = await navigator.getBattery();
+          const showBattery = () => {
+            const percent = Math.round(battery.level * 100);
+            $("batteryText").textContent = percent + "%";
+            $("batteryFill").style.width = percent + "%";
+            $("batteryFill").style.background = percent <= 20 ? "#ff525b" : "#55df91";
+          };
+          showBattery();
+          battery.addEventListener("levelchange", showBattery);
+          toast("Batterijstatus is beschikbaar in deze browser.");
+        } catch {
+          $("batteryToggle").checked = false;
+          toast("Deze browser geeft het echte batterijniveau niet door.");
+        }
       });
+
+      $("settingsButton").addEventListener("click", () => {
+        $("phoneNumber").value = storage.get("phoneNumber");
+        $("settingsOverlay").classList.add("show");
+      });
+
+      $("closeSettings").addEventListener("click", () => {
+        storage.set("phoneNumber", $("phoneNumber").value.trim());
+        $("settingsOverlay").classList.remove("show");
+      });
+
+      $("phoneNumber").addEventListener("change", () => {
+        storage.set("phoneNumber", $("phoneNumber").value.trim());
+      });
+
+      // Op een telefoon opent dit de Telefoon-app; de gebruiker start zelf het gesprek.
+      $("callButton").addEventListener("click", () => {
+        const number = storage.get("phoneNumber").trim();
+        if (!number) {
+          $("settingsOverlay").classList.add("show");
+          toast("Vul eerst een telefoonnummer in bij Instellingen.");
+          return;
+        }
+        location.href = "tel:" + encodeURIComponent(number);
+      });
+
+      // Dit opent het sms-scherm met nummer ingevuld; verzenden blijft handmatig.
+      $("smsButton").addEventListener("click", () => {
+        const number = storage.get("phoneNumber").trim();
+        if (!number) {
+          $("settingsOverlay").classList.add("show");
+          toast("Vul eerst een telefoonnummer in bij Instellingen.");
+          return;
+        }
+        location.href = "sms:" + encodeURIComponent(number);
+      });
+
+      document.querySelectorAll("[data-channel]").forEach(button => {
+        button.addEventListener("click", () => {
+          channel = Number(button.dataset.channel);
+          document.querySelectorAll("[data-channel]").forEach(item =>
+            item.classList.toggle("active", item === button)
+          );
+          toast("Kanaal " + channel + " geselecteerd.");
+        });
+      });
+
+      // Lokale microfoonopname. Dit is geen live portofoonverbinding.
+      let recorder = null;
+      let stream = null;
 
       async function startRecording(event) {
         event.preventDefault();
-        if (recording) return;
-
         if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-          showToast("Microfoonopname vereist een moderne browser via HTTPS of localhost.");
+          toast("Microfoonopname vereist HTTPS of localhost.");
           return;
         }
-
         try {
           stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          chunks = [];
+          const chunks = [];
           recorder = new MediaRecorder(stream);
-
-          recorder.addEventListener("dataavailable", event => {
-            if (event.data?.size) chunks.push(event.data);
-          });
-
-          recorder.addEventListener("stop", () => {
+          recorder.ondataavailable = event => {
+            if (event.data.size) chunks.push(event.data);
+          };
+          recorder.onstop = () => {
             stream?.getTracks().forEach(track => track.stop());
-            stream = null;
-
-            if (chunks.length) {
-              const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
-              const audioURL = URL.createObjectURL(blob);
-              const link = document.createElement("a");
-              link.href = audioURL;
-              link.download = `freddo-kanaal-${channel}-${Date.now()}.webm`;
-              link.click();
-              setTimeout(() => URL.revokeObjectURL(audioURL), 1500);
-              showToast("Opname opgeslagen. Live-audio vereist een serververbinding.");
-            }
-          });
-
+            const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "freddo-kanaal-" + channel + ".webm";
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            $("caption").textContent = "Opname opgeslagen";
+          };
           recorder.start();
-          recording = true;
-          $("talkButton").classList.add("recording");
-          $("talkCaption").textContent = `Opnemen op kanaal ${channel}…`;
-          updatePresence();
-        } catch (error) {
-          showToast(error.name === "NotAllowedError"
-            ? "Microfoontoegang is geweigerd."
-            : "Microfoon niet beschikbaar.");
+          $("talk").classList.add("recording");
+          $("caption").textContent = "Opnemen op kanaal " + channel + "…";
+        } catch {
+          toast("Microfoontoegang geweigerd of niet beschikbaar.");
         }
       }
 
       function stopRecording() {
-        if (!recording) return;
-        recording = false;
-        $("talkButton").classList.remove("recording");
-        $("talkCaption").textContent = "Houd ingedrukt om te spreken";
-
         if (recorder && recorder.state !== "inactive") recorder.stop();
-        else stream?.getTracks().forEach(track => track.stop());
-
-        updatePresence();
+        $("talk").classList.remove("recording");
       }
 
-      const talkButton = $("talkButton");
-      talkButton.addEventListener("pointerdown", startRecording);
-      talkButton.addEventListener("pointerup", stopRecording);
-      talkButton.addEventListener("pointercancel", stopRecording);
-      talkButton.addEventListener("pointerleave", stopRecording);
-      window.addEventListener("blur", stopRecording);
+      $("talk").addEventListener("pointerdown", startRecording);
+      $("talk").addEventListener("pointerup", stopRecording);
+      $("talk").addEventListener("pointercancel", stopRecording);
+      $("talk").addEventListener("pointerleave", stopRecording);
 
       $("messageForm").addEventListener("submit", event => {
         event.preventDefault();
-        const input = $("messageInput");
-        const text = input.value.trim();
-        if (!text) return;
-
-        const messages = getJSON(MESSAGES_KEY, []);
-        messages.push({
-          name: name || "Gast",
-          text,
-          channel,
-          time: new Intl.DateTimeFormat("nl-NL", {
-            hour: "2-digit", minute: "2-digit"
-          }).format(new Date())
-        });
-
-        try { localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages.slice(-50))); }
-        catch {}
-        input.value = "";
-        renderMessages();
-      });
-
-      function sendEmergency() {
-        if (!confirm("Noodoproep versturen?")) return;
-        showToast("🚨 Noodoproepmelding verstuurd");
-        $("connectionText").textContent = "Noodoproep actief";
-        $("onlineDot").style.background = "#ff4b55";
-        setTimeout(() => {
-          $("connectionText").textContent = "Verbonden";
-          $("onlineDot").style.background = "";
-        }, 5000);
-      }
-
-      $("emergencyButton").addEventListener("click", sendEmergency);
-      $("quickEmergency").addEventListener("click", sendEmergency);
-
-      window.addEventListener("storage", event => {
-        if (event.key === USERS_KEY) renderUsers();
-        if (event.key === MESSAGES_KEY) renderMessages();
-      });
-
-      window.addEventListener("pagehide", () => {
-        const users = getUsers();
-        delete users[sessionId];
-        try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch {}
-      });
-
-      updateClock();
-      setInterval(updateClock, 15000);
-      renderUsers();
-      renderMessages();
-      updatePresence();
-      setInterval(updatePresence, 5000);
-    })();
-  </script>
-</body>
-</html>
+   
