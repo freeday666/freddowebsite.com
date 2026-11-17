@@ -3,29 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Oranjestad RP — Vrachtwagen Game</title>
+  <title>Oranjestad RP — Truck Game</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: #87ceeb;
-      font-family: Arial, sans-serif;
-    }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; font-family: Arial, sans-serif; }
+    gmp-map-3d { display: block; width: 100%; height: 100%; }
     #info {
-      position: fixed;
-      top: 14px;
-      left: 14px;
-      z-index: 2;
-      padding: 12px 16px;
-      color: white;
-      background: #18232bdd;
-      border-radius: 8px;
-      line-height: 1.5;
+      position: fixed; z-index: 2; top: 14px; left: 14px;
+      padding: 12px 16px; border-radius: 8px;
+      color: white; background: #18232ddd; line-height: 1.5;
     }
     #info strong { color: #ff8a32; }
-    #speed { font-weight: bold; }
-    canvas { display: block; }
   </style>
 </head>
 <body>
@@ -35,7 +22,11 @@
     Snelheid: <span id="speed">0</span>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script>
+    // Vervang met je eigen Google Maps API-sleutel.
+    window.GOOGLE_MAPS_API_KEY = "JOUW_API_SLEUTEL";
+    window.GOOGLE_MAPS_MAP_ID = "JOUW_MAP_ID";
+  </script>
   <script src="game.js"></script>
 </body>
 </html>
