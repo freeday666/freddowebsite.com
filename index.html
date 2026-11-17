@@ -3,54 +3,175 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Truck Delivery Simulator</title>
-  <link rel="stylesheet" href="style.css">
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
-      }
+  <title>Truck Route Simulator</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #15191d;
+      color: white;
+      font: 16px/1.4 system-ui, sans-serif;
     }
-  </script>
+
+    header {
+      padding: 12px 18px;
+      background: #222930;
+    }
+
+    h1 { margin: 0; font-size: 20px; }
+
+    #layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      height: calc(100vh - 49px);
+    }
+
+    #game {
+      min-width: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #game canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    #sidebar {
+      padding: 14px;
+      overflow: auto;
+      background: #20262c;
+    }
+
+    #route-url {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 8px;
+    }
+
+    button {
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #load-route, #start {
+      width: 100%;
+      color: white;
+      background: #e87523;
+    }
+
+    #start:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    #map {
+      height: 260px;
+      margin-top: 12px;
+      background: #ddd;
+    }
+
+    #map-status, #mission {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    #stats {
+      display: flex;
+      justify-content: space-between;
+      margin: 14px 0;
+    }
+
+    #overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-content: center;
+      text-align: center;
+      padding: 20px;
+      background: #111a;
+    }
+
+    #overlay[hidden] { display: none; }
+
+    #controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    #controls button { flex: 1; }
+
+    @media (max-width: 760px) {
+      #layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 55vh auto;
+        height: auto;
+      }
+
+      #sidebar { min-height: 430px; }
+    }
+  </style>
 </head>
+
 <body>
-  <main id="game"></main>
+  <header><h1>Truck Route Simulator</h1></header>
 
-  <section id="hud">
-    <div><b>EURO TRUCK DELIVERY</b></div>
-    <div id="mission">Missie: laad de vrachtwagen</div>
-    <div>Snelheid: <span id="speed">0</span> km/u</div>
-    <div>Afstand: <span id="distance">0</span> m</div>
-  </section>
+  <main id="layout">
+    <section id="game">
+      <div id="overlay">
+        <div>
+          <h2 id="overlay-title">Route rijden</h2>
+          <p id="overlay-text">Laad de route om te beginnen.</p>
+          <button id="start" disabled>Start missie</button>
+        </div>
+      </div>
+    </section>
 
-  <section id="map-panel">
-    <div id="map"></div>
-    <div id="map-status">Kaart laden…</div>
-  </section>
+    <aside id="sidebar">
+      <h2>Google Maps-route</h2>
 
-  <section id="controls">
-    <button data-key="left">◀</button>
-    <button data-key="brake">Rem</button>
-    <button data-key="accelerate">Gas</button>
-    <button data-key="right">▶</button>
-  </section>
+      <input
+        id="route-url"
+        type="url"
+        value="https://www.google.com/maps/dir/Amsterdam,+Nederland/Utrecht,+Nederland/"
+        placeholder="Plak een Google Maps-route"
+        aria-label="Google Maps-route"
+      >
 
-  <section id="overlay">
-    <div class="card">
-      <h1 id="overlay-title">Truck Delivery Simulator</h1>
-      <p id="overlay-text">
-        Volg de route en rijd naar het afleverpunt. Gebruik WASD of de knoppen.
-      </p>
-      <button id="start">Start missie</button>
-    </div>
-  </section>
+      <button id="load-route">Laad route</button>
+      <div id="map"></div>
+      <div id="map-status">Route: Amsterdam → Utrecht</div>
 
-  <script type="module" src="./game.js"></script>
+      <div id="mission">Missie: laad een route</div>
 
-  <!-- Vervang DE_API_KEY door je Maps JavaScript API-key. -->
+      <div id="stats">
+        <span>Snelheid: <strong id="speed">0</strong> km/u</span>
+        <span>Afstand: <strong id="distance">—</strong> m</span>
+      </div>
+
+      <p>Besturing: W/S of ↑/↓ om te rijden en te remmen; A/D of ←/→ om te sturen.</p>
+
+      <div id="controls">
+        <button data-key="left" aria-label="Links">◀</button>
+        <button data-key="brake" aria-label="Rem">Rem</button>
+        <button data-key="accelerate" aria-label="Gas">Gas</button>
+        <button data-key="right" aria-label="Rechts">▶</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Gebruik hier je eigen Google Maps JavaScript API-key. -->
   <script async
-    src="https://maps.googleapis.com/maps/api/js?key=DE_API_KEY&callback=initMap&v=weekly">
+    src="https://maps.googleapis.com/maps/api/js?key=VUL_HIER_JE_GOOGLE_MAPS_API_KEY_IN&callback=initMap&v=weekly">
   </script>
+
   <script src="./script.js"></script>
+  <script type="module" src="./game.js"></script>
 </body>
 </html>
