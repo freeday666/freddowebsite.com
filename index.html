@@ -1,619 +1,191 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#090719">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
   <title>Freddo Porto</title>
-
   <style>
-    :root {
-      color-scheme: dark;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --bg: #090719;
-      --card: #17132b;
-      --purple: #7628fa;
-      --muted: #918ba9;
-      --white: #f8f5ff;
-    }
-
     * { box-sizing: border-box; }
-
     body {
-      min-height: 100vh;
-      margin: 0;
-      display: grid;
-      place-items: center;
-      padding: 20px;
-      color: var(--white);
-      background:
-        radial-gradient(ellipse at 50% 60%, #29213f 0, transparent 55%),
-        linear-gradient(145deg, #100f19, #080710);
+      margin: 0; min-height: 100vh; padding: 24px 16px;
+      display: grid; place-items: center;
+      background: #111827; color: #f9fafb;
+      font: 16px system-ui, sans-serif;
     }
-
-    button, input { font: inherit; }
-    button { color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-
-    .phone {
-      width: min(390px, 100%);
-      height: min(844px, calc(100dvh - 24px));
-      min-height: 620px;
-      padding: 9px;
-      border: 2px solid #777783;
-      border-radius: 54px;
-      background: linear-gradient(115deg, #383841, #07070b 18%, #282833 85%, #55555c);
-      box-shadow: 0 34px 90px #0009, inset 2px 0 3px #ffffff4a;
-      overflow: hidden;
+    main { width: min(100%, 440px); }
+    h1 { margin: 0 0 6px; }
+    .muted { color: #9ca3af; }
+    .card {
+      margin-top: 16px; padding: 18px; border-radius: 16px;
+      background: #1f2937; border: 1px solid #374151;
     }
-
-    .screen {
-      position: relative;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      padding: 0 23px;
-      border-radius: 45px;
-      background:
-        radial-gradient(ellipse at 50% 18%, #1c1150 0, transparent 40%),
-        linear-gradient(180deg, #090719, #0a071a 70%, #0d0920);
+    label { display: block; margin: 12px 0 6px; }
+    input, button {
+      width: 100%; border: 0; border-radius: 10px;
+      padding: 12px; font: inherit;
     }
-
-    .status {
-      height: 59px;
-      flex: 0 0 auto;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      padding-top: 14px;
-      font-size: 13px;
-      font-weight: 700;
+    input { background: #111827; color: white; border: 1px solid #4b5563; }
+    button { cursor: pointer; color: white; background: #2563eb; margin-top: 10px; }
+    button.secondary { background: #374151; }
+    button.danger { background: #b91c1c; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    audio { width: 100%; margin-top: 12px; }
+    a { color: #93c5fd; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    #lockScreen {
+      position: fixed; inset: 0; background: #111827;
+      display: none; place-items: center; padding: 20px; z-index: 2;
     }
-
-    .island {
-      position: absolute;
-      z-index: 1;
-      top: 13px;
-      left: 50%;
-      width: 112px;
-      height: 28px;
-      transform: translateX(-50%);
-      border-radius: 20px;
-      background: #020207;
-    }
-
-    .status-time, .status-icons { z-index: 2; }
-    .status-icons { display: flex; align-items: center; gap: 6px; }
-    .status-icons.off { opacity: .35; }
-
-    .wifi-icon { font-size: 14px; line-height: 1; }
-
-    .battery {
-      position: relative;
-      width: 25px;
-      height: 12px;
-      padding: 1px;
-      border: 1px solid white;
-      border-radius: 3px;
-    }
-
-    .battery::after {
-      content: "";
-      position: absolute;
-      top: 3px;
-      right: -4px;
-      width: 2px;
-      height: 4px;
-      border-radius: 0 2px 2px 0;
-      background: white;
-    }
-
-    .battery-fill {
-      width: 76%;
-      height: 100%;
-      border-radius: 1px;
-      background: #55df91;
-      transition: width .3s;
-    }
-
-    .header { text-align: center; padding: 13px 0 0; }
-    h1 { margin: 0; font-size: 21px; }
-    .connection { margin-top: 7px; color: #e9e3fa; font-size: 13px; }
-    .dot { color: #48dfa2; }
-
-    .channels {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      margin-top: 20px;
-    }
-
-    .channel {
-      height: 47px;
-      border: 0;
-      border-radius: 14px;
-      color: #d6cfee;
-      background: #211a3e;
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .channel.active {
-      color: white;
-      background: linear-gradient(145deg, #8141ff, #4d19c2);
-    }
-
-    .channel.emergency { color: #ff797b; }
-
-    .talk-wrap {
-      flex: 0 0 auto;
-      display: grid;
-      justify-items: center;
-      padding: 16px 0;
-    }
-
-    .talk {
-      width: 91px;
-      height: 91px;
-      border: 8px solid #382071;
-      border-radius: 50%;
-      background: linear-gradient(145deg, #852dff, #5d13dd);
-      font-size: 31px;
-      touch-action: none;
-    }
-
-    .talk.recording {
-      border-color: #67182c;
-      background: linear-gradient(145deg, #ff6475, #ce234c);
-    }
-
-    .caption { margin-top: 7px; color: var(--muted); font-size: 10px; }
-
-    .users {
-      min-height: 100px;
-      flex: 1;
-      overflow: auto;
-      padding: 12px;
-      border: 1px solid #ffffff0a;
-      border-radius: 19px;
-      background: linear-gradient(145deg, #17132bdf, #100d20ed);
-    }
-
-    .users-title { margin-bottom: 8px; font-size: 13px; font-weight: 700; }
-    .user { display: flex; align-items: center; gap: 9px; min-height: 40px; font-size: 12px; }
-    .avatar { display: grid; place-items: center; width: 29px; height: 29px; border-radius: 50%; background: #654a8b; }
-    .user small { display: block; margin-top: 2px; color: var(--muted); }
-
-    .bottom { flex: 0 0 auto; padding: 10px 0 17px; }
-    .message-form { display: flex; align-items: center; gap: 7px; }
-    .message-input {
-      min-width: 0;
-      height: 40px;
-      flex: 1;
-      padding: 0 12px;
-      border: 1px solid #ffffff0b;
-      border-radius: 24px;
-      outline: none;
-      color: white;
-      background: #211a3d;
-      font-size: 11px;
-    }
-
-    .message-input::placeholder { color: #9086a8; }
-    .send, .emergency {
-      width: 38px;
-      height: 38px;
-      flex: 0 0 auto;
-      border: 0;
-      border-radius: 50%;
-      background: #332657;
-    }
-
-    .emergency { background: #e72c44; font-size: 17px; }
-
-    .tools {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .tool {
-      padding: 7px 10px;
-      border: 1px solid #ffffff12;
-      border-radius: 14px;
-      background: #211a3d;
-      font-size: 11px;
-    }
-
-    .tool.off { opacity: .5; }
-    .messages { display: none; max-height: 95px; overflow: auto; margin-bottom: 8px; font-size: 11px; }
-    .messages.open { display: block; }
-    .message { padding: 5px 2px; overflow-wrap: anywhere; color: #eee8ff; }
-    .message b { color: #ba9bff; }
-
-    .home-indicator {
-      position: absolute;
-      bottom: 7px;
-      left: 50%;
-      width: 108px;
-      height: 4px;
-      transform: translateX(-50%);
-      border-radius: 5px;
-      background: white;
-    }
-
-    .overlay {
-      position: absolute;
-      z-index: 10;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 25px;
-      text-align: center;
-      background: #090719f5;
-      backdrop-filter: blur(16px);
-    }
-
-    .overlay.show { display: flex; }
-    .lock-card { width: 100%; }
-    .lock-icon { font-size: 42px; }
-    .lock-card h2 { margin: 12px 0 7px; }
-    .lock-card p { color: var(--muted); font-size: 13px; }
-
-    .pin-input {
-      width: 100%;
-      height: 48px;
-      margin: 12px 0;
-      padding: 0 14px;
-      border: 1px solid #ffffff20;
-      border-radius: 14px;
-      outline: none;
-      color: white;
-      background: #1a1530;
-      text-align: center;
-      letter-spacing: 8px;
-      font-size: 20px;
-    }
-
-    .primary, .secondary {
-      width: 100%;
-      min-height: 43px;
-      margin-top: 7px;
-      border: 0;
-      border-radius: 14px;
-      background: linear-gradient(145deg, #8141ff, #591ddb);
-      font-weight: 700;
-    }
-
-    .secondary { background: #29223d; }
-    .error { min-height: 18px; color: #ff777e; font-size: 12px; }
-    .settings { text-align: left; }
-    .settings h2 { text-align: center; }
-
-    .setting-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      padding: 13px 0;
-      border-bottom: 1px solid #ffffff12;
-      font-size: 13px;
-    }
-
-    .setting-row input[type="checkbox"] { width: 19px; height: 19px; accent-color: #874fff; }
-    .tel-input {
-      width: 120px;
-      padding: 7px 9px;
-      border: 1px solid #ffffff22;
-      border-radius: 9px;
-      outline: none;
-      color: white;
-      background: #1a1530;
-    }
-
-    .toast {
-      position: fixed;
-      z-index: 20;
-      left: 50%;
-      bottom: 20px;
-      max-width: 90vw;
-      padding: 11px 15px;
-      transform: translate(-50%, 15px);
-      border: 1px solid #ffffff22;
-      border-radius: 13px;
-      opacity: 0;
-      background: #211a36;
-      text-align: center;
-      font-size: 12px;
-      pointer-events: none;
-      transition: .2s;
-    }
-
-    .toast.show { opacity: 1; transform: translate(-50%, 0); }
-
-    @media (max-width: 500px) {
-      body { display: block; min-height: 100dvh; padding: 0; background: var(--bg); }
-      .phone { width: 100%; height: 100dvh; min-height: 590px; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
-      .screen {
-        padding: env(safe-area-inset-top, 0) max(23px, env(safe-area-inset-right, 0))
-          env(safe-area-inset-bottom, 0) max(23px, env(safe-area-inset-left, 0));
-        border-radius: 0;
-      }
-      .home-indicator { bottom: max(7px, env(safe-area-inset-bottom, 0)); }
-    }
-
-    @media (max-height: 700px) {
-      .status { height: 49px; }
-      .header { padding-top: 5px; }
-      .channels { margin-top: 13px; }
-      .talk-wrap { padding: 10px 0; }
-      .talk { width: 78px; height: 78px; }
-      .users { min-height: 90px; }
-    }
+    #lockScreen article { width: min(100%, 360px); }
+    #status { min-height: 24px; margin-top: 10px; color: #a7f3d0; }
   </style>
 </head>
-
 <body>
-  <main class="phone">
-    <div class="screen">
-      <div class="status">
-        <span id="clock">9:41</span>
-        <div class="island" aria-hidden="true"></div>
-        <div class="status-icons" id="statusIcons">
-          <span id="wifiStatus" aria-label="Wifi aan">⌁</span>
-          <span id="bluetoothStatus" aria-label="Bluetooth aan">ᛒ</span>
-          <span class="battery" title="Batterij (gesimuleerd)">
-            <span class="battery-fill" id="batteryFill"></span>
-          </span>
-          <span id="batteryText">76%</span>
-        </div>
+  <main>
+    <h1>📻 Freddo Porto</h1>
+    <div class="muted">Lokale portofoon-demo · <span id="clock"></span></div>
+
+    <section class="card">
+      <h2>Contact</h2>
+      <label for="phone">Telefoonnummer</label>
+      <input id="phone" type="tel" placeholder="+31612345678">
+      <div class="row">
+        <button id="callBtn">📞 Bellen</button>
+        <button id="smsBtn" class="secondary">✉️ Sms</button>
       </div>
+      <p class="muted">Je telefoon opent de bel- of berichtenapp. Bevestig daar zelf.</p>
+    </section>
 
-      <header class="header">
-        <h1>freddo porto</h1>
-        <div class="connection"><span class="dot">●</span> Verbonden</div>
-      </header>
+    <section class="card">
+      <h2>Spraakbericht opnemen</h2>
+      <button id="recordBtn">🎙️ Start opname</button>
+      <audio id="player" controls hidden></audio>
+      <a id="download" hidden>Download opname</a>
+      <div id="status" role="status"></div>
+    </section>
 
-      <nav class="channels" aria-label="Kanalen">
-        <button class="channel active" data-channel="1">♧</button>
-        <button class="channel" data-channel="2">1</button>
-        <button class="channel" data-channel="3">2</button>
-        <button class="channel" data-channel="4">5</button>
-        <button class="channel emergency" id="quickEmergency">●</button>
-      </nav>
-
-      <section class="talk-wrap">
-        <button class="talk" id="talk" aria-label="Houd ingedrukt om te spreken">🎙</button>
-        <div class="caption" id="caption">Houd ingedrukt om op te nemen</div>
-      </section>
-
-      <section class="users">
-        <div class="users-title">Online users <span id="userCount">4 online ◉</span></div>
-        <div class="user"><span class="avatar">👤</span><span>freddo porto<small>Online</small></span></div>
-        <div class="user"><span class="avatar">🏙️</span><span>Thomasbeest<small>Online</small></span></div>
-        <div class="user"><span class="avatar">👨🏻</span><span>Ohio cruiser<small>Online</small></span></div>
-        <div class="user"><span class="avatar">👨🏽</span><span>Freddo polore<small>Online</small></span></div>
-      </section>
-
-      <footer class="bottom">
-        <div class="messages" id="messages"></div>
-        <form class="message-form" id="messageForm">
-          <input class="message-input" id="messageInput" placeholder="Typ een bericht…" maxlength="240">
-          <button class="send" aria-label="Bericht versturen">➤</button>
-          <button class="emergency" id="emergency" type="button" aria-label="Noodoproep">♟</button>
-        </form>
-
-        <div class="tools">
-          <button class="tool" id="callButton">📞 Bellen</button>
-          <button class="tool" id="smsButton">✉️ Sms</button>
-          <button class="tool" id="lockButton">🔒 Vergrendel</button>
-          <button class="tool" id="settingsButton">⚙️</button>
-        </div>
-      </footer>
-
-      <div class="home-indicator"></div>
-
-      <!-- App-vergrendeling: dit vergrendelt alleen deze webapp -->
-      <section class="overlay" id="lockOverlay">
-        <div class="lock-card">
-          <div class="lock-icon">🔒</div>
-          <h2 id="lockTitle">App vergrendeld</h2>
-          <p id="lockHint">Voer je pincode in om verder te gaan.</p>
-          <form id="pinForm">
-            <input class="pin-input" id="pinInput" type="password" inputmode="numeric"
-              autocomplete="off" maxlength="8" placeholder="••••" aria-label="Pincode">
-            <div class="error" id="pinError"></div>
-            <button class="primary" id="pinSubmit" type="submit">Ontgrendelen</button>
-          </form>
-          <button class="secondary" id="cancelSetup" type="button" hidden>Annuleren</button>
-        </div>
-      </section>
-
-      <!-- Instellingenoverlay -->
-      <section class="overlay" id="settingsOverlay">
-        <div class="lock-card settings">
-          <h2>Instellingen</h2>
-          <label class="setting-row">Wifi <input type="checkbox" id="wifiToggle" checked></label>
-          <label class="setting-row">Bluetooth <input type="checkbox" id="bluetoothToggle" checked></label>
-          <label class="setting-row">Batterij simuleren
-            <input type="checkbox" id="batteryToggle">
-          </label>
-          <label class="setting-row">Telefoonnummer
-            <input class="tel-input" id="phoneNumber" type="tel" placeholder="+31…">
-          </label>
-          <button class="secondary" id="changePinButton">Pincode instellen/wijzigen</button>
-          <button class="secondary" id="closeSettings">Sluiten</button>
-        </div>
-      </section>
-    </div>
+    <section class="card">
+      <h2>App-vergrendeling</h2>
+      <label for="pin">Stel een pincode in (4–8 cijfers)</label>
+      <input id="pin" type="password" inputmode="numeric" maxlength="8" placeholder="Nieuwe pincode">
+      <button id="savePinBtn" class="secondary">Pincode opslaan</button>
+      <button id="lockBtn" class="danger">Vergrendel app</button>
+      <p class="muted">Dit vergrendelt alleen deze webpagina, niet je telefoon.</p>
+    </section>
   </main>
 
-  <div class="toast" id="toast" role="status"></div>
+  <div id="lockScreen">
+    <article>
+      <h2>App vergrendeld</h2>
+      <label for="unlockPin">Voer je pincode in</label>
+      <input id="unlockPin" type="password" inputmode="numeric" maxlength="8">
+      <button id="unlockBtn">Ontgrendelen</button>
+      <p id="lockError" class="muted"></p>
+    </article>
+  </div>
 
   <script>
-    (() => {
-      const $ = id => document.getElementById(id);
-      const storage = {
-        get(key, fallback = "") {
-          try { return localStorage.getItem("freddo-" + key) ?? fallback; }
-          catch { return fallback; }
-        },
-        set(key, value) {
-          try { localStorage.setItem("freddo-" + key, value); } catch {}
-        }
-      };
+    const $ = id => document.getElementById(id);
+    let recorder;
+    let chunks = [];
 
-      let channel = 1;
-      let setupMode = false;
-      let firstPin = "";
-      let toastTimer;
+    function updateClock() {
+      $("clock").textContent = new Date().toLocaleTimeString("nl-NL");
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
 
-      function toast(text) {
-        $("toast").textContent = text;
-        $("toast").classList.add("show");
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2600);
+    function cleanPhone() {
+      return $("phone").value.trim().replace(/[^\d+]/g, "");
+    }
+
+    $("callBtn").addEventListener("click", () => {
+      const phone = cleanPhone();
+      if (!phone) return alert("Vul eerst een telefoonnummer in.");
+      location.href = "tel:" + phone;
+    });
+
+    $("smsBtn").addEventListener("click", () => {
+      const phone = cleanPhone();
+      if (!phone) return alert("Vul eerst een telefoonnummer in.");
+      location.href = "sms:" + phone;
+    });
+
+    $("recordBtn").addEventListener("click", async () => {
+      if (recorder?.state === "recording") {
+        recorder.stop();
+        $("recordBtn").textContent = "🎙️ Start opname";
+        return;
       }
 
-      function updateClock() {
-        $("clock").textContent = new Intl.DateTimeFormat("nl-NL", {
-          hour: "2-digit", minute: "2-digit"
-        }).format(new Date());
+      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+        $("status").textContent = "Opnemen wordt niet ondersteund. Gebruik een moderne browser via HTTPS.";
+        return;
       }
 
-      function updateConnectivity() {
-        const wifi = $("wifiToggle").checked;
-        const bluetooth = $("bluetoothToggle").checked;
-        $("wifiStatus").style.opacity = wifi ? "1" : ".3";
-        $("bluetoothStatus").style.opacity = bluetooth ? "1" : ".3";
-        $("wifiStatus").title = wifi ? "Wifi aan (weergave)" : "Wifi uit (weergave)";
-        $("bluetoothStatus").title = bluetooth ? "Bluetooth aan (weergave)" : "Bluetooth uit (weergave)";
-        storage.set("wifi", String(wifi));
-        storage.set("bluetooth", String(bluetooth));
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        chunks = [];
+        recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = event => {
+          if (event.data.size) chunks.push(event.data);
+        };
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+          const url = URL.createObjectURL(blob);
+          $("player").src = url;
+          $("player").hidden = false;
+          $("download").href = url;
+          $("download").download = "spraakbericht.webm";
+          $("download").textContent = "⬇️ Download spraakbericht";
+          $("download").hidden = false;
+          $("status").textContent = "Opname klaar. Je kunt hem afspelen of downloaden.";
+          stream.getTracks().forEach(track => track.stop());
+        };
+        recorder.start();
+        $("recordBtn").textContent = "⏹️ Stop opname";
+        $("status").textContent = "Opname loopt…";
+      } catch (error) {
+        $("status").textContent = "Geen microfoontoegang: " + error.message;
       }
+    });
 
-      $("wifiToggle").checked = storage.get("wifi", "true") !== "false";
-      $("bluetoothToggle").checked = storage.get("bluetooth", "true") !== "false";
-      $("wifiToggle").addEventListener("change", updateConnectivity);
-      $("bluetoothToggle").addEventListener("change", updateConnectivity);
-
-      $("batteryToggle").addEventListener("change", async () => {
-        if (!$("batteryToggle").checked) {
-          toast("Batterijniveau is nu een voorbeeldwaarde.");
-          return;
-        }
-        try {
-          if (!navigator.getBattery) throw new Error();
-          const battery = await navigator.getBattery();
-          const showBattery = () => {
-            const percent = Math.round(battery.level * 100);
-            $("batteryText").textContent = percent + "%";
-            $("batteryFill").style.width = percent + "%";
-            $("batteryFill").style.background = percent <= 20 ? "#ff525b" : "#55df91";
-          };
-          showBattery();
-          battery.addEventListener("levelchange", showBattery);
-          toast("Batterijstatus is beschikbaar in deze browser.");
-        } catch {
-          $("batteryToggle").checked = false;
-          toast("Deze browser geeft het echte batterijniveau niet door.");
-        }
-      });
-
-      $("settingsButton").addEventListener("click", () => {
-        $("phoneNumber").value = storage.get("phoneNumber");
-        $("settingsOverlay").classList.add("show");
-      });
-
-      $("closeSettings").addEventListener("click", () => {
-        storage.set("phoneNumber", $("phoneNumber").value.trim());
-        $("settingsOverlay").classList.remove("show");
-      });
-
-      $("phoneNumber").addEventListener("change", () => {
-        storage.set("phoneNumber", $("phoneNumber").value.trim());
-      });
-
-      // Op een telefoon opent dit de Telefoon-app; de gebruiker start zelf het gesprek.
-      $("callButton").addEventListener("click", () => {
-        const number = storage.get("phoneNumber").trim();
-        if (!number) {
-          $("settingsOverlay").classList.add("show");
-          toast("Vul eerst een telefoonnummer in bij Instellingen.");
-          return;
-        }
-        location.href = "tel:" + encodeURIComponent(number);
-      });
-
-      // Dit opent het sms-scherm met nummer ingevuld; verzenden blijft handmatig.
-      $("smsButton").addEventListener("click", () => {
-        const number = storage.get("phoneNumber").trim();
-        if (!number) {
-          $("settingsOverlay").classList.add("show");
-          toast("Vul eerst een telefoonnummer in bij Instellingen.");
-          return;
-        }
-        location.href = "sms:" + encodeURIComponent(number);
-      });
-
-      document.querySelectorAll("[data-channel]").forEach(button => {
-        button.addEventListener("click", () => {
-          channel = Number(button.dataset.channel);
-          document.querySelectorAll("[data-channel]").forEach(item =>
-            item.classList.toggle("active", item === button)
-          );
-          toast("Kanaal " + channel + " geselecteerd.");
-        });
-      });
-
-      // Lokale microfoonopname. Dit is geen live portofoonverbinding.
-      let recorder = null;
-      let stream = null;
-
-      async function startRecording(event) {
-        event.preventDefault();
-        if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-          toast("Microfoonopname vereist HTTPS of localhost.");
-          return;
-        }
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          const chunks = [];
-          recorder = new MediaRecorder(stream);
-          recorder.ondataavailable = event => {
-            if (event.data.size) chunks.push(event.data);
-          };
-          recorder.onstop = () => {
-            stream?.getTracks().forEach(track => track.stop());
-            const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = "freddo-kanaal-" + channel + ".webm";
-            link.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
-            $("caption").textContent = "Opname opgeslagen";
-          };
-          recorder.start();
-          $("talk").classList.add("recording");
-          $("caption").textContent = "Opnemen op kanaal " + channel + "…";
-        } catch {
-          toast("Microfoontoegang geweigerd of niet beschikbaar.");
-        }
+    $("savePinBtn").addEventListener("click", () => {
+      const pin = $("pin").value;
+      if (!/^\d{4,8}$/.test(pin)) {
+        alert("Kies een pincode van 4 tot 8 cijfers.");
+        return;
       }
+      localStorage.setItem("freddoPin", pin);
+      $("pin").value = "";
+      alert("Pincode opgeslagen op dit apparaat.");
+    });
 
-      function stopRecording() {
-        if (recorder && recorder.state !== "inactive") recorder.stop();
-        $("talk").classList.remove("recording");
+    $("lockBtn").addEventListener("click", () => {
+      if (!localStorage.getItem("freddoPin")) {
+        alert("Stel eerst een pincode in.");
+        return;
       }
+      $("lockScreen").style.display = "grid";
+      $("unlockPin").focus();
+    });
 
-      $("talk").addEventListener("pointerdown", startRecording);
-      $("talk").addEventListener("pointerup", stopRecording);
-      $("talk").addEventListener("pointercancel", stopRecording);
-      $("talk").addEventListener("pointerleave", stopRecording);
+    $("unlockBtn").addEventListener("click", unlock);
+    $("unlockPin").addEventListener("keydown", event => {
+      if (event.key === "Enter") unlock();
+    });
 
-      $("messageForm").addEventListener("submit", event => {
-        event.preventDefault();
-   
+    function unlock() {
+      if ($("unlockPin").value === localStorage.getItem("freddoPin")) {
+        $("lockScreen").style.display = "none";
+        $("unlockPin").value = "";
+        $("lockError").textContent = "";
+      } else {
+        $("lockError").textContent = "Onjuiste pincode.";
+        $("unlockPin").value = "";
+      }
+    }
+  </script>
+</body>
+</html>
