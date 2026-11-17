@@ -1,6 +1,7 @@
 const form = document.getElementById("panel");
 const menu = document.getElementById("menu");
 const errorBox = document.getElementById("error");
+const startButton = document.getElementById("startButton");
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -14,33 +15,43 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
+  startButton.disabled = true;
+  startButton.textContent = "Kaart laden…";
+
   try {
-    await startGame(apiKey, mapId);
+    await loadGoogleMaps(apiKey);
+    await startGame(mapId);
+
     menu.style.display = "none";
     document.getElementById("info").style.display = "block";
   } catch (error) {
     console.error(error);
     errorBox.textContent =
-      "Kaart laden mislukt. Controleer je sleutel, Map ID en Google Maps-instellingen.";
+      "Kaart laden mislukt. Controleer je API-sleutel, Map ID, API-instellingen en facturering.";
+    startButton.disabled = false;
+    startButton.textContent = "Start game";
   }
 });
 
-async function startGame(apiKey, mapId) {
-  // Voorkom dat het script per ongeluk twee keer wordt geladen.
-  if (!window.google?.maps?.importLibrary) {
-    await new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src =
-        "https://maps.googleapis.com/maps/api/js?key=" +
-        encodeURIComponent(apiKey) +
-        "&v=beta&libraries=maps3d";
-      script.async = true;
-      script.onload = resolve;
-      script.onerror = () => reject(new Error("Google Maps script kon niet laden."));
-      document.head.appendChild(script);
-    });
+function loadGoogleMaps(apiKey) {
+  if (window.google?.maps?.importLibrary) {
+    return Promise.resolve();
   }
 
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src =
+      "https://maps.googleapis.com/maps/api/js?key=" +
+      encodeURIComponent(apiKey) +
+      "&v=beta&libraries=maps3d";
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("Google Maps-script kon niet laden."));
+    document.head.appendChild(script);
+  });
+}
+
+async function startGame(mapId) {
   const { Map3DElement, Marker3DElement } =
     await google.maps.importLibrary("maps3d");
 
@@ -63,15 +74,22 @@ async function startGame(apiKey, mapId) {
 
   const truck = new Marker3DElement({
     position: { lat, lng, altitude: 0 },
-    label: "🚚 ORANJESTAD RP"
+    label: "ORANJESTAD RP"
   });
+
   map.appendChild(truck);
 
-  const keys = {};
+  const keys = Object.create(null);
+
   window.addEventListener("keydown", (event) => {
-    keys[event.key.toLowerCase()] = true;
-    if (event.key.startsWith("Arrow")) event.preventDefault();
+    const key = event.key.toLowerCase();
+    keys[key] = true;
+
+    if (key.startsWith("arrow")) {
+      event.preventDefault();
+    }
   });
+
   window.addEventListener("keyup", (event) => {
     keys[event.key.toLowerCase()] = false;
   });
@@ -85,35 +103,38 @@ async function startGame(apiKey, mapId) {
     const left = keys.a || keys.arrowleft;
     const right = keys.d || keys.arrowright;
 
-    if (forward) speed = Math.min(speed + 8 * dt, 25);
-    else if (backward) speed = Math.max(speed - 8 * dt, -10);
-    else speed *= Math.pow(0.94, dt * 60);
+    if (forward) {
+      speed = Math.min(speed + 8 * dt, 25);
+    } else if (backward) {
+      speed = Math.max(speed - 8 * dt, -10);
+    } else {
+      speed *= Math.pow(0.94, dt * 60);
+    }
 
     if (Math.abs(speed) > 0.2) {
-      const steering = (right ? 1 : 0) - (left ? 1 : 0);
+      const steering = Number(right) - Number(left);
       heading = (heading + steering * 65 * dt * Math.sign(speed) + 360) % 360;
 
       const radians = heading * Math.PI / 180;
-      const metersPerLatDegree = 111320;
-      const metersPerLngDegree =
+      const metersPerLatitudeDegree = 111320;
+      const metersPerLongitudeDegree =
         111320 * Math.cos(lat * Math.PI / 180);
       const distance = speed * dt;
 
-      lat += Math.cos(radians) * distance / metersPerLatDegree;
-      lng += Math.sin(radians) * distance / metersPerLngDegree;
+      lat += Math.cos(radians) * distance / metersPerLatitudeDegree;
+      lng += Math.sin(radians) * distance / metersPerLongitudeDegree;
     }
 
     const position = { lat, lng, altitude: 0 };
-    truck.position = position;
 
-    // De camera volgt de locatie en kijkt vanuit achter de truck.
+    truck.position = position;
     map.center = position;
     map.heading = heading;
     map.tilt = 65;
     map.range = 90;
 
     document.getElementById("speed").textContent =
-      Math.round(Math.abs(speed) * 3.6);
+      String(Math.round(Math.abs(speed) * 3.6));
 
     requestAnimationFrame(animate);
   }
