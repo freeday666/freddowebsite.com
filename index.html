@@ -3,53 +3,36 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Truck Route Simulator</title>
-
+  <title>Truckdemo — Amsterdam naar Utrecht</title>
   <style>
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
+      color: #fff;
       background: #15191d;
-      color: white;
-      font: 16px/1.4 system-ui, sans-serif;
+      font: 16px system-ui, sans-serif;
     }
 
     header {
       padding: 12px 18px;
-      background: #222930;
+      background: #242b32;
     }
 
     h1 { margin: 0; font-size: 20px; }
 
-    #layout {
+    main {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 360px;
-      height: calc(100vh - 49px);
+      grid-template-columns: minmax(0, 1fr) 300px;
+      height: calc(100vh - 48px);
     }
 
-    #game {
-      min-width: 0;
-      overflow: hidden;
-      position: relative;
-    }
+    #game { min-width: 0; min-height: 300px; }
+    #game canvas { display: block; width: 100%; height: 100%; }
 
-    #game canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    #sidebar {
-      padding: 14px;
-      overflow: auto;
+    aside {
+      padding: 16px;
       background: #20262c;
-    }
-
-    #route-url {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 8px;
     }
 
     button {
@@ -57,121 +40,315 @@
       border: 0;
       border-radius: 5px;
       cursor: pointer;
-    }
-
-    #load-route, #start {
-      width: 100%;
       color: white;
       background: #e87523;
     }
 
-    #start:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-    }
-
-    #map {
-      height: 260px;
-      margin-top: 12px;
-      background: #ddd;
-    }
-
-    #map-status, #mission {
-      margin-top: 10px;
-      font-size: 14px;
-    }
-
-    #stats {
-      display: flex;
-      justify-content: space-between;
-      margin: 14px 0;
-    }
-
-    #overlay {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-content: center;
-      text-align: center;
-      padding: 20px;
-      background: #111a;
-    }
-
-    #overlay[hidden] { display: none; }
+    #stats { margin: 18px 0; line-height: 1.8; }
 
     #controls {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
-      margin-top: 12px;
+      margin-top: 18px;
     }
 
-    #controls button { flex: 1; }
+    #controls button { background: #39434d; }
 
-    @media (max-width: 760px) {
-      #layout {
+    #message {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background: #111b;
+      padding: 20px;
+    }
+
+    #message > div {
+      max-width: 420px;
+      padding: 24px;
+      border-radius: 12px;
+      background: #242b32;
+    }
+
+    #message button { margin-top: 10px; }
+
+    @media (max-width: 700px) {
+      main {
         grid-template-columns: 1fr;
         grid-template-rows: 55vh auto;
         height: auto;
       }
 
-      #sidebar { min-height: 430px; }
+      aside { min-height: 280px; }
     }
   </style>
 </head>
-
 <body>
-  <header><h1>Truck Route Simulator</h1></header>
+  <header><h1>Truckdemo: Amsterdam → Utrecht</h1></header>
 
-  <main id="layout">
-    <section id="game">
-      <div id="overlay">
-        <div>
-          <h2 id="overlay-title">Route rijden</h2>
-          <p id="overlay-text">Laad de route om te beginnen.</p>
-          <button id="start" disabled>Start missie</button>
-        </div>
-      </div>
-    </section>
+  <main>
+    <section id="game" aria-label="3D-truckdemo"></section>
 
-    <aside id="sidebar">
-      <h2>Google Maps-route</h2>
-
-      <input
-        id="route-url"
-        type="url"
-        value="https://www.google.com/maps/dir/Amsterdam,+Nederland/Utrecht,+Nederland/"
-        placeholder="Plak een Google Maps-route"
-        aria-label="Google Maps-route"
-      >
-
-      <button id="load-route">Laad route</button>
-      <div id="map"></div>
-      <div id="map-status">Route: Amsterdam → Utrecht</div>
-
-      <div id="mission">Missie: laad een route</div>
+    <aside>
+      <h2>Demo-route</h2>
+      <p>Amsterdam → Utrecht</p>
+      <p>Dit is een vaste voorbeeldroute. Er zijn geen API-keys nodig.</p>
 
       <div id="stats">
-        <span>Snelheid: <strong id="speed">0</strong> km/u</span>
-        <span>Afstand: <strong id="distance">—</strong> m</span>
+        Snelheid: <strong id="speed">0</strong> km/u<br>
+        Afstand: <strong id="distance">0</strong> m
       </div>
 
-      <p>Besturing: W/S of ↑/↓ om te rijden en te remmen; A/D of ←/→ om te sturen.</p>
+      <p>Toetsen: W/↑ gas, S/↓ rem, A/← links, D/→ rechts.</p>
 
       <div id="controls">
-        <button data-key="left" aria-label="Links">◀</button>
-        <button data-key="brake" aria-label="Rem">Rem</button>
-        <button data-key="accelerate" aria-label="Gas">Gas</button>
-        <button data-key="right" aria-label="Rechts">▶</button>
+        <button data-control="left">Links</button>
+        <button data-control="right">Rechts</button>
+        <button data-control="brake">Rem</button>
+        <button data-control="gas">Gas</button>
       </div>
     </aside>
   </main>
 
-  <!-- Gebruik hier je eigen Google Maps JavaScript API-key. -->
-  <script async
-    src="https://maps.googleapis.com/maps/api/js?key=VUL_HIER_JE_GOOGLE_MAPS_API_KEY_IN&callback=initMap&v=weekly">
-  </script>
+  <div id="message">
+    <div>
+      <h2>Truckdemo</h2>
+      <p>Rijd de eenvoudige demo-route van Amsterdam naar Utrecht.</p>
+      <button id="start">Start rijden</button>
+    </div>
+  </div>
 
-  <script src="./script.js"></script>
-  <script type="module" src="./game.js"></script>
+  <script type="module">
+    import * as THREE from
+      "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+    const game = document.querySelector("#game");
+    const speedText = document.querySelector("#speed");
+    const distanceText = document.querySelector("#distance");
+    const message = document.querySelector("#message");
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x91c9ed);
+    scene.fog = new THREE.Fog(0x91c9ed, 45, 180);
+
+    const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 300);
+    camera.position.set(0, 5, 12);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    game.appendChild(renderer.domElement);
+
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x586b3d, 2));
+
+    const sunlight = new THREE.DirectionalLight(0xffffff, 2);
+    sunlight.position.set(-8, 15, 5);
+    sunlight.castShadow = true;
+    scene.add(sunlight);
+
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(300, 300),
+      new THREE.MeshStandardMaterial({ color: 0x638b49 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.12;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    const road = new THREE.Mesh(
+      new THREE.PlaneGeometry(12, 260),
+      new THREE.MeshStandardMaterial({ color: 0x34383c })
+    );
+    road.rotation.x = -Math.PI / 2;
+    road.position.set(0, 0, -110);
+    road.receiveShadow = true;
+    scene.add(road);
+
+    // Witte middenstrepen langs de weg.
+    for (let z = 15; z > -235; z -= 12) {
+      const stripe = new THREE.Mesh(
+        new THREE.BoxGeometry(0.18, 0.025, 5),
+        new THREE.MeshStandardMaterial({ color: 0xffffff })
+      );
+      stripe.position.set(0, 0.02, z);
+      scene.add(stripe);
+    }
+
+    // Eenvoudige bomen naast de weg.
+    for (let z = 8; z > -220; z -= 12) {
+      for (const side of [-1, 1]) {
+        const trunk = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.18, 0.24, 1.4, 7),
+          new THREE.MeshStandardMaterial({ color: 0x624126 })
+        );
+        trunk.position.set(side * (9 + Math.random() * 4), 0.6, z);
+        scene.add(trunk);
+
+        const leaves = new THREE.Mesh(
+          new THREE.ConeGeometry(1.15, 2.5, 7),
+          new THREE.MeshStandardMaterial({ color: 0x286b38 })
+        );
+        leaves.position.set(trunk.position.x, 2.25, z);
+        scene.add(leaves);
+      }
+    }
+
+    const truck = new THREE.Group();
+
+    const cab = new THREE.Mesh(
+      new THREE.BoxGeometry(2.1, 1.8, 1.8),
+      new THREE.MeshStandardMaterial({ color: 0xe87523 })
+    );
+    cab.position.set(0, 1.45, -0.2);
+    cab.castShadow = true;
+    truck.add(cab);
+
+    const trailer = new THREE.Mesh(
+      new THREE.BoxGeometry(2.35, 2.2, 4.5),
+      new THREE.MeshStandardMaterial({ color: 0xe8e8e8 })
+    );
+    trailer.position.set(0, 1.45, 2.8);
+    trailer.castShadow = true;
+    truck.add(trailer);
+
+    const wheels = [];
+    for (const x of [-1.12, 1.12]) {
+      for (const z of [-0.9, 1.25, 4.1]) {
+        const wheel = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.46, 0.46, 0.3, 16),
+          new THREE.MeshStandardMaterial({ color: 0x171717 })
+        );
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(x, 0.48, z);
+        wheel.castShadow = true;
+        truck.add(wheel);
+        wheels.push(wheel);
+      }
+    }
+
+    truck.position.set(0, 0, 5);
+    scene.add(truck);
+
+    const keys = new Set();
+    let running = false;
+    let speed = 0;
+    let distance = 0;
+    let steering = 0;
+
+    addEventListener("keydown", event => {
+      const key = event.key.toLowerCase();
+      if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
+        event.preventDefault();
+      }
+      keys.add(key);
+    });
+
+    addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
+    addEventListener("blur", () => keys.clear());
+
+    document.querySelector("#start").addEventListener("click", () => {
+      running = true;
+      message.style.display = "none";
+    });
+
+    const controlKeys = {
+      gas: "arrowup",
+      brake: "arrowdown",
+      left: "arrowleft",
+      right: "arrowright"
+    };
+
+    document.querySelectorAll("[data-control]").forEach(button => {
+      const key = controlKeys[button.dataset.control];
+
+      button.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        keys.add(key);
+      });
+
+      for (const name of ["pointerup", "pointerleave", "pointercancel"]) {
+        button.addEventListener(name, () => keys.delete(key));
+      }
+    });
+
+    function resize() {
+      const width = game.clientWidth;
+      const height = game.clientHeight;
+      if (!width || !height) return;
+
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+
+    new ResizeObserver(resize).observe(game);
+    resize();
+
+    let previousTime = performance.now();
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = Math.min((now - previousTime) / 1000, 0.05);
+      previousTime = now;
+
+      if (running) {
+        if (keys.has("w") || keys.has("arrowup")) speed += 18 * dt;
+        else speed -= 5 * dt;
+
+        if (keys.has("s") || keys.has("arrowdown")) speed -= 25 * dt;
+        speed = THREE.MathUtils.clamp(speed, 0, 110);
+
+        const left = keys.has("a") || keys.has("arrowleft");
+        const right = keys.has("d") || keys.has("arrowright");
+        steering = THREE.MathUtils.damp(
+          steering,
+          (right ? 1 : 0) - (left ? 1 : 0),
+          5,
+          dt
+        );
+
+        truck.position.x += steering * (1.5 + speed / 35) * dt;
+        truck.position.x = THREE.MathUtils.clamp(truck.position.x, -4.2, 4.2);
+        truck.rotation.y = -steering * 0.09;
+
+        const movement = speed * dt * 0.23;
+        distance += movement;
+        road.position.z += movement;
+        if (road.position.z > 20) road.position.z -= 24;
+
+        scene.children.forEach(object => {
+          if (object.geometry?.type === "BoxGeometry" &&
+              object.position.y === 0.02) {
+            object.position.z += movement;
+            if (object.position.z > 15) object.position.z -= 240;
+          } else if (
+            object.geometry?.type === "CylinderGeometry" ||
+            object.geometry?.type === "ConeGeometry"
+          ) {
+            object.position.z += movement;
+            if (object.position.z > 18) object.position.z -= 240;
+          }
+        });
+
+        wheels.forEach(wheel => {
+          wheel.rotation.x += movement * 0.8;
+        });
+      }
+
+      speedText.textContent = Math.round(speed);
+      distanceText.textContent = Math.round(distance);
+
+      camera.position.x = THREE.MathUtils.damp(
+        camera.position.x, truck.position.x * 0.45, 3, dt
+      );
+      camera.lookAt(truck.position.x * 0.25, 1.2, -8);
+
+      renderer.render(scene, camera);
+    }
+
+    requestAnimationFrame(animate);
+  </script>
 </body>
 </html>
