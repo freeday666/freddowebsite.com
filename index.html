@@ -2,450 +2,80 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#101418">
-  <title>Satellietrit — demo</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Stadsbezorger 3D</title>
   <style>
-    * { box-sizing: border-box }
-
+    * { box-sizing: border-box; }
     html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-      background: #101418;
-      color: #fff;
-      font-family: system-ui, Arial, sans-serif;
-      touch-action: none;
+      margin: 0; width: 100%; height: 100%; overflow: hidden;
+      background: #101820; font-family: system-ui, Arial, sans-serif;
     }
-
-    #map { position: absolute; inset: 0 }
-
-    #setup {
-      position: absolute;
-      z-index: 5;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 20px;
-      background: #101418;
-      touch-action: auto;
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+    #hud { position: fixed; inset: 0; pointer-events: none; color: white; }
+    #status, #mission {
+      position: absolute; top: 14px; padding: 10px 13px;
+      border: 1px solid #ffffff44; border-radius: 11px;
+      background: #17212be8; box-shadow: 0 4px 16px #0005;
     }
-
-    .setup-card {
-      width: min(100%, 430px);
-      padding: 22px;
-      border: 1px solid #ffffff24;
-      border-radius: 18px;
-      background: #1b2229;
-      box-shadow: 0 12px 40px #0008;
+    #status { left: 14px; font-size: 14px; }
+    #mission { right: 14px; width: min(260px, 48vw); }
+    #mission strong { display: block; font-size: 12px; letter-spacing: .08em; }
+    #mission span { display: block; margin-top: 6px; font-size: 14px; font-weight: 700; }
+    #prompt {
+      position: absolute; bottom: 21%; left: 50%; transform: translateX(-50%);
+      padding: 10px 14px; border-radius: 10px; background: #17212bee;
+      font-weight: 700; display: none; text-align: center; white-space: nowrap;
     }
-
-    .setup-card h1 { margin: 0 0 8px; font-size: 22px }
-    .setup-card p { margin: 0 0 16px; color: #c0cad2; font-size: 14px; line-height: 1.5 }
-
-    #apiKey {
-      width: 100%;
-      min-height: 46px;
-      padding: 10px 12px;
-      border: 1px solid #ffffff45;
-      border-radius: 10px;
-      outline: none;
-      background: #101418;
-      color: #fff;
-      font: 14px system-ui, Arial, sans-serif;
-      touch-action: auto;
+    .controls { position: absolute; bottom: 18px; pointer-events: auto; user-select: none; }
+    #steering { left: 16px; display: flex; gap: 10px; }
+    #pedals { right: 16px; display: flex; gap: 10px; align-items: end; }
+    .btn {
+      border: 2px solid #ffffff66; color: white; background: #17212bdd;
+      font-weight: 800; box-shadow: 0 3px 10px #0006; touch-action: none;
     }
-
-    #apiKey:focus { border-color: #45aaff }
-
-    #loadMapButton {
-      width: 100%;
-      min-height: 46px;
-      margin-top: 10px;
-      border: 0;
-      border-radius: 10px;
-      background: #168de5;
-      color: #fff;
-      font: 700 15px system-ui, Arial, sans-serif;
-      cursor: pointer;
-      touch-action: manipulation;
+    .steer {
+      width: 66px; height: 66px; border-radius: 50%;
+      font-size: 27px;
     }
-
-    #setupError {
-      min-height: 20px;
-      margin-top: 10px;
-      color: #ffaaa5;
-      font-size: 13px;
+    .pedal {
+      width: 62px; height: 82px; border-radius: 18px; font-size: 14px;
     }
-
-    .notice { font-size: 12px !important; margin-top: 14px !important }
-
-    #message {
-      position: absolute;
-      z-index: 3;
-      top: max(12px, env(safe-area-inset-top));
-      left: 12px;
-      right: 12px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: #101820e8;
-      font-size: 13px;
-      line-height: 1.4;
-      pointer-events: none;
+    #action {
+      position: absolute; right: 20px; bottom: 118px; width: 62px; height: 62px;
+      border-radius: 50%; font-size: 12px; display: none; pointer-events: auto;
     }
-
-    #message.error { background: #752929ed }
-
-    #car {
-      position: absolute;
-      z-index: 1;
-      left: 50%;
-      top: 50%;
-      width: 58px;
-      height: 94px;
-      transform: translate(-50%, -50%);
-      filter: drop-shadow(0 5px 5px #000a);
-      pointer-events: none;
-    }
-
-    #dashboard {
-      position: absolute;
-      z-index: 2;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      min-height: 155px;
-      padding: 12px 14px max(14px, env(safe-area-inset-bottom));
-      border-radius: 20px 20px 0 0;
-      background: linear-gradient(#1c2329f2, #080b0ff7);
-      border-top: 1px solid #ffffff30;
-    }
-
-    .dashTop { display: flex; justify-content: space-between; align-items: center; gap: 12px }
-
-    .screen {
-      flex: 1;
-      min-height: 54px;
-      padding: 8px 11px;
-      border: 1px solid #ffffff22;
-      border-radius: 12px;
-      background: #101820;
-      color: #bfeaff;
-    }
-
-    #status { color: #fff; font-size: 12px }
-
-    .speed { min-width: 82px; text-align: center; font-size: 25px; font-weight: 700 }
-    .speed small { display: block; color: #aab4bd; font-size: 11px; font-weight: 400 }
-
-    .controls { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px }
-    .group { display: flex; gap: 8px }
-
-    .controls button {
-      width: 52px;
-      height: 48px;
-      border: 1px solid #ffffff45;
-      border-radius: 14px;
-      background: #ffffff1b;
-      color: #fff;
-      font: 700 20px system-ui, Arial, sans-serif;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-
-    .controls button:active,
-    .controls button.pressed { background: #168de5 }
-
-    .controls button.pedal { width: 60px; font-size: 13px }
-    .hint { color: #aeb8c1; font-size: 11px; text-align: center }
-
-    @media (max-width: 360px) {
-      .controls { gap: 5px }
-      .group { gap: 5px }
-      .controls button { width: 44px }
-      .controls button.pedal { width: 52px }
-      .hint { font-size: 10px }
+    .btn.active { background: #287a43ee; }
+    #help {
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+      font-size: 12px; color: #ffffffcc; text-shadow: 0 1px 3px #000;
+      white-space: nowrap; text-align: center;
     }
   </style>
 </head>
-
 <body>
-  <div id="map" aria-label="Satellietkaart"></div>
-
-  <main id="setup">
-    <form class="setup-card" id="setupForm">
-      <h1>Satellietrit</h1>
-      <p>Plak je eigen Google Maps API-sleutel om de kaart te laden.</p>
-
-      <label for="apiKey">Google Maps API-sleutel</label>
-      <input
-        id="apiKey"
-        type="password"
-        placeholder="Plak je API-sleutel"
-        autocomplete="off"
-        autocapitalize="off"
-        spellcheck="false"
-        required
-      >
-
-      <button id="loadMapButton" type="submit">Kaart laden</button>
-      <div id="setupError" role="status"></div>
-
-      <p class="notice">
-        De sleutel wordt niet door deze pagina opgeslagen. Beperk je sleutel in Google Cloud
-        tot je eigen website en de Maps JavaScript API. Deel je sleutel niet openbaar.
-      </p>
-    </form>
-  </main>
-
-  <div id="message" hidden role="status"></div>
-
-  <svg id="car" viewBox="0 0 70 112" aria-label="Demo-auto">
-    <ellipse cx="35" cy="57" rx="27" ry="48" fill="#090b0d"/>
-    <path d="M19 14 Q22 5 35 5 Q48 5 51 14 L59 35 L60 83 Q57 103 35 107
-             Q13 103 10 83 L11 35Z"
-          fill="#d9e0e5" stroke="#fff" stroke-width="2"/>
-    <path d="M20 26 Q23 17 35 16 Q47 17 50 26 L54 43 L16 43Z"
-          fill="#253e4d" stroke="#9dd9f2"/>
-    <path d="M15 49 Q35 45 55 49 L53 77 Q35 83 17 77Z" fill="#252d32"/>
-    <path d="M19 82 Q35 87 51 82 L47 96 Q35 102 23 96Z" fill="#bfcbd1"/>
-    <path d="M15 12 L24 15 M55 12 L46 15"
-          stroke="#fff1b3" stroke-width="4" stroke-linecap="round"/>
-    <path d="M13 91 L20 94 M57 91 L50 94"
-          stroke="#d32f2f" stroke-width="4" stroke-linecap="round"/>
-  </svg>
-
-  <section id="dashboard" aria-label="Rijbediening">
-    <div class="dashTop">
-      <div class="screen">
-        ⚡ ELEKTRISCH<br>
-        <span id="status">Klaar om te rijden</span>
-      </div>
-      <div class="speed">
-        <span id="speed">0</span>
-        <small>km/u · simulatie</small>
-      </div>
+  <div id="hud">
+    <div id="status">🚚 In de bestelwagen · 0 km/u</div>
+    <div id="mission">
+      <strong>BEZORGOPDRACHT</strong>
+      <span id="missionText">Rijd naar de groene bestemming</span>
     </div>
 
-    <div class="controls">
-      <div class="group">
-        <button type="button" data-control="left" aria-label="Links">◀</button>
-        <button type="button" data-control="right" aria-label="Rechts">▶</button>
-      </div>
-
-      <div class="hint">Houd ingedrukt<br>om te besturen</div>
-
-      <div class="group">
-        <button type="button" class="pedal" data-control="brake">REM</button>
-        <button type="button" class="pedal" data-control="gas">GAS</button>
-      </div>
+    <div id="steering" class="controls">
+      <button class="btn steer" data-control="left" aria-label="Links sturen">◀</button>
+      <button class="btn steer" data-control="right" aria-label="Rechts sturen">▶</button>
     </div>
-  </section>
 
-  <script>
-    const START = { lat: 52.3676, lng: 4.9041 };
-    const MAX_SPEED = 50;
+    <div id="pedals" class="controls">
+      <button class="btn pedal" data-control="brake">REM</button>
+      <button class="btn pedal" data-control="throttle">GAS</button>
+    </div>
 
-    const setup = document.getElementById("setup");
-    const setupForm = document.getElementById("setupForm");
-    const apiKeyInput = document.getElementById("apiKey");
-    const setupError = document.getElementById("setupError");
-    const message = document.getElementById("message");
-    const statusText = document.getElementById("status");
-    const speedText = document.getElementById("speed");
-    const car = document.getElementById("car");
+    <button id="action" class="btn">ACTIE</button>
+    <div id="prompt"></div>
+    <div id="help">WASD/pijltjes: rijden of lopen · E: in/uitstappen · U: laadklep · C: cockpitcamera · Veeg: lopen</div>
+  </div>
 
-    const controls = { left: false, right: false, gas: false, brake: false };
-    const position = { ...START };
-
-    let map = null;
-    let marker = null;
-    let speed = 0;
-    let heading = 0;
-    let previousFrame = 0;
-    let messageTimer = null;
-    let mapsLoading = false;
-
-    setupForm.addEventListener("submit", event => {
-      event.preventDefault();
-      if (mapsLoading || map) return;
-
-      const apiKey = apiKeyInput.value.trim();
-      if (!apiKey) {
-        setupError.textContent = "Plak eerst je API-sleutel.";
-        apiKeyInput.focus();
-        return;
-      }
-
-      setupError.textContent = "";
-      loadGoogleMaps(apiKey);
-    });
-
-    function loadGoogleMaps(apiKey) {
-      mapsLoading = true;
-      document.getElementById("loadMapButton").disabled = true;
-      document.getElementById("loadMapButton").textContent = "Kaart laden…";
-
-      window.initMap = () => {
-        mapsLoading = false;
-
-        if (!window.google?.maps) {
-          showSetupError("Google Maps is niet beschikbaar. Controleer je sleutel en API-instellingen.");
-          return;
-        }
-
-        try {
-          map = new google.maps.Map(document.getElementById("map"), {
-            center: position,
-            zoom: 18,
-            mapTypeId: "satellite",
-            tilt: 0,
-            disableDefaultUI: true,
-            gestureHandling: "greedy"
-          });
-
-          marker = new google.maps.Marker({
-            position,
-            map,
-            title: "Demo-auto",
-            icon: makeMarkerIcon()
-          });
-
-          setup.hidden = true;
-          showMessage("Satellietkaart geladen · alleen een rijsimulatie", false, true);
-        } catch (error) {
-          showSetupError("De kaart kon niet worden gestart. Controleer je Maps API-instellingen.");
-        }
-      };
-
-      window.gm_authFailure = () => {
-        mapsLoading = false;
-        showSetupError("Google heeft de sleutel geweigerd. Controleer de sleutel, facturering en beperkingen.");
-      };
-
-      const script = document.createElement("script");
-      script.src =
-        "https://maps.googleapis.com/maps/api/js?key=" +
-        encodeURIComponent(apiKey) +
-        "&callback=initMap";
-      script.async = true;
-      script.defer = true;
-
-      script.onerror = () => {
-        mapsLoading = false;
-        showSetupError("Google Maps kon niet laden. Controleer je internetverbinding en API-sleutel.");
-      };
-
-      document.head.appendChild(script);
-    }
-
-    function showSetupError(text) {
-      setup.hidden = false;
-      setupError.textContent = text;
-      document.getElementById("loadMapButton").disabled = false;
-      document.getElementById("loadMapButton").textContent = "Opnieuw proberen";
-    }
-
-    function showMessage(text, isError = false, autoHide = false) {
-      message.textContent = text;
-      message.classList.toggle("error", isError);
-      message.hidden = false;
-
-      clearTimeout(messageTimer);
-      if (autoHide) {
-        messageTimer = setTimeout(() => {
-          message.hidden = true;
-        }, 3500);
-      }
-    }
-
-    function makeMarkerIcon() {
-      return {
-        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-        scale: 5,
-        fillColor: "#ef3d3d",
-        fillOpacity: 1,
-        strokeColor: "#ffffff",
-        strokeWeight: 2,
-        rotation: heading
-      };
-    }
-
-    document.querySelectorAll("[data-control]").forEach(button => {
-      button.addEventListener("pointerdown", event => {
-        event.preventDefault();
-        button.setPointerCapture?.(event.pointerId);
-        setControl(button, true);
-      });
-
-      const release = event => {
-        event.preventDefault();
-        setControl(button, false);
-      };
-
-      button.addEventListener("pointerup", release);
-      button.addEventListener("pointercancel", release);
-      button.addEventListener("lostpointercapture", () => setControl(button, false));
-      button.addEventListener("contextmenu", event => event.preventDefault());
-    });
-
-    function setControl(button, pressed) {
-      controls[button.dataset.control] = pressed;
-      button.classList.toggle("pressed", pressed);
-    }
-
-    window.addEventListener("blur", () => {
-      document.querySelectorAll("[data-control]").forEach(button => setControl(button, false));
-    });
-
-    function tick(timestamp) {
-      if (!previousFrame) previousFrame = timestamp;
-      const delta = Math.min((timestamp - previousFrame) / 1000, 0.05);
-      previousFrame = timestamp;
-
-      if (controls.gas) {
-        speed = Math.min(speed + 10 * delta, MAX_SPEED);
-      } else if (controls.brake) {
-        speed = Math.max(speed - 22 * delta, 0);
-      } else {
-        speed = Math.max(speed - 2.5 * delta, 0);
-      }
-
-      if (speed > 0.5) {
-        const turnRate = 105 * delta * Math.min(speed / 10, 1);
-        if (controls.left) heading = (heading - turnRate + 360) % 360;
-        if (controls.right) heading = (heading + turnRate) % 360;
-
-        // Demo-beweging; dit volgt geen echte wegen of navigatie.
-        const meters = (speed / 3.6) * delta;
-        const radians = heading * Math.PI / 180;
-        const latitudeRadians = position.lat * Math.PI / 180;
-
-        position.lat += (Math.cos(radians) * meters) / 111320;
-        position.lng +=
-          (Math.sin(radians) * meters) /
-          (111320 * Math.max(0.2, Math.cos(latitudeRadians)));
-
-        if (map && marker) {
-          const point = new google.maps.LatLng(position.lat, position.lng);
-          marker.setPosition(point);
-          marker.setIcon(makeMarkerIcon());
-          map.panTo(point);
-        }
-      }
-
-      speedText.textContent = String(Math.round(speed));
-      statusText.textContent =
-        speed > 0.5 ? "Rijden · alleen simulatie" : "Klaar om te rijden";
-      car.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
-
-      requestAnimationFrame(tick);
-    }
-
-    requestAnimationFrame(tick);
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
