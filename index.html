@@ -2,209 +2,91 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>First-person Street View rijden</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Street View Drive</title>
   <style>
     * { box-sizing: border-box; }
-
-    html, body, #app {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-      background: #111;
+    body {
+      margin: 0; background: #111; color: white;
+      font: 15px system-ui, sans-serif; overflow: hidden;
     }
-
-    #pano {
-      position: absolute;
-      inset: 0;
+    #game { position: relative; width: 100vw; height: 100vh; }
+    #pano { position: absolute; inset: 0; }
+    #overlay {
+      position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(transparent 55%, #0008);
     }
-
-    #topbar {
-      position: absolute;
-      z-index: 10;
-      top: 12px;
-      left: 12px;
-      right: 12px;
-      display: flex;
-      gap: 8px;
-    }
-
-    #address {
-      flex: 1;
-      min-width: 0;
-      height: 44px;
-      padding: 0 12px;
-      border: 0;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    #search {
-      height: 44px;
-      padding: 0 15px;
-      border: 0;
-      border-radius: 8px;
-      background: #1479d1;
-      color: white;
-      font-weight: bold;
-    }
-
     #status {
-      position: absolute;
-      z-index: 10;
-      top: 66px;
-      left: 12px;
-      padding: 8px 11px;
-      border-radius: 8px;
-      color: white;
-      background: #000a;
-      font-size: 13px;
+      position: absolute; top: 16px; left: 16px;
+      padding: 10px 14px; border-radius: 10px;
+      background: #000a; pointer-events: none;
     }
-
-    /* Stuurwiel onderaan in beeld */
-    #wheelArea {
-      position: absolute;
-      z-index: 8;
-      bottom: max(12px, env(safe-area-inset-bottom));
-      left: 50%;
-      width: 180px;
-      height: 180px;
-      transform: translateX(-50%);
-      pointer-events: none;
+    #help {
+      position: absolute; top: 16px; right: 16px;
+      max-width: 260px; padding: 12px 15px; border-radius: 10px;
+      background: #000a; line-height: 1.5;
     }
-
-    #wheel {
-      position: absolute;
-      inset: 12px;
-      border: 12px solid #171717;
-      border-radius: 50%;
-      background: #0002;
-      box-shadow: 0 4px 14px #0009, inset 0 0 0 2px #777;
-      transition: transform 100ms linear;
-    }
-
-    #wheel::before,
-    #wheel::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 3%;
-      width: 9px;
-      height: 88%;
-      border-radius: 8px;
-      background: #222;
-      border: 1px solid #666;
-      transform: translateX(-50%);
-    }
-
-    #wheel::after {
-      transform: translateX(-50%) rotate(90deg);
-    }
-
-    #wheelHub {
-      position: absolute;
-      width: 38px;
-      height: 38px;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      border: 5px solid #222;
-      background: #888;
-    }
-
     #controls {
-      position: absolute;
-      z-index: 11;
-      left: 0;
-      right: 0;
-      bottom: max(22px, env(safe-area-inset-bottom));
-      display: flex;
-      justify-content: space-between;
-      padding: 0 16px;
-      pointer-events: none;
+      position: absolute; bottom: 22px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 10px; align-items: center;
     }
-
-    .controlGroup {
-      display: flex;
-      gap: 10px;
-      pointer-events: auto;
+    button {
+      border: 0; border-radius: 12px; padding: 13px 18px;
+      font-size: 16px; color: white; background: #222e;
+      cursor: pointer; touch-action: none;
     }
-
-    .control {
-      width: 60px;
-      height: 60px;
-      border: 2px solid #fff;
-      border-radius: 50%;
-      color: white;
-      background: #111c;
-      font-size: 23px;
-      font-weight: bold;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
+    button:active, button.active { background: #1685ff; }
+    #steering {
+      position: absolute; width: 118px; height: 118px; bottom: 20px; left: 20px;
+      border: 9px solid #ddd; border-radius: 50%;
+      box-shadow: 0 2px 14px #0009; opacity: .85;
+      transition: transform .08s linear;
     }
-
-    .control.pedal {
-      width: 66px;
-      border-radius: 14px;
-      font-size: 13px;
+    #steering::before, #steering::after {
+      content: ""; position: absolute; background: #ddd;
     }
-
-    .control.active {
-      background: #1479d1;
+    #steering::before { width: 9px; height: 50px; left: 45px; top: 48px; }
+    #steering::after { width: 78px; height: 8px; left: 11px; top: 45px; }
+    #message {
+      position: absolute; inset: 0; display: grid; place-items: center;
+      background: #000b; text-align: center; padding: 25px;
     }
-
-    @media (max-width: 390px) {
-      #wheelArea {
-        width: 145px;
-        height: 145px;
-        bottom: 10px;
-      }
-
-      .control {
-        width: 52px;
-        height: 52px;
-      }
-
-      .control.pedal {
-        width: 58px;
-      }
-
-      #controls {
-        padding: 0 9px;
-        bottom: 18px;
-      }
+    #message > div { max-width: 520px; }
+    #message button { margin-top: 14px; background: #1685ff; }
+    @media (max-width: 600px) {
+      #help { top: auto; right: 10px; bottom: 100px; font-size: 12px; }
+      #steering { width: 82px; height: 82px; left: 10px; bottom: 12px; }
+      #steering::before { left: 28px; top: 32px; height: 34px; }
+      #steering::after { left: 8px; top: 29px; width: 48px; }
+      #controls { bottom: 15px; left: auto; right: 10px; transform: none; }
+      button { padding: 12px; font-size: 14px; }
     }
   </style>
 </head>
-
 <body>
-  <main id="app">
+  <main id="game">
     <div id="pano"></div>
-
-    <div id="topbar">
-      <input id="address" value="Waikiki Beach, Honolulu" placeholder="Zoek een plaats of adres">
-      <button id="search" type="button">Zoek</button>
+    <div id="overlay"></div>
+    <div id="status">Snelheid: 0 km/u</div>
+    <div id="help">
+      <b>Besturing</b><br>
+      ↑ / W: gas &nbsp; ↓ / S: rem/achteruit<br>
+      ← → / A D: sturen<br>
+      Klik/tik op de weg om daarheen te rijden
     </div>
-
-    <div id="status">Google Street View laden…</div>
-
-    <div id="wheelArea" aria-label="Meedraaiend stuurwiel">
-      <div id="wheel"><div id="wheelHub"></div></div>
-    </div>
-
+    <div id="steering"></div>
     <div id="controls">
-      <div class="controlGroup">
-        <button class="control" data-control="left" aria-label="Links sturen">◀</button>
-        <button class="control" data-control="right" aria-label="Rechts sturen">▶</button>
-      </div>
-      <div class="controlGroup">
-        <button class="control pedal" data-control="brake">REM</button>
-        <button class="control pedal" data-control="gas">RIJD</button>
+      <button id="left">◀ Stuur</button>
+      <button id="brake">Rem</button>
+      <button id="gas">Gas ▶</button>
+      <button id="right">Stuur ▶</button>
+    </div>
+    <div id="message">
+      <div>
+        <h1>Street View Drive</h1>
+        <p>Klik op start en kies daarna een weg in Street View. Rijden werkt het best op wegen met veel panoramapunten.</p>
+        <button id="start">Start rijden</button>
       </div>
     </div>
   </main>
@@ -212,195 +94,159 @@
   <script>
     const API_KEY = "JOUW_GOOGLE_MAPS_API_KEY";
 
-    let panorama;
-    let speed = 0;
-    let lastTime = performance.now();
-    let distanceSinceMove = 0;
-    let steeringAngle = 0;
+    let panorama, streetViewService;
+    let speed = 0, steering = 0, heading = 0;
+    let gas = false, brake = false, left = false, right = false;
+    let moving = false, lastMove = 0;
+    const statusEl = document.getElementById("status");
+    const wheelEl = document.getElementById("steering");
 
-    const held = {
-      left: false,
-      right: false,
-      gas: false,
-      brake: false
-    };
-
-    function setStatus(text) {
-      document.getElementById("status").textContent = text;
+    function loadGoogleMaps() {
+      if (!API_KEY || API_KEY.includes("JOUW_")) {
+        showMessage("Voeg eerst je Google Maps API-key toe in de HTML.");
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(API_KEY)}&callback=init`;
+      script.async = true;
+      script.defer = true;
+      script.onerror = () => showMessage("Google Maps kon niet laden. Controleer je API-key en Maps JavaScript API.");
+      document.head.appendChild(script);
     }
 
-    function initMap() {
-      const start = { lat: 21.2793, lng: -157.8294 };
-
+    window.init = function() {
       panorama = new google.maps.StreetViewPanorama(
         document.getElementById("pano"),
         {
-          position: start,
-          pov: { heading: 90, pitch: 0 },
+          position: { lat: 37.7699, lng: -122.4469 },
+          pov: { heading: 0, pitch: 0 },
           zoom: 0,
-          addressControl: false,
+          visible: true,
+          addressControl: true,
           fullscreenControl: true,
           motionTracking: false,
           linksControl: true,
-          visible: true
+          clickToGo: true
         }
       );
 
+      streetViewService = new google.maps.StreetViewService();
+
+      panorama.addListener("pov_changed", () => {
+        if (!moving) heading = panorama.getPov().heading;
+      });
+
+      panorama.addListener("position_changed", () => {
+        lastMove = performance.now();
+      });
+
       panorama.addListener("status_changed", () => {
-        if (panorama.getStatus() === "OK") {
-          setStatus("First-person Street View — houd RIJD ingedrukt");
-        } else {
-          setStatus("Geen Street View op deze plek. Zoek een andere locatie.");
+        if (panorama.getStatus() === "ZERO_RESULTS") {
+          statusEl.textContent = "Geen Street View hier — klik op een andere weg";
         }
       });
 
-      const geocoder = new google.maps.Geocoder();
-
-      function searchPlace() {
-        const query = document.getElementById("address").value.trim();
-        if (!query) return;
-
-        setStatus("Locatie zoeken…");
-        geocoder.geocode({ address: query }, (results, status) => {
-          if (status === "OK" && results[0]) {
-            panorama.setPosition(results[0].geometry.location);
-            panorama.setPov({ heading: 90, pitch: 0 });
-            setStatus("Locatie gevonden — controleer of Street View beschikbaar is");
-          } else {
-            setStatus("Locatie niet gevonden. Probeer een ander adres.");
-          }
-        });
-      }
-
-      document.getElementById("search").addEventListener("click", searchPlace);
-      document.getElementById("address").addEventListener("keydown", event => {
-        if (event.key === "Enter") searchPlace();
-      });
-
-      setupControls();
+      document.getElementById("message").style.display = "none";
       requestAnimationFrame(tick);
-    }
-
-    function setupControls() {
-      document.querySelectorAll("[data-control]").forEach(button => {
-        const name = button.dataset.control;
-
-        button.addEventListener("pointerdown", event => {
-          event.preventDefault();
-          button.setPointerCapture(event.pointerId);
-          held[name] = true;
-          button.classList.add("active");
-        });
-
-        function release() {
-          held[name] = false;
-          button.classList.remove("active");
-        }
-
-        button.addEventListener("pointerup", release);
-        button.addEventListener("pointercancel", release);
-        button.addEventListener("lostpointercapture", release);
-      });
-
-      const keys = {
-        ArrowLeft: "left", a: "left",
-        ArrowRight: "right", d: "right",
-        ArrowUp: "gas", w: "gas",
-        ArrowDown: "brake", s: "brake"
-      };
-
-      window.addEventListener("keydown", event => {
-        const name = keys[event.key];
-        if (name) {
-          event.preventDefault();
-          held[name] = true;
-        }
-      });
-
-      window.addEventListener("keyup", event => {
-        const name = keys[event.key];
-        if (name) held[name] = false;
-      });
-    }
+    };
 
     function tick(now) {
-      const dt = Math.min((now - lastTime) / 1000, 0.05);
-      lastTime = now;
+      const dt = Math.min((now - (tick.last || now)) / 1000, 0.05);
+      tick.last = now;
 
-      if (panorama) {
-        if (held.gas) speed += 16 * dt;
-        else speed -= 7 * dt;
-        if (held.brake) speed -= 25 * dt;
+      const steerInput = (right ? 1 : 0) - (left ? 1 : 0);
+      steering += (steerInput - steering) * Math.min(1, dt * 5);
+      wheelEl.style.transform = `rotate(${steering * 180}deg)`;
 
-        speed = Math.max(0, Math.min(speed, 50));
+      if (gas) speed = Math.min(55, speed + 13 * dt);
+      else if (brake) speed = Math.max(-12, speed - 22 * dt);
+      else speed *= Math.max(0, 1 - 0.7 * dt);
 
-        const steering = (held.right ? 1 : 0) - (held.left ? 1 : 0);
-
-        // Stuurwiel draait zichtbaar mee:
-        steeringAngle += steering * 150 * dt;
-        steeringAngle *= Math.pow(0.88, dt * 60);
-        document.getElementById("wheel").style.transform =
-          `rotate(${steeringAngle}deg)`;
-
-        // First-person kijkrichting draait mee met het stuur.
-        if (steering !== 0) {
-          const pov = panorama.getPov();
-          pov.heading = (pov.heading + steering * 55 * dt + 360) % 360;
-          panorama.setPov(pov);
-        }
-
-        // Rijdt naar het dichtstbijzijnde Street View-wegpunt
-        // in de richting waarin de camera kijkt.
-        if (speed > 0.5) {
-          distanceSinceMove += speed * dt;
-
-          if (distanceSinceMove > 12) {
-            const links = panorama.getLinks();
-            const heading = panorama.getPov().heading;
-
-            if (links && links.length) {
-              let best = null;
-              let bestDifference = Infinity;
-
-              for (const link of links) {
-                const difference = Math.abs(
-                  ((link.heading - heading + 540) % 360) - 180
-                );
-
-                if (difference < bestDifference) {
-                  bestDifference = difference;
-                  best = link;
-                }
-              }
-
-              if (best) {
-                panorama.setPano(best.pano);
-                panorama.setPov({ heading: best.heading, pitch: 0 });
-              }
-            }
-
-            distanceSinceMove = 0;
-          }
-        } else {
-          distanceSinceMove = 0;
-        }
-
-        setStatus(`First-person Street View · ${Math.round(speed)} km/u`);
+      if (Math.abs(speed) > 1 && panorama) {
+        // Sturen verandert de rijrichting; de camera volgt die geleidelijk.
+        heading = (heading + steering * speed * 0.22 * dt + 360) % 360;
+        panorama.setPov({ heading, pitch: 0 });
+        if (!moving) driveStep();
       }
 
+      statusEl.textContent = `Snelheid: ${Math.round(Math.abs(speed))} km/u`;
       requestAnimationFrame(tick);
     }
 
-    const script = document.createElement("script");
-    script.src =
-      "https://maps.googleapis.com/maps/api/js?key=" +
-      encodeURIComponent(API_KEY) +
-      "&callback=initMap";
-    script.async = true;
-    script.defer = true;
-    script.onerror = () =>
-      setStatus("Maps laden mislukt. Controleer je API-sleutel en instellingen.");
-    document.head.appendChild(script);
+    function driveStep() {
+      if (moving || !panorama || Math.abs(speed) < 1) return;
+      const current = panorama.getPosition();
+      if (!current) return;
+
+      const links = panorama.getLinks() || [];
+      if (!links.length) return;
+
+      const currentHeading = panorama.getPov().heading;
+      const desired = (currentHeading + (speed < 0 ? 180 : 0) + 360) % 360;
+
+      // Kies de verbonden panorama die het meest in de gewenste rijrichting ligt.
+      let best = null, bestDiff = Infinity;
+      for (const link of links) {
+        const diff = angleDifference(link.heading, desired);
+        if (diff < bestDiff) { bestDiff = diff; best = link; }
+      }
+      if (!best) return;
+
+      moving = true;
+      const target = best.pano;
+      const delay = Math.max(350, 1500 - Math.abs(speed) * 18);
+
+      setTimeout(() => {
+        if (!panorama) { moving = false; return; }
+        panorama.setPano(target);
+        panorama.setPov({ heading, pitch: 0 });
+        setTimeout(() => {
+          moving = false;
+          if (Math.abs(speed) > 1) driveStep();
+        }, delay);
+      }, delay);
+    }
+
+    function angleDifference(a, b) {
+      return Math.abs(((a - b + 540) % 360) - 180);
+    }
+
+    function showMessage(text) {
+      const box = document.querySelector("#message > div");
+      box.innerHTML = `<h2>${text}</h2><button onclick="location.reload()">Opnieuw proberen</button>`;
+      document.getElementById("message").style.display = "grid";
+    }
+
+    function bindHold(id, setter) {
+      const el = document.getElementById(id);
+      const down = e => { e.preventDefault(); setter(true); el.classList.add("active"); };
+      const up = e => { e.preventDefault(); setter(false); el.classList.remove("active"); };
+      el.addEventListener("pointerdown", down);
+      el.addEventListener("pointerup", up);
+      el.addEventListener("pointercancel", up);
+      el.addEventListener("pointerleave", up);
+    }
+
+    bindHold("gas", v => gas = v);
+    bindHold("brake", v => brake = v);
+    bindHold("left", v => left = v);
+    bindHold("right", v => right = v);
+
+    document.addEventListener("keydown", e => {
+      if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault();
+      if (e.key === "ArrowUp" || e.key.toLowerCase() === "w") gas = true;
+      if (e.key === "ArrowDown" || e.key.toLowerCase() === "s") brake = true;
+      if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") left = true;
+      if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") right = true;
+    });
+    document.addEventListener("keyup", e => {
+      if (e.key === "ArrowUp" || e.key.toLowerCase() === "w") gas = false;
+      if (e.key === "ArrowDown" || e.key.toLowerCase() === "s") brake = false;
+      if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") left = false;
+      if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") right = false;
+    });
+
+    document.getElementById("start").addEventListener("click", loadGoogleMaps);
   </script>
 </body>
 </html>
