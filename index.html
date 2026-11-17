@@ -1,276 +1,335 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bouwlust Drive</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Rijden langs de kust</title>
   <style>
     * { box-sizing: border-box; }
-    body {
+
+    html, body {
       margin: 0;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      background: #9ec9e8;
-      color: white;
-      font: 16px system-ui, sans-serif;
+      background: #111;
+      font-family: Arial, sans-serif;
+      touch-action: none;
     }
-    canvas { display: block; }
+
+    #game {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #70b9e6 url("cabine.jpg") center center / cover no-repeat;
+    }
+
+    /* De cabine blijft op zijn plek; alleen het uitzicht beweegt. */
+    #view {
+      position: absolute;
+      top: 0;
+      left: 18%;
+      width: 82%;
+      height: 66%;
+      overflow: hidden;
+      clip-path: polygon(0 0, 100% 0, 100% 83%, 18% 100%);
+      pointer-events: none;
+    }
+
+    #scenery {
+      position: absolute;
+      inset: -8%;
+      background:
+        linear-gradient(to bottom,
+          #69b5e8 0%, #94d2f0 45%,
+          #268bb1 46%, #16789c 60%,
+          #77715e 61%, #343434 100%);
+      transform: perspective(500px);
+    }
+
+    .road {
+      position: absolute;
+      left: 16%;
+      bottom: -5%;
+      width: 66%;
+      height: 66%;
+      background: #45494b;
+      clip-path: polygon(43% 0, 57% 0, 100% 100%, 0 100%);
+    }
+
+    .road::before {
+      content: "";
+      position: absolute;
+      left: 49%;
+      top: 0;
+      width: 2%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        to bottom, #f5e8b3 0 28px, transparent 28px 54px
+      );
+      transform: perspective(120px) rotateX(20deg);
+      transform-origin: top;
+    }
+
+    .shore {
+      position: absolute;
+      bottom: 22%;
+      left: -4%;
+      width: 40%;
+      height: 13%;
+      background: #ddc99a;
+      transform: rotate(-5deg);
+    }
+
+    .palm {
+      position: absolute;
+      bottom: 37%;
+      width: 5px;
+      height: 100px;
+      background: #725238;
+      transform-origin: bottom;
+    }
+
+    .palm::before {
+      content: "🌴";
+      position: absolute;
+      top: -35px;
+      left: -23px;
+      font-size: 43px;
+    }
+
+    .house {
+      position: absolute;
+      right: 2%;
+      bottom: 28%;
+      width: 23%;
+      height: 27%;
+      background: #5bc3a4;
+      border: 5px solid #f4eee0;
+      box-shadow: 0 6px 0 #d67874;
+    }
+
+    .house::before {
+      content: "";
+      position: absolute;
+      left: -8%;
+      top: -28%;
+      width: 116%;
+      height: 30%;
+      background: #dd745c;
+      clip-path: polygon(10% 0, 90% 0, 100% 100%, 0 100%);
+    }
+
+    .car {
+      position: absolute;
+      left: 53%;
+      bottom: 29%;
+      width: 8%;
+      height: 12%;
+      border-radius: 12px 12px 5px 5px;
+      background: #eee;
+      border: 3px solid #bbb;
+      box-shadow: 0 4px 5px #333;
+    }
+
+    .car::before {
+      content: "";
+      position: absolute;
+      left: 17%;
+      top: -34%;
+      width: 66%;
+      height: 40%;
+      border-radius: 8px 8px 0 0;
+      background: #b7d7e4;
+      border: 2px solid #aaa;
+    }
+
     #hud {
-      position: fixed;
-      top: 14px;
-      left: 14px;
-      padding: 12px 16px;
-      border-radius: 12px;
-      background: #101820cc;
-      line-height: 1.5;
-      user-select: none;
-    }
-    #help {
-      position: fixed;
-      bottom: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 9px 14px;
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      color: white;
+      background: #0009;
+      padding: 9px 12px;
       border-radius: 10px;
-      background: #101820cc;
-      text-align: center;
       font-size: 14px;
-      white-space: nowrap;
+      z-index: 5;
     }
-    #error {
-      display: none;
-      position: fixed;
-      inset: 20px;
-      padding: 20px;
-      background: #301b1b;
-      border-radius: 12px;
+
+    #controls {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      padding: 0 18px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .group {
+      display: flex;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    button {
+      width: 68px;
+      height: 68px;
+      border: 2px solid #ffffffaa;
+      border-radius: 50%;
+      color: white;
+      background: #111a;
+      font-size: 28px;
+      font-weight: bold;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      box-shadow: 0 3px 10px #0006;
+    }
+
+    button:active, button.active {
+      background: #28a9df;
+      transform: scale(.94);
+    }
+
+    .pedal {
+      width: 76px;
+      height: 76px;
+      font-size: 15px;
+      border-radius: 18px;
+    }
+
+    #help {
+      position: absolute;
+      left: 50%;
+      top: 12px;
+      transform: translateX(-50%);
+      padding: 8px 12px;
+      border-radius: 10px;
+      color: white;
+      background: #0008;
+      font-size: 13px;
+      text-align: center;
+      z-index: 5;
+    }
+
+    @media (min-width: 800px) {
+      button { width: 76px; height: 76px; }
+      .pedal { width: 86px; height: 76px; }
     }
   </style>
 </head>
 <body>
-  <div id="hud">
-    <strong>BOUWLUST DRIVE</strong><br>
-    Snelheid: <span id="speed">0</span> km/u<br>
-    Afstand: <span id="distance">0</span> m
-  </div>
-  <div id="help">W / ↑ gas &nbsp; S / ↓ rem &nbsp; A/D of ←/→ sturen</div>
-  <div id="error">Three.js kon niet laden. Controleer je internetverbinding en laad de pagina opnieuw.</div>
+  <main id="game">
+    <div id="view">
+      <div id="scenery">
+        <div class="shore"></div>
+        <div class="road"></div>
+        <div class="house"></div>
+        <div class="car"></div>
+        <div class="palm" style="left:12%; height:85px"></div>
+        <div class="palm" style="left:24%; height:120px"></div>
+        <div class="palm" style="left:36%; height:95px"></div>
+        <div class="palm" style="left:77%; height:110px"></div>
+      </div>
+    </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <div id="help">Tik of houd de knoppen ingedrukt om te rijden</div>
+    <div id="hud">Snelheid: <span id="speed">0</span> km/u</div>
+
+    <div id="controls">
+      <div class="group">
+        <button data-control="left" aria-label="Links">◀</button>
+        <button data-control="right" aria-label="Rechts">▶</button>
+      </div>
+      <div class="group">
+        <button class="pedal" data-control="brake">REM</button>
+        <button class="pedal" data-control="gas">GAS</button>
+      </div>
+    </div>
+  </main>
+
   <script>
-  (() => {
-    if (!window.THREE) {
-      document.getElementById("error").style.display = "block";
-      return;
-    }
+    const scenery = document.getElementById("scenery");
+    const speedText = document.getElementById("speed");
+    const buttons = document.querySelectorAll("[data-control]");
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x9ec9e8);
-    scene.fog = new THREE.Fog(0x9ec9e8, 90, 330);
-
-    const camera = new THREE.PerspectiveCamera(
-      65, window.innerWidth / window.innerHeight, 0.1, 500
-    );
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    document.body.appendChild(renderer.domElement);
-
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x70805e, 1.45));
-
-    const sun = new THREE.DirectionalLight(0xffffff, 1.3);
-    sun.position.set(-25, 45, 20);
-    sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
-    scene.add(sun);
-
-    const mat = (color, extra = {}) =>
-      new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
-
-    const grassMat = mat(0x568b48);
-    const roadMat = mat(0x34383a);
-    const pavementMat = mat(0xaeb1a7);
-    const whiteMat = mat(0xf4f0d9);
-    const darkMat = mat(0x17191b);
-    const houseColors = [0xd8c2a5, 0xcaa989, 0xd5d1c5, 0xb9c5c4, 0xe0d2bb];
-    const houseMats = houseColors.map(c => mat(c));
-    const windowMat = new THREE.MeshStandardMaterial({
-      color: 0x6fabb8, roughness: 0.3, metalness: 0.1
-    });
-
-    function box(parent, x, y, z, sx, sy, sz, material) {
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), material);
-      mesh.position.set(x, y, z);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      parent.add(mesh);
-      return mesh;
-    }
-
-    // Ground and road
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), grassMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -0.12;
-    ground.receiveShadow = true;
-    scene.add(ground);
-
-    box(scene, 0, -0.01, 0, 12, 0.12, 1000, roadMat);
-    box(scene, -7.2, 0.02, 0, 2.4, 0.18, 1000, pavementMat);
-    box(scene, 7.2, 0.02, 0, 2.4, 0.18, 1000, pavementMat);
-
-    // Road markings
-    for (let z = -490; z < 500; z += 12) {
-      box(scene, 0, 0.07, z, 0.16, 0.025, 5, whiteMat);
-    }
-
-    // Houses along both sides
-    for (let z = -480; z < 500; z += 24) {
-      for (const side of [-1, 1]) {
-        const group = new THREE.Group();
-        const x = side * (12 + Math.random() * 3);
-        const width = 7 + Math.random() * 2;
-        const height = 5 + Math.random() * 2.4;
-        const depth = 11 + Math.random() * 3;
-        const color = houseMats[Math.floor(Math.random() * houseMats.length)];
-
-        box(group, 0, height / 2, 0, width, height, depth, color);
-        // Flat roof and decorative front door
-        box(group, 0, height + 0.12, 0, width + 0.25, 0.25, depth + 0.25, mat(0x554c43));
-        box(group, 0, 1.15, side * (depth / 2 + 0.035), 1.1, 2.25, 0.12, mat(0x694b34));
-
-        // Front windows
-        for (const wx of [-width * 0.28, width * 0.28]) {
-          box(group, wx, 3.1, side * (depth / 2 + 0.04), 1.5, 1.35, 0.12, windowMat);
-        }
-
-        group.position.set(x, 0, z + (Math.random() - 0.5) * 5);
-        scene.add(group);
-
-        // Small garden trees
-        if (Math.random() > 0.35) {
-          const tx = x - side * (width / 2 + 2);
-          const trunk = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.18, 0.24, 2, 7), mat(0x64472d)
-          );
-          trunk.position.set(tx, 1, z);
-          trunk.castShadow = true;
-          scene.add(trunk);
-
-          const crown = new THREE.Mesh(
-            new THREE.SphereGeometry(1.35, 8, 7), mat(0x397341)
-          );
-          crown.position.set(tx, 2.45, z);
-          crown.castShadow = true;
-          scene.add(crown);
-        }
-      }
-    }
-
-    // Car
-    const car = new THREE.Group();
-    scene.add(car);
-
-    box(car, 0, 0.75, 0, 2.05, 0.65, 4.1, mat(0xc52929, { metalness: 0.18 }));
-    box(car, 0, 1.25, -0.25, 1.55, 0.75, 2.15, mat(0xb51f24));
-    box(car, 0, 1.3, -0.25, 1.4, 0.58, 1.95, windowMat);
-
-    const wheels = [];
-    for (const x of [-1.04, 1.04]) {
-      for (const z of [-1.35, 1.35]) {
-        const wheel = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.39, 0.39, 0.24, 16),
-          darkMat
-        );
-        wheel.rotation.z = Math.PI / 2;
-        wheel.position.set(x, 0.42, z);
-        wheel.castShadow = true;
-        car.add(wheel);
-        wheels.push(wheel);
-      }
-    }
-
-    // Headlights and rear lights
-    for (const x of [-0.72, 0.72]) {
-      box(car, x, 0.86, -2.07, 0.38, 0.22, 0.06, mat(0xfff4cf, {
-        emissive: 0x665522
-      }));
-      box(car, x, 0.86, 2.07, 0.38, 0.22, 0.06, mat(0x8d1111));
-    }
-
-    car.position.set(0, 0, 0);
-
-    const keys = Object.create(null);
-    window.addEventListener("keydown", e => {
-      keys[e.key.toLowerCase()] = true;
-      if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(e.key.toLowerCase())) {
-        e.preventDefault();
-      }
-    });
-    window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-
+    const held = { left: false, right: false, gas: false, brake: false };
     let speed = 0;
-    let distance = 0;
-    let steering = 0;
-    const clock = new THREE.Clock();
+    let offsetX = 0;
+    let offsetY = 0;
+    let lastTime = performance.now();
 
-    function update(dt) {
-      const accelerating = keys.w || keys.arrowup;
-      const braking = keys.s || keys.arrowdown;
-      const left = keys.a || keys.arrowleft;
-      const right = keys.d || keys.arrowright;
+    function setControl(name, value) {
+      held[name] = value;
+      const button = document.querySelector(`[data-control="${name}"]`);
+      if (button) button.classList.toggle("active", value);
+    }
 
-      if (accelerating) speed += 20 * dt;
-      if (braking) speed -= 32 * dt;
-      if (!accelerating && !braking) speed *= Math.pow(0.985, dt * 60);
+    buttons.forEach(button => {
+      const name = button.dataset.control;
 
-      speed = THREE.MathUtils.clamp(speed, -12, 55);
-
-      const steerInput = (left ? 1 : 0) - (right ? 1 : 0);
-      steering += (steerInput - steering) * Math.min(1, dt * 7);
-
-      if (Math.abs(speed) > 0.15) {
-        car.position.x += steering * speed * 0.022 * dt * 60;
-        car.rotation.y = THREE.MathUtils.clamp(-steering * speed * 0.008, -0.35, 0.35);
-        distance += Math.abs(speed) * dt;
-      }
-
-      // Keep the car near the road
-      car.position.x = THREE.MathUtils.clamp(car.position.x, -5.3, 5.3);
-      wheels.forEach(w => {
-        w.rotation.x += speed * dt * 1.5;
+      button.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        button.setPointerCapture(event.pointerId);
+        setControl(name, true);
       });
 
-      camera.position.set(
-        car.position.x * 0.72,
-        5.3,
-        car.position.z + 10.5
-      );
-      camera.lookAt(car.position.x, 1.1, car.position.z - 5);
-
-      document.getElementById("speed").textContent =
-        Math.round(Math.abs(speed) * 3.6);
-      document.getElementById("distance").textContent =
-        Math.round(distance);
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-      const dt = Math.min(clock.getDelta(), 0.05);
-
-      car.position.z -= speed * dt;
-      update(dt);
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      ["pointerup", "pointercancel", "lostpointercapture"].forEach(type => {
+        button.addEventListener(type, () => setControl(name, false));
+      });
     });
-  })();
+
+    // Toetsenbordbediening voor computer.
+    window.addEventListener("keydown", event => {
+      const keys = {
+        ArrowLeft: "left", a: "left",
+        ArrowRight: "right", d: "right",
+        ArrowUp: "gas", w: "gas",
+        ArrowDown: "brake", s: "brake"
+      };
+      if (keys[event.key]) {
+        event.preventDefault();
+        setControl(keys[event.key], true);
+      }
+    });
+
+    window.addEventListener("keyup", event => {
+      const keys = {
+        ArrowLeft: "left", a: "left",
+        ArrowRight: "right", d: "right",
+        ArrowUp: "gas", w: "gas",
+        ArrowDown: "brake", s: "brake"
+      };
+      if (keys[event.key]) setControl(keys[event.key], false);
+    });
+
+    function frame(now) {
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+
+      if (held.gas) speed += 32 * dt;
+      else speed -= 9 * dt;
+
+      if (held.brake) speed -= 55 * dt;
+      speed = Math.max(0, Math.min(120, speed));
+
+      const steering = (held.right ? 1 : 0) - (held.left ? 1 : 0);
+      offsetX -= steering * (35 + speed * 1.1) * dt;
+      offsetY += speed * 0.13 * dt;
+
+      scenery.style.transform =
+        `translate(${offsetX}px, ${Math.sin(offsetY) * 5}px) scale(${1 + speed / 900})`;
+
+      speedText.textContent = Math.round(speed);
+      requestAnimationFrame(frame);
+    }
+
+    requestAnimationFrame(frame);
   </script>
 </body>
 </html>
