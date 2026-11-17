@@ -1,98 +1,604 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Street View rijden</title>
+  <title>Freddo Porto</title>
   <style>
-    * { box-sizing: border-box }
-    body { margin: 0; font: 16px system-ui, sans-serif; background: #111; color: white }
-    header { padding: 12px; display: flex; gap: 8px; background: #202124 }
-    input { flex: 1; min-width: 0; padding: 12px; font-size: 16px; border-radius: 8px; border: 0 }
-    button { padding: 11px 14px; border: 0; border-radius: 8px; background: #4285f4; color: white; font-size: 15px }
-    iframe { display: block; width: 100%; height: calc(100vh - 125px); border: 0 }
-    footer { min-height: 58px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 8px }
-    #status { position: fixed; left: 12px; bottom: 72px; background: #000c; padding: 8px 12px; border-radius: 8px }
-    @media(max-width:600px) {
-      header { flex-wrap: wrap }
-      input { flex-basis: 100% }
-      iframe { height: calc(100vh - 175px) }
-      footer { gap: 6px }
-      button { padding: 10px }
+    :root {
+      color-scheme: dark;
+      --bg: #080b1b;
+      --card: #151a35;
+      --card2: #1b2143;
+      --purple: #773cff;
+      --purple2: #a477ff;
+      --text: #f7f7ff;
+      --muted: #9da4c8;
+      --green: #52e3a1;
+      --red: #ff5268;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 80% 0%, #26205c 0, transparent 45%),
+        linear-gradient(145deg, #11152c, var(--bg) 68%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input { font: inherit; }
+
+    .app {
+      width: min(100%, 480px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 26px 20px 34px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 8px 2px 24px;
+    }
+
+    .brand { font-size: 24px; font-weight: 800; letter-spacing: -.7px; }
+    .brand span { color: var(--purple2); }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px #52e3a188;
+    }
+
+    .card {
+      background: linear-gradient(145deg, #1b2041ee, #11152eee);
+      border: 1px solid #ffffff12;
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 16px 45px #0003;
+      margin-bottom: 16px;
+    }
+
+    .join-card { padding: 18px; }
+
+    .join-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    input {
+      min-width: 0;
+      flex: 1;
+      color: var(--text);
+      background: #090d20;
+      border: 1px solid #ffffff1c;
+      border-radius: 14px;
+      padding: 13px 14px;
+      outline: none;
+    }
+
+    input:focus { border-color: var(--purple2); }
+
+    button {
+      color: var(--text);
+      border: 0;
+      cursor: pointer;
+      transition: transform .12s, filter .12s, opacity .12s;
+    }
+
+    button:hover { filter: brightness(1.12); }
+    button:active { transform: scale(.97); }
+
+    .primary {
+      background: linear-gradient(135deg, #8f50ff, #6728ed);
+      border-radius: 14px;
+      padding: 0 18px;
+      font-weight: 700;
+    }
+
+    button:disabled { opacity: .45; cursor: not-allowed; }
+
+    .you {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .avatar {
+      display: grid;
+      flex: 0 0 auto;
+      width: 48px;
+      height: 48px;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #9b70ff, #4d36b9);
+      font-size: 22px;
+    }
+
+    .you-name { font-size: 17px; font-weight: 750; }
+    .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      font-size: 18px;
+      font-weight: 750;
+    }
+
+    .channels {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 9px;
+    }
+
+    .channel {
+      min-height: 66px;
+      border: 1px solid #ffffff12;
+      border-radius: 18px;
+      background: #ffffff08;
+      color: var(--muted);
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .channel small {
+      display: block;
+      margin-top: 3px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .7px;
+    }
+
+    .channel.active {
+      color: white;
+      border-color: #a477ff99;
+      background: linear-gradient(145deg, #8145f5, #4d2bb3);
+      box-shadow: 0 7px 22px #773cff44;
+    }
+
+    .talk {
+      width: 100%;
+      min-height: 116px;
+      margin-top: 16px;
+      border-radius: 22px;
+      background: linear-gradient(145deg, #252b50, #171c39);
+      border: 1px solid #ffffff14;
+      font-size: 17px;
+      font-weight: 750;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .talk .mic { display: block; font-size: 29px; margin-bottom: 7px; }
+    .talk.active-talk {
+      background: linear-gradient(145deg, #ff5c73, #cb244e);
+      box-shadow: 0 0 28px #ff526855;
+      animation: pulse .8s infinite alternate;
+    }
+
+    @keyframes pulse { to { transform: scale(1.015); } }
+
+    .hint {
+      margin: 10px 2px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .people { display: grid; gap: 3px; }
+
+    .person {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 2px;
+      border-bottom: 1px solid #ffffff0c;
+    }
+
+    .person:last-child { border-bottom: 0; }
+    .person-info { flex: 1; min-width: 0; }
+    .person-name { font-weight: 650; overflow-wrap: anywhere; }
+    .person-state { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .online { color: var(--green); }
+
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .action-btn {
+      min-height: 48px;
+      border-radius: 15px;
+      background: #ffffff0d;
+      border: 1px solid #ffffff18;
+      font-weight: 700;
+    }
+    .emergency {
+      color: white;
+      background: linear-gradient(135deg, #ff5268, #d92346);
+      border: 0;
+    }
+
+    .messages {
+      max-height: 190px;
+      overflow: auto;
+      display: grid;
+      gap: 8px;
+    }
+
+    .message {
+      padding: 10px 12px;
+      border-radius: 13px;
+      background: #ffffff0b;
+      overflow-wrap: anywhere;
+    }
+
+    .message strong { color: var(--purple2); }
+    .message time { color: var(--muted); font-size: 10px; float: right; }
+
+    .compose { display: flex; gap: 8px; margin-top: 12px; }
+    .compose button { min-width: 52px; }
+
+    .log {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+      max-height: 100px;
+      overflow: auto;
+    }
+
+    .empty { color: var(--muted); font-size: 13px; padding: 7px 0; }
+    .notice {
+      display: none;
+      padding: 13px;
+      margin-bottom: 14px;
+      border-radius: 14px;
+      color: white;
+      font-weight: 750;
+      background: linear-gradient(135deg, #ff5268, #a91e48);
+      animation: pulse .7s infinite alternate;
     }
   </style>
 </head>
 <body>
-  <header>
-    <input id="place" placeholder="Adres, plaats of Google Maps-link" value="Eiffel Tower, Paris">
-    <button id="search">Zoek / laad</button>
-    <button id="open">Open in Google Maps</button>
-  </header>
+  <main class="app">
+    <header>
+      <div class="brand">freddo <span>porto</span></div>
+      <div class="status"><span class="dot"></span><span id="connectionLabel">Niet verbonden</span></div>
+    </header>
 
-  <iframe
-    id="map"
-    title="Google Maps Street View"
-    allowfullscreen
-    loading="eager"
-    referrerpolicy="no-referrer-when-downgrade">
-  </iframe>
+    <div class="notice" id="emergencyNotice" role="alert"></div>
 
-  <div id="status">Zoek een plek en gebruik daarna de Street View-bediening in de kaart.</div>
+    <section class="card join-card">
+      <strong>Welkom bij Freddo Porto</strong>
+      <div class="sub">Kies een gebruikersnaam om mee te doen.</div>
+      <form class="join-row" id="joinForm">
+        <input id="nameInput" maxlength="24" placeholder="Jouw gebruikersnaam" autocomplete="nickname" required>
+        <button class="primary" type="submit" id="joinButton">Meedoen</button>
+      </form>
+    </section>
 
-  <footer>
-    <button id="left">◀ Links</button>
-    <button id="back">Achteruit</button>
-    <button id="forward">Vooruit</button>
-    <button id="right">Rechts ▶</button>
-  </footer>
+    <section class="card">
+      <div class="you">
+        <div class="avatar">🎙️</div>
+        <div>
+          <div class="you-name" id="yourName">Niet ingelogd</div>
+          <div class="sub" id="channelLabel">Selecteer een porto-kanaal</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">Porto kanalen <span class="sub">1–5</span></div>
+      <div class="channels" id="channels">
+        <button class="channel" data-channel="1">1<small>PORTO</small></button>
+        <button class="channel" data-channel="2">2<small>PORTO</small></button>
+        <button class="channel" data-channel="3">3<small>PORTO</small></button>
+        <button class="channel" data-channel="4">4<small>PORTO</small></button>
+        <button class="channel" data-channel="5">5<small>PORTO</small></button>
+      </div>
+
+      <button class="talk" id="talkButton" disabled>
+        <span class="mic">🎙️</span>
+        <span id="talkLabel">Houd ingedrukt om te praten</span>
+      </button>
+      <div class="hint">Houd de knop ingedrukt tijdens het praten</div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">Gebruikers <span class="sub" id="peopleCount">0 online</span></div>
+      <div class="people" id="peopleList"><div class="empty">Log in om de gebruikerslijst te bekijken.</div></div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">Berichten</div>
+      <div class="messages" id="messages"><div class="empty">Nog geen berichten.</div></div>
+      <form class="compose" id="messageForm">
+        <input id="messageInput" maxlength="300" placeholder="Typ een bericht..." disabled>
+        <button class="primary" type="submit" id="sendButton" disabled>Stuur</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="actions">
+        <button class="action-btn" id="callButton" disabled>📞 Bellen</button>
+        <button class="action-btn emergency" id="emergencyButton" disabled>🚨 Noodoproep</button>
+      </div>
+      <div class="hint">Noodoproep verstuurt een melding in deze app.</div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">Activiteit</div>
+      <div class="log" id="activityLog">Welkom! Meld je aan om te beginnen.</div>
+    </section>
+  </main>
 
   <script>
-    const input = document.getElementById("place");
-    const frame = document.getElementById("map");
-    const status = document.getElementById("status");
+    (() => {
+      const $ = id => document.getElementById(id);
+      const STORAGE_KEY = "freddo-porto-state-v1";
+      const PRESENCE_KEY = "freddo-porto-presence-v1";
+      const PRESENCE_TTL = 15000;
 
-    function mapsUrl(value) {
-      const q = encodeURIComponent(value.trim());
-      return `https://www.google.com/maps?q=${q}&layer=c`;
-    }
+      let username = "";
+      let channel = 1;
+      let isTalking = false;
+      let state = loadState();
 
-    function loadPlace() {
-      const query = input.value.trim();
-      if (!query) {
-        status.textContent = "Vul eerst een adres, plaats of Maps-link in.";
-        return;
+      function loadState() {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { messages: [], events: [] };
+        } catch {
+          return { messages: [], events: [] };
+        }
       }
 
-      // Maps-link rechtstreeks openen als externe link; anders zoekterm/adres gebruiken.
-      const isMapsLink = /^https?:\/\/(www\.)?google\.[^/]+\/maps/i.test(query);
-      frame.src = isMapsLink
-        ? query.replace(/^http:/, "https:")
-        : mapsUrl(query);
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
 
-      status.textContent =
-        "Kaart geladen. Kies in Google Maps een Street View-blauwe lijn of sleep het Pegman-poppetje naar een weg.";
-    }
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, char => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        })[char]);
+      }
 
-    document.getElementById("search").addEventListener("click", loadPlace);
-    input.addEventListener("keydown", e => {
-      if (e.key === "Enter") loadPlace();
-    });
+      function timeNow() {
+        return new Date().toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
+      }
 
-    document.getElementById("open").addEventListener("click", () => {
-      const query = input.value.trim();
-      if (query) window.open(mapsUrl(query), "_blank", "noopener");
-    });
+      function logEvent(text) {
+        state.events.unshift({ text, time: timeNow() });
+        state.events = state.events.slice(0, 30);
+        saveState();
+        renderEvents();
+      }
 
-    // Google Maps laat externe pagina's niet toe om de panorama's te besturen.
-    // Deze knoppen openen daarom de kaart; rij met Maps' eigen Street View-pijlen.
-    for (const id of ["left", "right", "forward", "back"]) {
-      document.getElementById(id).addEventListener("click", () => {
-        status.textContent =
-          "Gebruik de pijlen in Street View zelf om tussen panorama's te bewegen. Externe knoppen kunnen Google Maps niet besturen.";
+      function getPresence() {
+        try {
+          const data = JSON.parse(localStorage.getItem(PRESENCE_KEY)) || {};
+          const now = Date.now();
+          for (const [key, person] of Object.entries(data)) {
+            if (now - person.updated > PRESENCE_TTL) delete data[key];
+          }
+          localStorage.setItem(PRESENCE_KEY, JSON.stringify(data));
+          return data;
+        } catch {
+          return {};
+        }
+      }
+
+      function updatePresence() {
+        if (!username) return;
+        const people = getPresence();
+        const id = sessionStorage.getItem("freddo-session-id");
+        people[id] = { name: username, channel, updated: Date.now(), talking: isTalking };
+        localStorage.setItem(PRESENCE_KEY, JSON.stringify(people));
+        renderPeople();
+      }
+
+      function removePresence() {
+        if (!username) return;
+        const people = getPresence();
+        delete people[sessionStorage.getItem("freddo-session-id")];
+        localStorage.setItem(PRESENCE_KEY, JSON.stringify(people));
+      }
+
+      function renderPeople() {
+        const people = Object.values(getPresence());
+        $("peopleCount").textContent = `${people.length} online`;
+        if (!people.length) {
+          $("peopleList").innerHTML = '<div class="empty">Er zijn nu geen andere gebruikers online.</div>';
+          return;
+        }
+
+        $("peopleList").innerHTML = people.map(person => `
+          <div class="person">
+            <div class="avatar">👤</div>
+            <div class="person-info">
+              <div class="person-name">${escapeHtml(person.name)}${person.name === username ? " (jij)" : ""}</div>
+              <div class="person-state">
+                ${person.talking ? "🎙️ Praat nu" : "Online"} · Kanaal ${person.channel}
+              </div>
+            </div>
+            <span class="online">●</span>
+          </div>
+        `).join("");
+      }
+
+      function renderMessages() {
+        const messages = state.messages.slice(-60);
+        if (!messages.length) {
+          $("messages").innerHTML = '<div class="empty">Nog geen berichten.</div>';
+          return;
+        }
+        $("messages").innerHTML = messages.map(message => `
+          <div class="message">
+            <strong>${escapeHtml(message.name)}</strong>
+            <time>${escapeHtml(message.time)}</time><br>
+            ${escapeHtml(message.text)}
+          </div>
+        `).join("");
+        $("messages").scrollTop = $("messages").scrollHeight;
+      }
+
+      function renderEvents() {
+        $("activityLog").innerHTML = state.events.length
+          ? state.events.map(event => `• ${escapeHtml(event.time)} — ${escapeHtml(event.text)}`).join("<br>")
+          : "Nog geen activiteit.";
+      }
+
+      function setJoined(name) {
+        username = name;
+        $("yourName").textContent = name;
+        $("connectionLabel").textContent = "Verbonden";
+        $("joinButton").textContent = "Aangemeld";
+        $("nameInput").value = name;
+        $("nameInput").disabled = true;
+        $("joinButton").disabled = true;
+        $("talkButton").disabled = false;
+        $("messageInput").disabled = false;
+        $("sendButton").disabled = false;
+        $("callButton").disabled = false;
+        $("emergencyButton").disabled = false;
+        $("channelLabel").textContent = `Verbonden met porto-kanaal ${channel}`;
+        updatePresence();
+        logEvent(`${name} is gejoint`);
+      }
+
+      $("joinForm").addEventListener("submit", event => {
+        event.preventDefault();
+        const name = $("nameInput").value.trim().replace(/\s+/g, " ");
+        if (!name) return;
+        setJoined(name.slice(0, 24));
       });
-    }
 
-    loadPlace();
+      $("channels").addEventListener("click", event => {
+        const button = event.target.closest("[data-channel]");
+        if (!button) return;
+        channel = Number(button.dataset.channel);
+        document.querySelectorAll(".channel").forEach(item =>
+          item.classList.toggle("active", item === button)
+        );
+        $("channelLabel").textContent = username
+          ? `Verbonden met porto-kanaal ${channel}`
+          : `Geselecteerd: porto-kanaal ${channel}`;
+        updatePresence();
+      });
+
+      function talkStart(event) {
+        if (!username || isTalking) return;
+        event.preventDefault();
+        isTalking = true;
+        $("talkButton").classList.add("active-talk");
+        $("talkLabel").textContent = `Je praat op kanaal ${channel}…`;
+        updatePresence();
+      }
+
+      function talkEnd() {
+        if (!isTalking) return;
+        isTalking = false;
+        $("talkButton").classList.remove("active-talk");
+        $("talkLabel").textContent = "Houd ingedrukt om te praten";
+        updatePresence();
+      }
+
+      $("talkButton").addEventListener("pointerdown", talkStart);
+      $("talkButton").addEventListener("pointerup", talkEnd);
+      $("talkButton").addEventListener("pointercancel", talkEnd);
+      $("talkButton").addEventListener("pointerleave", talkEnd);
+      window.addEventListener("blur", talkEnd);
+
+      $("messageForm").addEventListener("submit", event => {
+        event.preventDefault();
+        const text = $("messageInput").value.trim();
+        if (!username || !text) return;
+        state.messages.push({ name: username, text, time: timeNow(), channel });
+        state.messages = state.messages.slice(-100);
+        saveState();
+        $("messageInput").value = "";
+        renderMessages();
+      });
+
+      $("callButton").addEventListener("click", () => {
+        if (!username) return;
+        alert("Bellen werkt alleen wanneer een telefonie- of voice-server is gekoppeld. Deze HTML-demo kan geen echte telefoongesprekken voeren.");
+        logEvent(`${username} probeerde te bellen`);
+      });
+
+      $("emergencyButton").addEventListener("click", () => {
+        if (!username) return;
+        const ok = confirm("Noodoproep sturen? Iedereen die deze gedeelde app gebruikt krijgt een melding.");
+        if (!ok) return;
+        state.emergency = { name: username, time: Date.now() };
+        saveState();
+        showEmergency();
+        logEvent(`🚨 NOODOPROEP van ${username}`);
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("Freddo Porto — NOODOPROEP", { body: `${username} heeft een noodoproep gemaakt.` });
+        }
+      });
+
+      function showEmergency() {
+        const emergency = state.emergency;
+        const box = $("emergencyNotice");
+        if (!emergency || Date.now() - emergency.time > 60000) {
+          box.style.display = "none";
+          return;
+        }
+        box.textContent = `🚨 NOODOPROEP — ${emergency.name} heeft hulp nodig!`;
+        box.style.display = "block";
+      }
+
+      window.addEventListener("storage", event => {
+        if (event.key === STORAGE_KEY) {
+          state = loadState();
+          renderMessages();
+          renderEvents();
+          showEmergency();
+        }
+        if (event.key === PRESENCE_KEY) renderPeople();
+      });
+
+      window.addEventListener("beforeunload", removePresence);
+
+      if (!sessionStorage.getItem("freddo-session-id")) {
+        sessionStorage.setItem("freddo-session-id", crypto.randomUUID
+          ? crypto.randomUUID()
+          : String(Date.now()) + Math.random());
+      }
+
+      renderMessages();
+      renderEvents();
+      renderPeople();
+      showEmergency();
+
+      setInterval(() => {
+        updatePresence();
+        renderPeople();
+        showEmergency();
+      }, 4000);
+
+      // Optioneel: browsermeldingen vragen na de eerste klik op noodoproep is niet nodig.
+      $("emergencyButton").addEventListener("contextmenu", event => {
+        event.preventDefault();
+        if ("Notification" in window) Notification.requestPermission();
+      });
+    })();
   </script>
 </body>
 </html>
