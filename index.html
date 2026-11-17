@@ -29,32 +29,31 @@
     button { cursor: pointer; color: white; background: #2563eb; margin-top: 10px; }
     button.secondary { background: #374151; }
     button.danger { background: #b91c1c; }
-    button:disabled { opacity: .5; cursor: not-allowed; }
     audio { width: 100%; margin-top: 12px; }
-    a { color: #93c5fd; }
+    a { display: inline-block; margin-top: 10px; color: #93c5fd; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    #status { min-height: 24px; margin-top: 10px; color: #a7f3d0; }
     #lockScreen {
       position: fixed; inset: 0; background: #111827;
       display: none; place-items: center; padding: 20px; z-index: 2;
     }
     #lockScreen article { width: min(100%, 360px); }
-    #status { min-height: 24px; margin-top: 10px; color: #a7f3d0; }
   </style>
 </head>
 <body>
   <main>
     <h1>📻 Freddo Porto</h1>
-    <div class="muted">Lokale portofoon-demo · <span id="clock"></span></div>
+    <div class="muted">Webapp · <span id="clock"></span></div>
 
     <section class="card">
       <h2>Contact</h2>
       <label for="phone">Telefoonnummer</label>
-      <input id="phone" type="tel" placeholder="+31612345678">
+      <input id="phone" type="tel" autocomplete="tel" placeholder="+31612345678">
       <div class="row">
         <button id="callBtn">📞 Bellen</button>
         <button id="smsBtn" class="secondary">✉️ Sms</button>
       </div>
-      <p class="muted">Je telefoon opent de bel- of berichtenapp. Bevestig daar zelf.</p>
+      <p class="muted">Je telefoon opent de bel- of berichtenapp.</p>
     </section>
 
     <section class="card">
@@ -62,130 +61,29 @@
       <button id="recordBtn">🎙️ Start opname</button>
       <audio id="player" controls hidden></audio>
       <a id="download" hidden>Download opname</a>
-      <div id="status" role="status"></div>
+      <div id="status" role="status" aria-live="polite"></div>
     </section>
 
     <section class="card">
       <h2>App-vergrendeling</h2>
-      <label for="pin">Stel een pincode in (4–8 cijfers)</label>
-      <input id="pin" type="password" inputmode="numeric" maxlength="8" placeholder="Nieuwe pincode">
+      <label for="pin">Nieuwe pincode (4–8 cijfers)</label>
+      <input id="pin" type="password" inputmode="numeric" maxlength="8">
       <button id="savePinBtn" class="secondary">Pincode opslaan</button>
       <button id="lockBtn" class="danger">Vergrendel app</button>
-      <p class="muted">Dit vergrendelt alleen deze webpagina, niet je telefoon.</p>
+      <p class="muted">Dit is een eenvoudige vergrendeling voor deze webpagina.</p>
     </section>
   </main>
 
-  <div id="lockScreen">
+  <div id="lockScreen" role="dialog" aria-modal="true" aria-labelledby="lockTitle">
     <article>
-      <h2>App vergrendeld</h2>
+      <h2 id="lockTitle">App vergrendeld</h2>
       <label for="unlockPin">Voer je pincode in</label>
       <input id="unlockPin" type="password" inputmode="numeric" maxlength="8">
       <button id="unlockBtn">Ontgrendelen</button>
-      <p id="lockError" class="muted"></p>
+      <p id="lockError" class="muted" aria-live="polite"></p>
     </article>
   </div>
 
-  <script>
-    const $ = id => document.getElementById(id);
-    let recorder;
-    let chunks = [];
-
-    function updateClock() {
-      $("clock").textContent = new Date().toLocaleTimeString("nl-NL");
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
-
-    function cleanPhone() {
-      return $("phone").value.trim().replace(/[^\d+]/g, "");
-    }
-
-    $("callBtn").addEventListener("click", () => {
-      const phone = cleanPhone();
-      if (!phone) return alert("Vul eerst een telefoonnummer in.");
-      location.href = "tel:" + phone;
-    });
-
-    $("smsBtn").addEventListener("click", () => {
-      const phone = cleanPhone();
-      if (!phone) return alert("Vul eerst een telefoonnummer in.");
-      location.href = "sms:" + phone;
-    });
-
-    $("recordBtn").addEventListener("click", async () => {
-      if (recorder?.state === "recording") {
-        recorder.stop();
-        $("recordBtn").textContent = "🎙️ Start opname";
-        return;
-      }
-
-      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-        $("status").textContent = "Opnemen wordt niet ondersteund. Gebruik een moderne browser via HTTPS.";
-        return;
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        chunks = [];
-        recorder = new MediaRecorder(stream);
-        recorder.ondataavailable = event => {
-          if (event.data.size) chunks.push(event.data);
-        };
-        recorder.onstop = () => {
-          const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
-          const url = URL.createObjectURL(blob);
-          $("player").src = url;
-          $("player").hidden = false;
-          $("download").href = url;
-          $("download").download = "spraakbericht.webm";
-          $("download").textContent = "⬇️ Download spraakbericht";
-          $("download").hidden = false;
-          $("status").textContent = "Opname klaar. Je kunt hem afspelen of downloaden.";
-          stream.getTracks().forEach(track => track.stop());
-        };
-        recorder.start();
-        $("recordBtn").textContent = "⏹️ Stop opname";
-        $("status").textContent = "Opname loopt…";
-      } catch (error) {
-        $("status").textContent = "Geen microfoontoegang: " + error.message;
-      }
-    });
-
-    $("savePinBtn").addEventListener("click", () => {
-      const pin = $("pin").value;
-      if (!/^\d{4,8}$/.test(pin)) {
-        alert("Kies een pincode van 4 tot 8 cijfers.");
-        return;
-      }
-      localStorage.setItem("freddoPin", pin);
-      $("pin").value = "";
-      alert("Pincode opgeslagen op dit apparaat.");
-    });
-
-    $("lockBtn").addEventListener("click", () => {
-      if (!localStorage.getItem("freddoPin")) {
-        alert("Stel eerst een pincode in.");
-        return;
-      }
-      $("lockScreen").style.display = "grid";
-      $("unlockPin").focus();
-    });
-
-    $("unlockBtn").addEventListener("click", unlock);
-    $("unlockPin").addEventListener("keydown", event => {
-      if (event.key === "Enter") unlock();
-    });
-
-    function unlock() {
-      if ($("unlockPin").value === localStorage.getItem("freddoPin")) {
-        $("lockScreen").style.display = "none";
-        $("unlockPin").value = "";
-        $("lockError").textContent = "";
-      } else {
-        $("lockError").textContent = "Onjuiste pincode.";
-        $("unlockPin").value = "";
-      }
-    }
-  </script>
+  <script src="script.js" defer></script>
 </body>
-</html>
+</html>q
