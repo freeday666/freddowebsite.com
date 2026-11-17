@@ -2,136 +2,68 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Stadsbezorger 3D — Testdemo</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Stadsbezorger 3D</title>
   <style>
-    :root {
-      color-scheme: dark;
-      font-family: system-ui, sans-serif;
-    }
-
     * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+    body { font: 14px system-ui, sans-serif; color: white; background: #8ac6e0; }
+    canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      overflow: hidden;
-      background: #101820;
-      color: white;
-    }
-
-    canvas {
-      position: fixed;
-      inset: 0;
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    .hud {
-      position: fixed;
-      z-index: 2;
-      top: 16px;
-      left: 16px;
-      max-width: min(440px, calc(100vw - 32px));
-      padding: 16px 18px;
-      border: 1px solid #ffffff26;
-      border-radius: 16px;
-      background: #101820d9;
-      box-shadow: 0 8px 32px #0005;
-      backdrop-filter: blur(12px);
-    }
-
-    .hud h1 {
-      margin: 0 0 6px;
-      font-size: 18px;
-    }
-
-    .hud p {
-      margin: 5px 0;
-      color: #d2dce5;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    #status {
-      color: #7cf5b0;
-      font-weight: 700;
-    }
-
-    .discord {
-      display: inline-block;
-      margin-top: 8px;
-      color: #a9baff;
-      font-size: 13px;
-    }
-
-    .touch-controls {
-      position: fixed;
-      z-index: 3;
-      right: 16px;
-      bottom: max(16px, env(safe-area-inset-bottom));
-      left: 16px;
-      display: none;
-      justify-content: space-between;
-      align-items: end;
+    #hud {
+      position: fixed; z-index: 2; top: 12px; left: 12px;
+      max-width: min(390px, calc(100vw - 24px)); padding: 12px 15px;
+      border: 1px solid #ffffff44; border-radius: 14px;
+      background: #111923dd; backdrop-filter: blur(8px);
       pointer-events: none;
     }
+    #hud h1 { margin: 0 0 5px; font-size: 17px; }
+    #hud p { margin: 3px 0; color: #e0e8ef; font-size: 12px; line-height: 1.4; }
+    #status { color: #81f0aa !important; font-weight: 700; }
 
-    .touch-group {
-      display: flex;
-      gap: 10px;
+    #mobile {
+      display: none; position: fixed; z-index: 3; inset: auto 12px max(12px, env(safe-area-inset-bottom));
+      justify-content: space-between; align-items: end; pointer-events: none;
+    }
+    .group { display: flex; gap: 8px; align-items: end; }
+    button {
+      min-width: 56px; min-height: 56px; padding: 8px;
+      color: white; background: #111923dd; border: 1px solid #ffffff66;
+      border-radius: 17px; font: 700 13px system-ui, sans-serif;
+      touch-action: none; user-select: none; -webkit-user-select: none;
       pointer-events: auto;
     }
-
-    .touch-controls button {
-      min-width: 58px;
-      min-height: 58px;
-      padding: 10px;
-      border: 1px solid #ffffff55;
-      border-radius: 18px;
-      background: #101820cc;
-      color: white;
-      font: 700 14px system-ui, sans-serif;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-
-    .touch-controls button:active {
-      background: #4a79ffcc;
-      transform: scale(.96);
-    }
+    button:active, button.pressed { background: #356be0ee; }
+    .utility { min-width: 52px; min-height: 48px; font-size: 11px; }
 
     @media (pointer: coarse) {
-      .touch-controls { display: flex; }
-      .hud { top: 10px; left: 10px; padding: 12px; }
-      .hud p { font-size: 12px; }
+      #mobile { display: flex; }
+      #hud { top: 8px; left: 8px; padding: 9px 12px; }
+      #hud p { font-size: 11px; }
     }
   </style>
 </head>
-
 <body>
-  <section class="hud">
+  <section id="hud">
     <h1>🚚 Stadsbezorger 3D</h1>
-    <p>Rijd met <b>WASD</b> of de pijltjes. Druk <b>V</b> voor de bestuurderscamera achter het stuur.</p>
-    <p><b>E</b>: in-/uitstappen · <b>U</b>: laadklep · <b>V</b>: camera wisselen</p>
-    <p id="status">Je zit achter het stuur. Start de rit!</p>
-    <a class="discord" href="https://discord.gg/cuXRe4PUgJ" target="_blank" rel="noopener noreferrer">
-      Join onze Discord
-    </a>
+    <p>WASD/pijltjes: besturen · <b>Ctrl+V</b>: camera wisselen</p>
+    <p>E: in-/uitstappen · U: laadklep</p>
+    <p id="status">Je zit achter het stuur.</p>
   </section>
 
-  <div class="touch-controls" aria-label="Mobiele bediening">
-    <div class="touch-group">
-      <button data-key="arrowleft" aria-label="Links">◀</button>
-      <button data-key="arrowright" aria-label="Rechts">▶</button>
+  <div id="mobile">
+    <div class="group">
+      <button data-control="left" aria-label="Links">◀</button>
+      <button data-control="right" aria-label="Rechts">▶</button>
     </div>
-    <div class="touch-group">
-      <button data-key="arrowdown">REM</button>
-      <button data-key="arrowup">GAS</button>
-      <button id="cameraButton">CAM</button>
+    <div class="group">
+      <button class="utility" id="enterButton">IN/UIT</button>
+      <button class="utility" id="gateButton">KLEP</button>
+      <button class="utility" id="cameraButton">CAM</button>
+    </div>
+    <div class="group">
+      <button data-control="brake">REM</button>
+      <button data-control="gas">GAS</button>
     </div>
   </div>
 
@@ -140,41 +72,27 @@
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x9ed7ef);
-    scene.fog = new THREE.Fog(0x9ed7ef, 70, 230);
+    scene.fog = new THREE.Fog(0x9ed7ef, 90, 300);
 
-    const camera = new THREE.PerspectiveCamera(
-      72,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      500
-    );
-
+    const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 500);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
     renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x52604a, 2));
-    const sunlight = new THREE.DirectionalLight(0xffffff, 2.3);
-    sunlight.position.set(-35, 65, 30);
-    sunlight.castShadow = true;
-    scene.add(sunlight);
+    scene.add(new THREE.HemisphereLight(0xe9f7ff, 0x586148, 2));
+    const sun = new THREE.DirectionalLight(0xffffff, 2.4);
+    sun.position.set(-30, 60, 25);
+    sun.castShadow = true;
+    scene.add(sun);
 
-    const mat = (color, roughness = 0.85) =>
+    const material = (color, roughness = 0.85) =>
       new THREE.MeshStandardMaterial({ color, roughness });
 
-    const grassMaterial = mat(0x72a85c);
-    const roadMaterial = mat(0x343a40);
-    const lineMaterial = mat(0xf2e8bf);
-    const buildingColors = [0xe9b979, 0xd78668, 0xd9d6c5, 0x9eb7a1, 0xd8bfdd];
-
-    function box(name, x, y, z, sx, sy, sz, material, parent = scene) {
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(sx, sy, sz),
-        material
-      );
-      mesh.name = name;
+    function addBox(parent, x, y, z, sx, sy, sz, mat) {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
       mesh.position.set(x, y, z);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
@@ -182,221 +100,231 @@
       return mesh;
     }
 
-    // Grond en lange weg.
-    box("gras", 0, -0.25, 0, 200, 0.5, 300, grassMaterial);
-    box("weg", 0, 0.02, 0, 12, 0.12, 300, roadMaterial);
-
-    // Middenstreep.
-    for (let z = -140; z < 150; z += 12) {
-      box("wegmarkering", 0, 0.1, z, 0.18, 0.025, 6, lineMaterial);
+    // Weg, bermen en stippellijnen.
+    addBox(scene, 0, -0.25, 0, 240, 0.5, 400, material(0x79a960));
+    addBox(scene, 0, 0.02, 0, 12, 0.12, 400, material(0x343a40));
+    for (let z = -195; z < 200; z += 12) {
+      addBox(scene, 0, 0.1, z, 0.16, 0.025, 5.5, material(0xf1e7c8));
     }
 
-    // Eenvoudige huizen langs de weg.
-    for (let z = -120; z <= 120; z += 24) {
-      for (const side of [-1, 1]) {
-        const height = 7 + Math.random() * 6;
-        const color = buildingColors[
-          Math.floor(Math.random() * buildingColors.length)
-        ];
-        box(
-          "huis",
-          side * (12 + Math.random() * 7),
-          height / 2,
-          z + Math.random() * 7,
-          9,
-          height,
-          10,
-          mat(color)
-        );
+    // Huizen, ramen en bomen langs de route.
+    const buildingMats = [0xe0b07c, 0xcf8069, 0xd6d3c5, 0x9cb6a1, 0xc8b5d5]
+      .map(c => material(c));
+    const windowMat = new THREE.MeshStandardMaterial({
+      color: 0x9bd8ec, roughness: 0.25, metalness: 0.1
+    });
 
-        // Plat dak en een raam aan de straatkant.
-        const houseX = side * (12 + 0); // raam is decoratief; huizen blijven eenvoudig
+    for (let z = -180; z <= 180; z += 24) {
+      for (const side of [-1, 1]) {
+        const x = side * (17 + Math.random() * 5);
+        const h = 7 + Math.random() * 7;
+        const house = addBox(
+          scene, x, h / 2, z + Math.random() * 5,
+          9, h, 10, buildingMats[Math.floor(Math.random() * buildingMats.length)]
+        );
+        const frontX = x - side * 4.52;
+        for (const wy of [2.4, 4.8]) {
+          addBox(scene, frontX, wy, z, 0.06, 1.2, 1.4, windowMat);
+          addBox(scene, frontX, wy, z + 3, 0.06, 1.2, 1.4, windowMat);
+        }
       }
     }
 
-    // Bestelwagen: de wagen rijdt in de lengterichting van de weg (Z-as).
     const van = new THREE.Group();
     scene.add(van);
 
-    const bodyMaterial = mat(0xe9f0f3, 0.45);
-    const darkMaterial = mat(0x202a32, 0.4);
-    const glassMaterial = new THREE.MeshStandardMaterial({
-      color: 0x87c9df,
-      roughness: 0.22,
-      metalness: 0.12
+    const bodyMat = material(0xe8eef1, 0.4);
+    const darkMat = material(0x202a32, 0.4);
+    const glassMat = new THREE.MeshStandardMaterial({
+      color: 0x82c9e1, roughness: 0.18, metalness: 0.12
     });
 
-    box("carrosserie", 0, 1.25, 0, 2.5, 1.5, 5, bodyMaterial, van);
-    box("cabine", 0, 2.15, -1.25, 2.35, 1.2, 2.25, bodyMaterial, van);
-    box("voorruit", 0, 2.3, -2.38, 1.9, 0.72, 0.08, glassMaterial, van);
-    box("bumper", 0, 0.65, -2.55, 2.45, 0.3, 0.25, darkMaterial, van);
+    addBox(van, 0, 1.25, 0.05, 2.5, 1.5, 5.1, bodyMat);
+    addBox(van, 0, 2.15, -1.35, 2.35, 1.2, 2.35, bodyMat);
+    addBox(van, 0, 2.34, -2.54, 1.95, 0.72, 0.06, glassMat);
+    addBox(van, -1.19, 2.33, -1.38, 0.045, 0.72, 0.95, glassMat);
+    addBox(van, 1.19, 2.33, -1.38, 0.045, 0.72, 0.95, glassMat);
+    addBox(van, 0, 0.66, -2.63, 2.45, 0.28, 0.2, darkMat);
+    addBox(van, 0, 1.76, -2.12, 1.95, 0.24, 0.8, darkMat);
 
-    // Dashboard en stuur zijn zichtbaar in de bestuurderscamera.
-    box("dashboard", 0, 1.75, -2.05, 1.85, 0.25, 0.7, darkMaterial, van);
-
-    const steeringWheel = new THREE.Mesh(
-      new THREE.TorusGeometry(0.28, 0.045, 10, 24),
-      darkMaterial
-    );
-    steeringWheel.position.set(-0.55, 1.95, -1.88);
+    // Stuurwiel, dashboard en stoelen voor de cockpitcamera.
+    const steeringWheel = new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.045, 10, 28), darkMat);
+    steeringWheel.position.set(-0.58, 1.98, -2.02);
     van.add(steeringWheel);
+
+    for (const x of [-0.58, 0.58]) {
+      addBox(van, x, 1.42, -1.25, 0.55, 0.85, 0.55, darkMat);
+    }
 
     const wheels = [];
     for (const x of [-1.3, 1.3]) {
-      for (const z of [-1.65, 1.65]) {
+      for (const z of [-1.7, 1.75]) {
         const wheel = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.48, 0.48, 0.28, 20),
-          darkMaterial
+          new THREE.CylinderGeometry(0.48, 0.48, 0.28, 24),
+          darkMat
         );
         wheel.rotation.z = Math.PI / 2;
-        wheel.position.set(x, 0.55, z);
+        wheel.position.set(x, 0.52, z);
         wheel.castShadow = true;
         van.add(wheel);
         wheels.push(wheel);
       }
     }
 
-    // Laadklep achter de bestelwagen.
-    const tailgate = box(
-      "laadklep",
-      0,
-      0.95,
-      2.55,
-      2.2,
-      0.12,
-      0.9,
-      darkMaterial,
-      van
-    );
+    const tailgate = addBox(van, 0, 0.95, 2.65, 2.2, 0.12, 0.9, darkMat);
 
-    // Bezorgbestemming.
+    // Glowing destination marker.
     const marker = new THREE.Mesh(
       new THREE.CylinderGeometry(1.35, 1.35, 0.08, 32),
       new THREE.MeshStandardMaterial({
-        color: 0x35e58a,
-        emissive: 0x0a6b35,
-        transparent: true,
-        opacity: 0.8
+        color: 0x35e58a, emissive: 0x0a6b35, transparent: true, opacity: 0.8
       })
     );
-    marker.position.set(0, 0.12, -55);
+    marker.position.set(0, 0.12, -65);
     scene.add(marker);
 
     const keys = new Set();
+    const touch = { left: false, right: false, gas: false, brake: false };
+    const status = document.querySelector("#status");
     let speed = 0;
     let steering = 0;
     let driving = true;
-    let cameraMode = "chase";
+    let firstPerson = false;
     let gateOpen = false;
+    let walkHeading = 0;
 
-    const status = document.querySelector("#status");
-
-    function setCameraMode() {
-      cameraMode = cameraMode === "cockpit" ? "chase" : "cockpit";
-      status.textContent = cameraMode === "cockpit"
-        ? "Bestuurderscamera: achter het stuur."
-        : "Volgcamera ingeschakeld.";
+    function toggleCamera() {
+      firstPerson = !firstPerson;
+      status.textContent = firstPerson
+        ? "First person: kijk vanuit de cabine of op ooghoogte."
+        : "Third person: volgcamera ingeschakeld.";
     }
 
-    function onKeyDown(event) {
+    function toggleDriving() {
+      driving = !driving;
+      speed = 0;
+      status.textContent = driving ? "Je zit weer achter het stuur." : "Je bent uitgestapt.";
+    }
+
+    function toggleGate() {
+      gateOpen = !gateOpen;
+      tailgate.rotation.x = gateOpen ? -Math.PI / 2 : 0;
+      status.textContent = gateOpen ? "Laadklep geopend." : "Laadklep gesloten.";
+    }
+
+    window.addEventListener("keydown", (event) => {
       const key = event.key.toLowerCase();
       if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
         event.preventDefault();
       }
       keys.add(key);
 
-      if (key === "v" && driving) setCameraMode();
-
-      if (key === "e") {
-        driving = !driving;
-        status.textContent = driving
-          ? "Je zit weer achter het stuur."
-          : "Je bent uitgestapt.";
-      }
-
-      if (key === "u" && driving) {
-        gateOpen = !gateOpen;
-        tailgate.rotation.x = gateOpen ? -Math.PI / 2 : 0;
-        status.textContent = gateOpen ? "Laadklep geopend." : "Laadklep gesloten.";
-      }
-    }
-
-    function onKeyUp(event) {
-      keys.delete(event.key.toLowerCase());
-    }
-
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("keyup", onKeyUp);
-
-    document.querySelectorAll("[data-key]").forEach((button) => {
-      const key = button.dataset.key;
-      const release = () => keys.delete(key);
-
-      button.addEventListener("pointerdown", (event) => {
+      // Camera wisselen met Ctrl+V (ook Control op Mac-toetsenborden).
+      if (key === "v" && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
-        keys.add(key);
-        button.setPointerCapture(event.pointerId);
-      });
+        toggleCamera();
+      }
+      if (key === "e" && !event.repeat) toggleDriving();
+      if (key === "u" && !event.repeat) toggleGate();
+    });
+
+    window.addEventListener("keyup", (event) => keys.delete(event.key.toLowerCase()));
+    window.addEventListener("blur", () => {
+      keys.clear();
+      for (const key of Object.keys(touch)) touch[key] = false;
+    });
+
+    document.querySelectorAll("[data-control]").forEach((button) => {
+      const control = button.dataset.control;
+      const press = (event) => {
+        event.preventDefault();
+        touch[control] = true;
+        button.classList.add("pressed");
+        button.setPointerCapture?.(event.pointerId);
+      };
+      const release = () => {
+        touch[control] = false;
+        button.classList.remove("pressed");
+      };
+      button.addEventListener("pointerdown", press);
       button.addEventListener("pointerup", release);
       button.addEventListener("pointercancel", release);
       button.addEventListener("lostpointercapture", release);
     });
 
-    document.querySelector("#cameraButton").addEventListener("click", () => {
-      if (driving) setCameraMode();
-    });
+    document.querySelector("#cameraButton").addEventListener("click", toggleCamera);
+    document.querySelector("#enterButton").addEventListener("click", toggleDriving);
+    document.querySelector("#gateButton").addEventListener("click", toggleGate);
 
     const clock = new THREE.Clock();
     const forward = new THREE.Vector3();
+    const desiredCamera = new THREE.Vector3();
+    const cameraLook = new THREE.Vector3();
+
+    function isForward() {
+      return keys.has("w") || keys.has("arrowup") || touch.gas;
+    }
+    function isBackward() {
+      return keys.has("s") || keys.has("arrowdown") || touch.brake;
+    }
+    function isLeft() {
+      return keys.has("a") || keys.has("arrowleft") || touch.left;
+    }
+    function isRight() {
+      return keys.has("d") || keys.has("arrowright") || touch.right;
+    }
 
     function animate() {
       requestAnimationFrame(animate);
       const dt = Math.min(clock.getDelta(), 0.04);
 
       if (driving) {
-        if (keys.has("arrowup") || keys.has("w")) speed += 12 * dt;
-        if (keys.has("arrowdown") || keys.has("s")) speed -= 16 * dt;
-        if (!keys.has("arrowup") && !keys.has("w") &&
-            !keys.has("arrowdown") && !keys.has("s")) {
-          speed *= Math.pow(0.08, dt);
-        }
+        if (isForward()) speed += 13 * dt;
+        if (isBackward()) speed -= 18 * dt;
+        if (!isForward() && !isBackward()) speed *= Math.pow(0.12, dt);
+        speed = THREE.MathUtils.clamp(speed, -9, 27);
 
-        speed = THREE.MathUtils.clamp(speed, -10, 25);
-
-        const turnLeft = keys.has("arrowleft") || keys.has("a");
-        const turnRight = keys.has("arrowright") || keys.has("d");
-        steering = THREE.MathUtils.damp(
-          steering,
-          (turnLeft ? 1 : 0) - (turnRight ? 1 : 0),
-          8,
-          dt
-        );
-
+        const steerInput = (isLeft() ? 1 : 0) - (isRight() ? 1 : 0);
+        steering = THREE.MathUtils.damp(steering, steerInput, 8, dt);
         van.rotation.y += steering * speed * 0.018 * dt;
+
         forward.set(-Math.sin(van.rotation.y), 0, -Math.cos(van.rotation.y));
         van.position.addScaledVector(forward, speed * dt);
-
-        wheels.forEach((wheel) => {
-          wheel.rotation.x += speed * dt * 1.8;
-        });
+        wheels.forEach(wheel => wheel.rotation.x += speed * dt * 1.8);
+      } else {
+        // Eenvoudige te-voetbediening: WASD/pijltjes beweegt de speler.
+        const walkForward = (isForward() ? 1 : 0) - (isBackward() ? 1 : 0);
+        const walkTurn = (isLeft() ? 1 : 0) - (isRight() ? 1 : 0);
+        walkHeading += walkTurn * dt * 2.2;
+        if (walkForward !== 0) {
+          van.position.x += -Math.sin(walkHeading) * walkForward * 5 * dt;
+          van.position.z += -Math.cos(walkHeading) * walkForward * 5 * dt;
+          van.rotation.y = walkHeading;
+        }
       }
 
-      if (cameraMode === "cockpit" && driving) {
-        // Kamera op ooghoogte, in de cabine, kijkend door de voorruit.
-        const cockpitPosition = new THREE.Vector3(-0.48, 2.05, -1.72);
-        van.localToWorld(cockpitPosition);
-        camera.position.copy(cockpitPosition);
-
-        const viewDirection = new THREE.Vector3(0, 0.02, -1)
-          .applyQuaternion(van.quaternion);
-        camera.lookAt(
-          camera.position.clone().add(viewDirection.multiplyScalar(30))
-        );
+      if (firstPerson) {
+        if (driving) {
+          // Oogpunt achter het stuur; de cabine en voorruit blijven zichtbaar.
+          const eye = new THREE.Vector3(-0.48, 2.03, -1.82);
+          van.localToWorld(eye);
+          camera.position.copy(eye);
+          cameraLook.set(0, 0.03, -1).applyQuaternion(van.quaternion);
+          camera.lookAt(eye.clone().add(cameraLook.multiplyScalar(45)));
+        } else {
+          // Te voet: first-person camera op ooghoogte.
+          const eye = van.position.clone();
+          eye.y += 1.72;
+          eye.x -= Math.sin(walkHeading) * 0.1;
+          eye.z -= Math.cos(walkHeading) * 0.1;
+          camera.position.copy(eye);
+          cameraLook.set(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), walkHeading);
+          camera.lookAt(eye.clone().add(cameraLook.multiplyScalar(35)));
+        }
       } else {
-        const chaseOffset = new THREE.Vector3(0, 5.5, 10)
-          .applyQuaternion(van.quaternion);
-        const targetPosition = van.position.clone().add(chaseOffset);
-        camera.position.lerp(targetPosition, 1 - Math.pow(0.001, dt));
+        const offset = new THREE.Vector3(0, 5.2, 10.5).applyQuaternion(van.quaternion);
+        desiredCamera.copy(van.position).add(offset);
+        camera.position.lerp(desiredCamera, 1 - Math.pow(0.001, dt));
         camera.lookAt(van.position.x, van.position.y + 1.2, van.position.z);
       }
 
@@ -407,9 +335,9 @@
     animate();
 
     window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(innerWidth, innerHeight);
     });
   </script>
 </body>
