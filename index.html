@@ -2,343 +2,40 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Stadsbezorger 3D</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Oranjestad RP — Vrachtwagen Game</title>
   <style>
     * { box-sizing: border-box; }
-    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
-    body { font: 14px system-ui, sans-serif; color: white; background: #8ac6e0; }
-    canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
-
-    #hud {
-      position: fixed; z-index: 2; top: 12px; left: 12px;
-      max-width: min(390px, calc(100vw - 24px)); padding: 12px 15px;
-      border: 1px solid #ffffff44; border-radius: 14px;
-      background: #111923dd; backdrop-filter: blur(8px);
-      pointer-events: none;
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #87ceeb;
+      font-family: Arial, sans-serif;
     }
-    #hud h1 { margin: 0 0 5px; font-size: 17px; }
-    #hud p { margin: 3px 0; color: #e0e8ef; font-size: 12px; line-height: 1.4; }
-    #status { color: #81f0aa !important; font-weight: 700; }
-
-    #mobile {
-      display: none; position: fixed; z-index: 3; inset: auto 12px max(12px, env(safe-area-inset-bottom));
-      justify-content: space-between; align-items: end; pointer-events: none;
+    #info {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 2;
+      padding: 12px 16px;
+      color: white;
+      background: #18232bdd;
+      border-radius: 8px;
+      line-height: 1.5;
     }
-    .group { display: flex; gap: 8px; align-items: end; }
-    button {
-      min-width: 56px; min-height: 56px; padding: 8px;
-      color: white; background: #111923dd; border: 1px solid #ffffff66;
-      border-radius: 17px; font: 700 13px system-ui, sans-serif;
-      touch-action: none; user-select: none; -webkit-user-select: none;
-      pointer-events: auto;
-    }
-    button:active, button.pressed { background: #356be0ee; }
-    .utility { min-width: 52px; min-height: 48px; font-size: 11px; }
-
-    @media (pointer: coarse) {
-      #mobile { display: flex; }
-      #hud { top: 8px; left: 8px; padding: 9px 12px; }
-      #hud p { font-size: 11px; }
-    }
+    #info strong { color: #ff8a32; }
+    #speed { font-weight: bold; }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-  <section id="hud">
-    <h1>🚚 Stadsbezorger 3D</h1>
-    <p>WASD/pijltjes: besturen · <b>Ctrl+V</b>: camera wisselen</p>
-    <p>E: in-/uitstappen · U: laadklep</p>
-    <p id="status">Je zit achter het stuur.</p>
-  </section>
-
-  <div id="mobile">
-    <div class="group">
-      <button data-control="left" aria-label="Links">◀</button>
-      <button data-control="right" aria-label="Rechts">▶</button>
-    </div>
-    <div class="group">
-      <button class="utility" id="enterButton">IN/UIT</button>
-      <button class="utility" id="gateButton">KLEP</button>
-      <button class="utility" id="cameraButton">CAM</button>
-    </div>
-    <div class="group">
-      <button data-control="brake">REM</button>
-      <button data-control="gas">GAS</button>
-    </div>
+  <div id="info">
+    <strong>ORANJESTAD RP</strong><br>
+    Rijden: W/A/S/D of pijltjestoetsen<br>
+    Snelheid: <span id="speed">0</span>
   </div>
 
-  <script type="module">
-    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x9ed7ef);
-    scene.fog = new THREE.Fog(0x9ed7ef, 90, 300);
-
-    const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 500);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.setSize(innerWidth, innerHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    document.body.appendChild(renderer.domElement);
-
-    scene.add(new THREE.HemisphereLight(0xe9f7ff, 0x586148, 2));
-    const sun = new THREE.DirectionalLight(0xffffff, 2.4);
-    sun.position.set(-30, 60, 25);
-    sun.castShadow = true;
-    scene.add(sun);
-
-    const material = (color, roughness = 0.85) =>
-      new THREE.MeshStandardMaterial({ color, roughness });
-
-    function addBox(parent, x, y, z, sx, sy, sz, mat) {
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
-      mesh.position.set(x, y, z);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      parent.add(mesh);
-      return mesh;
-    }
-
-    // Weg, bermen en stippellijnen.
-    addBox(scene, 0, -0.25, 0, 240, 0.5, 400, material(0x79a960));
-    addBox(scene, 0, 0.02, 0, 12, 0.12, 400, material(0x343a40));
-    for (let z = -195; z < 200; z += 12) {
-      addBox(scene, 0, 0.1, z, 0.16, 0.025, 5.5, material(0xf1e7c8));
-    }
-
-    // Huizen, ramen en bomen langs de route.
-    const buildingMats = [0xe0b07c, 0xcf8069, 0xd6d3c5, 0x9cb6a1, 0xc8b5d5]
-      .map(c => material(c));
-    const windowMat = new THREE.MeshStandardMaterial({
-      color: 0x9bd8ec, roughness: 0.25, metalness: 0.1
-    });
-
-    for (let z = -180; z <= 180; z += 24) {
-      for (const side of [-1, 1]) {
-        const x = side * (17 + Math.random() * 5);
-        const h = 7 + Math.random() * 7;
-        const house = addBox(
-          scene, x, h / 2, z + Math.random() * 5,
-          9, h, 10, buildingMats[Math.floor(Math.random() * buildingMats.length)]
-        );
-        const frontX = x - side * 4.52;
-        for (const wy of [2.4, 4.8]) {
-          addBox(scene, frontX, wy, z, 0.06, 1.2, 1.4, windowMat);
-          addBox(scene, frontX, wy, z + 3, 0.06, 1.2, 1.4, windowMat);
-        }
-      }
-    }
-
-    const van = new THREE.Group();
-    scene.add(van);
-
-    const bodyMat = material(0xe8eef1, 0.4);
-    const darkMat = material(0x202a32, 0.4);
-    const glassMat = new THREE.MeshStandardMaterial({
-      color: 0x82c9e1, roughness: 0.18, metalness: 0.12
-    });
-
-    addBox(van, 0, 1.25, 0.05, 2.5, 1.5, 5.1, bodyMat);
-    addBox(van, 0, 2.15, -1.35, 2.35, 1.2, 2.35, bodyMat);
-    addBox(van, 0, 2.34, -2.54, 1.95, 0.72, 0.06, glassMat);
-    addBox(van, -1.19, 2.33, -1.38, 0.045, 0.72, 0.95, glassMat);
-    addBox(van, 1.19, 2.33, -1.38, 0.045, 0.72, 0.95, glassMat);
-    addBox(van, 0, 0.66, -2.63, 2.45, 0.28, 0.2, darkMat);
-    addBox(van, 0, 1.76, -2.12, 1.95, 0.24, 0.8, darkMat);
-
-    // Stuurwiel, dashboard en stoelen voor de cockpitcamera.
-    const steeringWheel = new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.045, 10, 28), darkMat);
-    steeringWheel.position.set(-0.58, 1.98, -2.02);
-    van.add(steeringWheel);
-
-    for (const x of [-0.58, 0.58]) {
-      addBox(van, x, 1.42, -1.25, 0.55, 0.85, 0.55, darkMat);
-    }
-
-    const wheels = [];
-    for (const x of [-1.3, 1.3]) {
-      for (const z of [-1.7, 1.75]) {
-        const wheel = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.48, 0.48, 0.28, 24),
-          darkMat
-        );
-        wheel.rotation.z = Math.PI / 2;
-        wheel.position.set(x, 0.52, z);
-        wheel.castShadow = true;
-        van.add(wheel);
-        wheels.push(wheel);
-      }
-    }
-
-    const tailgate = addBox(van, 0, 0.95, 2.65, 2.2, 0.12, 0.9, darkMat);
-
-    // Glowing destination marker.
-    const marker = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.35, 1.35, 0.08, 32),
-      new THREE.MeshStandardMaterial({
-        color: 0x35e58a, emissive: 0x0a6b35, transparent: true, opacity: 0.8
-      })
-    );
-    marker.position.set(0, 0.12, -65);
-    scene.add(marker);
-
-    const keys = new Set();
-    const touch = { left: false, right: false, gas: false, brake: false };
-    const status = document.querySelector("#status");
-    let speed = 0;
-    let steering = 0;
-    let driving = true;
-    let firstPerson = false;
-    let gateOpen = false;
-    let walkHeading = 0;
-
-    function toggleCamera() {
-      firstPerson = !firstPerson;
-      status.textContent = firstPerson
-        ? "First person: kijk vanuit de cabine of op ooghoogte."
-        : "Third person: volgcamera ingeschakeld.";
-    }
-
-    function toggleDriving() {
-      driving = !driving;
-      speed = 0;
-      status.textContent = driving ? "Je zit weer achter het stuur." : "Je bent uitgestapt.";
-    }
-
-    function toggleGate() {
-      gateOpen = !gateOpen;
-      tailgate.rotation.x = gateOpen ? -Math.PI / 2 : 0;
-      status.textContent = gateOpen ? "Laadklep geopend." : "Laadklep gesloten.";
-    }
-
-    window.addEventListener("keydown", (event) => {
-      const key = event.key.toLowerCase();
-      if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) {
-        event.preventDefault();
-      }
-      keys.add(key);
-
-      // Camera wisselen met Ctrl+V (ook Control op Mac-toetsenborden).
-      if (key === "v" && (event.ctrlKey || event.metaKey)) {
-        event.preventDefault();
-        toggleCamera();
-      }
-      if (key === "e" && !event.repeat) toggleDriving();
-      if (key === "u" && !event.repeat) toggleGate();
-    });
-
-    window.addEventListener("keyup", (event) => keys.delete(event.key.toLowerCase()));
-    window.addEventListener("blur", () => {
-      keys.clear();
-      for (const key of Object.keys(touch)) touch[key] = false;
-    });
-
-    document.querySelectorAll("[data-control]").forEach((button) => {
-      const control = button.dataset.control;
-      const press = (event) => {
-        event.preventDefault();
-        touch[control] = true;
-        button.classList.add("pressed");
-        button.setPointerCapture?.(event.pointerId);
-      };
-      const release = () => {
-        touch[control] = false;
-        button.classList.remove("pressed");
-      };
-      button.addEventListener("pointerdown", press);
-      button.addEventListener("pointerup", release);
-      button.addEventListener("pointercancel", release);
-      button.addEventListener("lostpointercapture", release);
-    });
-
-    document.querySelector("#cameraButton").addEventListener("click", toggleCamera);
-    document.querySelector("#enterButton").addEventListener("click", toggleDriving);
-    document.querySelector("#gateButton").addEventListener("click", toggleGate);
-
-    const clock = new THREE.Clock();
-    const forward = new THREE.Vector3();
-    const desiredCamera = new THREE.Vector3();
-    const cameraLook = new THREE.Vector3();
-
-    function isForward() {
-      return keys.has("w") || keys.has("arrowup") || touch.gas;
-    }
-    function isBackward() {
-      return keys.has("s") || keys.has("arrowdown") || touch.brake;
-    }
-    function isLeft() {
-      return keys.has("a") || keys.has("arrowleft") || touch.left;
-    }
-    function isRight() {
-      return keys.has("d") || keys.has("arrowright") || touch.right;
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-      const dt = Math.min(clock.getDelta(), 0.04);
-
-      if (driving) {
-        if (isForward()) speed += 13 * dt;
-        if (isBackward()) speed -= 18 * dt;
-        if (!isForward() && !isBackward()) speed *= Math.pow(0.12, dt);
-        speed = THREE.MathUtils.clamp(speed, -9, 27);
-
-        const steerInput = (isLeft() ? 1 : 0) - (isRight() ? 1 : 0);
-        steering = THREE.MathUtils.damp(steering, steerInput, 8, dt);
-        van.rotation.y += steering * speed * 0.018 * dt;
-
-        forward.set(-Math.sin(van.rotation.y), 0, -Math.cos(van.rotation.y));
-        van.position.addScaledVector(forward, speed * dt);
-        wheels.forEach(wheel => wheel.rotation.x += speed * dt * 1.8);
-      } else {
-        // Eenvoudige te-voetbediening: WASD/pijltjes beweegt de speler.
-        const walkForward = (isForward() ? 1 : 0) - (isBackward() ? 1 : 0);
-        const walkTurn = (isLeft() ? 1 : 0) - (isRight() ? 1 : 0);
-        walkHeading += walkTurn * dt * 2.2;
-        if (walkForward !== 0) {
-          van.position.x += -Math.sin(walkHeading) * walkForward * 5 * dt;
-          van.position.z += -Math.cos(walkHeading) * walkForward * 5 * dt;
-          van.rotation.y = walkHeading;
-        }
-      }
-
-      if (firstPerson) {
-        if (driving) {
-          // Oogpunt achter het stuur; de cabine en voorruit blijven zichtbaar.
-          const eye = new THREE.Vector3(-0.48, 2.03, -1.82);
-          van.localToWorld(eye);
-          camera.position.copy(eye);
-          cameraLook.set(0, 0.03, -1).applyQuaternion(van.quaternion);
-          camera.lookAt(eye.clone().add(cameraLook.multiplyScalar(45)));
-        } else {
-          // Te voet: first-person camera op ooghoogte.
-          const eye = van.position.clone();
-          eye.y += 1.72;
-          eye.x -= Math.sin(walkHeading) * 0.1;
-          eye.z -= Math.cos(walkHeading) * 0.1;
-          camera.position.copy(eye);
-          cameraLook.set(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), walkHeading);
-          camera.lookAt(eye.clone().add(cameraLook.multiplyScalar(35)));
-        }
-      } else {
-        const offset = new THREE.Vector3(0, 5.2, 10.5).applyQuaternion(van.quaternion);
-        desiredCamera.copy(van.position).add(offset);
-        camera.position.lerp(desiredCamera, 1 - Math.pow(0.001, dt));
-        camera.lookAt(van.position.x, van.position.y + 1.2, van.position.z);
-      }
-
-      marker.position.y = 0.13 + Math.sin(performance.now() * 0.002) * 0.08;
-      renderer.render(scene, camera);
-    }
-
-    animate();
-
-    window.addEventListener("resize", () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
-    });
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
