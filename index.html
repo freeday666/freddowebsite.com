@@ -2,424 +2,55 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>European Roads — Rijgame</title>
-  <style>
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #111923;
-      color: white;
-      font-family: Arial, sans-serif;
-      touch-action: none;
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Truck Delivery Simulator</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+      }
     }
-    #game-wrap {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      display: grid;
-      place-items: center;
-    }
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #83b967;
-    }
-    #hud {
-      position: absolute;
-      z-index: 2;
-      top: max(12px, env(safe-area-inset-top));
-      left: 12px;
-      right: 12px;
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      font-size: clamp(12px, 2.4vw, 18px);
-      font-weight: bold;
-      text-shadow: 0 2px 4px #000;
-      pointer-events: none;
-    }
-    #overlay {
-      position: absolute;
-      z-index: 4;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 20px;
-      background: #07111dcc;
-      text-align: center;
-    }
-    #card {
-      width: min(440px, 100%);
-      padding: 24px;
-      border-radius: 14px;
-      background: #1c2a38;
-      box-shadow: 0 10px 35px #0008;
-    }
-    h1 { color: #ff9b42; margin-top: 0; }
-    .small { color: #c4d0da; line-height: 1.5; }
-    #start {
-      border: 0;
-      border-radius: 8px;
-      background: #f07822;
-      color: white;
-      padding: 13px 24px;
-      font-size: 17px;
-      font-weight: bold;
-      cursor: pointer;
-      touch-action: manipulation;
-    }
-    #controls {
-      position: absolute;
-      z-index: 3;
-      bottom: max(20px, env(safe-area-inset-bottom));
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: space-between;
-      padding: 0 22px;
-      pointer-events: none;
-    }
-    .control {
-      width: clamp(68px, 18vw, 90px);
-      height: clamp(62px, 15vw, 78px);
-      border: 2px solid #ffffffaa;
-      border-radius: 18px;
-      background: #17212bcc;
-      color: white;
-      font-size: 30px;
-      font-weight: bold;
-      pointer-events: auto;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-    .control:active { background: #f07822dd; }
-    @media (hover: hover) and (pointer: fine) {
-      #controls { opacity: .45; }
-      #controls:hover { opacity: 1; }
-    }
-  </style>
+  </script>
 </head>
 <body>
-  <main id="game-wrap">
-    <canvas id="game" width="960" height="600" aria-label="Rijgame"></canvas>
+  <main id="game"></main>
 
-    <div id="hud">
-      <span>EUROPEAN ROADS</span>
-      <span>Afstand: <b id="distance">0</b> m</span>
-      <span>Snelheid: <b id="speed">0</b> km/u</span>
+  <section id="hud">
+    <div><b>EURO TRUCK DELIVERY</b></div>
+    <div id="mission">Missie: laad de vrachtwagen</div>
+    <div>Snelheid: <span id="speed">0</span> km/u</div>
+    <div>Afstand: <span id="distance">0</span> m</div>
+  </section>
+
+  <section id="map-panel">
+    <div id="map"></div>
+    <div id="map-status">Kaart laden…</div>
+  </section>
+
+  <section id="controls">
+    <button data-key="left">◀</button>
+    <button data-key="brake">Rem</button>
+    <button data-key="accelerate">Gas</button>
+    <button data-key="right">▶</button>
+  </section>
+
+  <section id="overlay">
+    <div class="card">
+      <h1 id="overlay-title">Truck Delivery Simulator</h1>
+      <p id="overlay-text">
+        Volg de route en rijd naar het afleverpunt. Gebruik WASD of de knoppen.
+      </p>
+      <button id="start">Start missie</button>
     </div>
+  </section>
 
-    <section id="overlay">
-      <div id="card">
-        <h1 id="title">European Roads</h1>
-        <p id="message">Rijd over de weg en ontwijk auto's en bussen.</p>
-        <p class="small">
-          Computer: A/D of ←/→ om te sturen.<br>
-          Mobiel: houd de linker- of rechterknop ingedrukt.
-        </p>
-        <button id="start">Start rijden</button>
-      </div>
-    </section>
+  <script type="module" src="./game.js"></script>
 
-    <div id="controls" aria-label="Mobiele besturing">
-      <button class="control" data-direction="left" aria-label="Stuur links">◀</button>
-      <button class="control" data-direction="right" aria-label="Stuur rechts">▶</button>
-    </div>
-  </main>
-
-<script>
-(() => {
-  "use strict";
-
-  const canvas = document.querySelector("#game");
-  const ctx = canvas.getContext("2d");
-  const distanceText = document.querySelector("#distance");
-  const speedText = document.querySelector("#speed");
-  const overlay = document.querySelector("#overlay");
-  const title = document.querySelector("#title");
-  const message = document.querySelector("#message");
-  const startButton = document.querySelector("#start");
-
-  const W = canvas.width;
-  const H = canvas.height;
-  const ROAD_LEFT = 265;
-  const ROAD_RIGHT = 695;
-  const player = { x: W / 2, y: 475, w: 62, h: 108 };
-
-  const input = { left: false, right: false };
-  let traffic = [];
-  let scenery = [];
-  let running = false;
-  let distance = 0;
-  let speed = 105;
-  let roadOffset = 0;
-  let spawnTimer = 0;
-  let previousTime = 0;
-
-  function resetGame() {
-    player.x = W / 2;
-    traffic = [];
-    distance = 0;
-    speed = 105;
-    roadOffset = 0;
-    spawnTimer = 0;
-    scenery = Array.from({ length: 12 }, (_, i) => ({
-      y: i * 65,
-      side: i % 2 ? -1 : 1,
-      type: i % 3
-    }));
-    distanceText.textContent = "0";
-    speedText.textContent = "105";
-  }
-
-  function roundedRect(x, y, w, h, radius, color) {
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, radius);
-    ctx.fill();
-  }
-
-  function drawVehicle(x, y, w, h, color, isBus = false) {
-    // Schaduw en banden
-    roundedRect(x - w / 2 - 2, y - h / 2 + 5, w + 4, h, 12, "#0005");
-    ctx.fillStyle = "#17191c";
-    ctx.fillRect(x - w / 2 - 4, y - h * .30, 8, h * .22);
-    ctx.fillRect(x + w / 2 - 4, y - h * .30, 8, h * .22);
-    ctx.fillRect(x - w / 2 - 4, y + h * .12, 8, h * .22);
-    ctx.fillRect(x + w / 2 - 4, y + h * .12, 8, h * .22);
-
-    roundedRect(x - w / 2, y - h / 2, w, h, isBus ? 8 : 14, color);
-
-    if (isBus) {
-      ctx.fillStyle = "#b9e7f3";
-      ctx.fillRect(x - w * .39, y - h * .39, w * .78, h * .23);
-      ctx.fillStyle = "#eee5c5";
-      for (let i = 0; i < 4; i++) {
-        ctx.fillRect(x - w * .39, y - h * .08 + i * 19, w * .78, 12);
-      }
-      ctx.fillStyle = "#f1d43b";
-      ctx.fillRect(x - w * .38, y + h * .40, w * .76, 5);
-      return;
-    }
-
-    // SUV-ramen
-    roundedRect(x - w * .36, y - h * .30, w * .72, h * .48, 9, "#273640");
-    ctx.fillStyle = "#9ec9d6";
-    ctx.beginPath();
-    ctx.moveTo(x - w * .28, y - h * .27);
-    ctx.lineTo(x + w * .28, y - h * .27);
-    ctx.lineTo(x + w * .26, y - h * .07);
-    ctx.lineTo(x - w * .26, y - h * .07);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = "#7fa9b7";
-    ctx.fillRect(x - w * .25, y + h * .02, w * .5, h * .12);
-
-    // Lampen en grille
-    ctx.fillStyle = "#fff2b3";
-    ctx.fillRect(x - w * .39, y - h * .47, w * .22, 7);
-    ctx.fillRect(x + w * .17, y - h * .47, w * .22, 7);
-    ctx.fillStyle = "#333b40";
-    ctx.fillRect(x - w * .14, y - h * .49, w * .28, 8);
-    ctx.fillStyle = "#f54242";
-    ctx.fillRect(x - w * .38, y + h * .42, w * .2, 7);
-    ctx.fillRect(x + w * .18, y + h * .42, w * .2, 7);
-  }
-
-  function drawWorld(dt) {
-    ctx.fillStyle = "#83b967";
-    ctx.fillRect(0, 0, W, H);
-
-    // Akkers
-    for (let y = -100; y < H + 100; y += 130) {
-      const offsetY = (y + roadOffset * .35) % (H + 130);
-      ctx.fillStyle = "#719e58";
-      ctx.fillRect(35, offsetY, 130, 52);
-      ctx.fillRect(795, offsetY + 45, 125, 48);
-    }
-
-    // Berm en asfalt
-    ctx.fillStyle = "#c9b99b";
-    ctx.fillRect(ROAD_LEFT - 24, 0, ROAD_RIGHT - ROAD_LEFT + 48, H);
-    ctx.fillStyle = "#41464a";
-    ctx.fillRect(ROAD_LEFT, 0, ROAD_RIGHT - ROAD_LEFT, H);
-
-    // Wegkanten en middenmarkering
-    ctx.fillStyle = "#f6f0de";
-    ctx.fillRect(ROAD_LEFT + 10, 0, 5, H);
-    ctx.fillRect(ROAD_RIGHT - 15, 0, 5, H);
-
-    for (let y = -90; y < H + 90; y += 90) {
-      const yy = (y + roadOffset) % (H + 90);
-      ctx.fillRect(W / 2 - 3, yy, 6, 45);
-    }
-
-    // Bomen en huizen langs de weg
-    for (const item of scenery) {
-      item.y += speed * dt * 1.35;
-      if (item.y > H + 70) {
-        item.y = -60;
-        item.side = Math.random() < .5 ? -1 : 1;
-        item.type = Math.floor(Math.random() * 3);
-      }
-
-      const x = item.side < 0 ? ROAD_LEFT - 75 : ROAD_RIGHT + 75;
-      if (item.type === 2) {
-        ctx.fillStyle = "#b9774d";
-        ctx.fillRect(x - 25, item.y - 32, 50, 45);
-        ctx.fillStyle = "#933f36";
-        ctx.beginPath();
-        ctx.moveTo(x - 32, item.y - 32);
-        ctx.lineTo(x, item.y - 62);
-        ctx.lineTo(x + 32, item.y - 32);
-        ctx.fill();
-        ctx.fillStyle = "#e5d9ad";
-        ctx.fillRect(x - 6, item.y - 12, 12, 25);
-      } else {
-        ctx.fillStyle = "#60462e";
-        ctx.fillRect(x - 5, item.y - 2, 10, 24);
-        ctx.fillStyle = item.type === 0 ? "#267c3b" : "#398c45";
-        ctx.beginPath();
-        ctx.arc(x, item.y - 15, 25, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-  }
-
-  function spawnTraffic() {
-    const lanes = [365, 480, 595];
-    const lane = lanes[Math.floor(Math.random() * lanes.length)];
-    const isBus = Math.random() < .23;
-    traffic.push({
-      x: lane + (Math.random() - .5) * 14,
-      y: -150,
-      w: isBus ? 66 : 54,
-      h: isBus ? 145 : 94,
-      isBus,
-      color: isBus
-        ? "#f2c230"
-        : ["#d74b3f", "#e5e6e2", "#32749a", "#55915a"][Math.floor(Math.random() * 4)],
-      speed: isBus ? 42 : 62
-    });
-  }
-
-  function endGame() {
-    if (!running) return;
-    running = false;
-    title.textContent = "Botsing!";
-    message.textContent = `Je reed ${Math.floor(distance)} meter. Probeer het opnieuw!`;
-    startButton.textContent = "Opnieuw rijden";
-    overlay.style.display = "grid";
-  }
-
-  function update(dt) {
-    if (!running) return;
-
-    const direction = Number(input.right) - Number(input.left);
-    player.x += direction * 320 * dt;
-    player.x = Math.max(ROAD_LEFT + 42, Math.min(ROAD_RIGHT - 42, player.x));
-
-    speed = Math.min(150, speed + 2 * dt);
-    roadOffset = (roadOffset + speed * dt * 2.3) % 90;
-    distance += speed * dt / 3.6;
-
-    spawnTimer += dt;
-    if (spawnTimer >= 1.25) {
-      spawnTraffic();
-      spawnTimer = 0;
-    }
-
-    for (const vehicle of traffic) {
-      vehicle.y += (speed - vehicle.speed) * dt * 2.1;
-      const touchingX = Math.abs(vehicle.x - player.x) < (vehicle.w + player.w) * .40;
-      const touchingY = Math.abs(vehicle.y - player.y) < (vehicle.h + player.h) * .40;
-      if (touchingX && touchingY) {
-        endGame();
-        break;
-      }
-    }
-
-    traffic = traffic.filter(vehicle => vehicle.y < H + 170);
-    distanceText.textContent = String(Math.floor(distance));
-    speedText.textContent = String(Math.round(speed));
-  }
-
-  function render(dt) {
-    drawWorld(dt);
-    for (const vehicle of traffic) {
-      drawVehicle(vehicle.x, vehicle.y, vehicle.w, vehicle.h, vehicle.color, vehicle.isBus);
-    }
-    drawVehicle(player.x, player.y, player.w, player.h, "#7d858b");
-  }
-
-  function frame(now) {
-    const dt = Math.min((now - previousTime) / 1000 || 0, 0.04);
-    previousTime = now;
-    update(dt);
-    render(dt);
-    requestAnimationFrame(frame);
-  }
-
-  function setControl(button, pressed) {
-    input[button.dataset.direction] = pressed;
-  }
-
-  // Mobiel: indrukken en vasthouden; pointer events werken ook met touch.
-  document.querySelectorAll(".control").forEach(button => {
-    button.addEventListener("pointerdown", event => {
-      event.preventDefault();
-      button.setPointerCapture?.(event.pointerId);
-      setControl(button, true);
-    });
-    for (const eventName of ["pointerup", "pointercancel", "lostpointercapture"]) {
-      button.addEventListener(eventName, () => setControl(button, false));
-    }
-  });
-
-  // Computer: pijltjestoetsen of A/D.
-  window.addEventListener("keydown", event => {
-    const key = event.key.toLowerCase();
-    if (key === "arrowleft" || key === "a") {
-      input.left = true;
-      event.preventDefault();
-    }
-    if (key === "arrowright" || key === "d") {
-      input.right = true;
-      event.preventDefault();
-    }
-  });
-
-  window.addEventListener("keyup", event => {
-    const key = event.key.toLowerCase();
-    if (key === "arrowleft" || key === "a") input.left = false;
-    if (key === "arrowright" || key === "d") input.right = false;
-  });
-
-  window.addEventListener("blur", () => {
-    input.left = false;
-    input.right = false;
-  });
-
-  startButton.addEventListener("click", () => {
-    resetGame();
-    running = true;
-    title.textContent = "European Roads";
-    message.textContent = "Rijd over de weg en ontwijk auto's en bussen.";
-    startButton.textContent = "Start rijden";
-    overlay.style.display = "none";
-    previousTime = performance.now();
-  });
-
-  resetGame();
-  requestAnimationFrame(frame);
-})();
-</script>
+  <!-- Vervang DE_API_KEY door je Maps JavaScript API-key. -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=DE_API_KEY&callback=initMap&v=weekly">
+  </script>
+  <script src="./script.js"></script>
 </body>
 </html>
