@@ -1,14 +1,12 @@
-// Google Maps-route van Amsterdam naar Utrecht.
-// Vervang in index.html DE_API_KEY door je eigen Maps JavaScript API-key.
-
-const pickup = { lat: 52.3676, lng: 4.9041 };
-const delivery = { lat: 52.0907, lng: 5.1214 };
+// Haalt een echte rijroute op en geeft de Google Maps-routepunten door aan Three.js.
+const pickup = { lat: 52.3676, lng: 4.9041 };   // Amsterdam
+const delivery = { lat: 52.0907, lng: 5.1214 }; // Utrecht
 
 window.initMap = function () {
   const status = document.querySelector("#map-status");
 
   if (!window.google?.maps) {
-    status.textContent = "Google Maps kon niet laden.";
+    status.textContent = "Google Maps kon niet laden. Controleer je API-key.";
     return;
   }
 
@@ -20,34 +18,43 @@ window.initMap = function () {
     fullscreenControl: false
   });
 
-  const directions = new google.maps.DirectionsService();
-  const renderer = new google.maps.DirectionsRenderer({
+  const directionsService = new google.maps.DirectionsService();
+  const directionsRenderer = new google.maps.DirectionsRenderer({
     map,
-    suppressMarkers: false,
-    polylineOptions: {
-      strokeColor: "#f07822",
-      strokeWeight: 6
-    }
+    polylineOptions: { strokeColor: "#f07822", strokeWeight: 6 }
   });
 
-  directions.route(
-    {
-      origin: pickup,
-      destination: delivery,
-      travelMode: google.maps.TravelMode.DRIVING
-    },
-    (result, statusCode) => {
-      if (statusCode === "OK") {
-        renderer.setDirections(result);
-        status.textContent = "Route: Amsterdam → Utrecht";
-      } else {
-        status.textContent = `Route niet beschikbaar: ${statusCode}`;
-      }
+  directionsService.route({
+    origin: pickup,
+    destination: delivery,
+    travelMode: google.maps.TravelMode.DRIVING
+  }, (result, code) => {
+    if (code !== "OK") {
+      status.textContent = `Route niet beschikbaar: ${code}`;
+      return;
     }
-  );
+
+    directionsRenderer.setDirections(result);
+
+    const route = result.routes[0];
+    const points = route.overview_path.map(p => ({
+      lat: p.lat(),
+      lng: p.lng()
+    }));
+
+    status.textContent = `Echte route geladen: ${route.legs[0].distance.text}`;
+
+    // De 3D-game bouwt een weg van exact deze routepunten.
+    window.dispatchEvent(new CustomEvent("truck-route-ready", {
+      detail: {
+        points,
+        distanceMeters: route.legs[0].distance.value
+      }
+    }));
+  });
 };
 
 window.gm_authFailure = function () {
   document.querySelector("#map-status").textContent =
-    "Maps-key ongeldig of niet toegestaan voor deze website.";
+    "Google Maps-key geweigerd. Controleer de key en API-instellingen.";
 };
