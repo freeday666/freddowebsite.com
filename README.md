@@ -1,27 +1,40 @@
-# 🚚 Stadsbezorger 3D
+# Freddo Porto
 
-Een kleine, speelbare 3D-bezorgdemo voor **desktop én mobiel**.
-Rijd door de stad, stap uit en open de laadklep. De game draait in de browser en gebruikt Three.js.
+Een eenvoudige portofoonachtige webapp in één HTML-bestand.
 
-> **Demo:** [Bekijk de game](./index.html)  
-> **Discord:** [Kom bij de community](https://discord.gg/cuXRe4PUgJ)
+## Bestanden
 
----
+- `index.html` — de complete app, inclusief stijl en JavaScript.
 
-## ✨ Kenmerken
+## Starten
 
-- 3D-stad met straat, huizen en lantaarnpalen
-- Bestelwagen met first-person cockpitcamera en dashboard
-- Rijden, sturen, remmen en achteruitrijden
-- Uitstappen, lopen en weer instappen
-- Interactieve achterklep en bezorgdoel
-- Aanraakbediening voor telefoons en tablets
-- Werkt in moderne browsers op desktop en mobiel
+1. Sla de HTML-code op als `index.html`.
+2. Open het bestand in een moderne browser.
+3. Voor microfoonopname open de app via `localhost` of HTTPS en geef toestemming voor microfoontoegang.
 
-## 📁 Bestanden
+## Functies
 
-```text
-projectmap/
-├── index.html
-├── game.js
-└── README.md
+- Huidige tijd weergeven.
+- Simulatieschakelaars voor wifi en Bluetooth.
+- Batterijniveau weergeven als de browser dat ondersteunt.
+- App vergrendelen met een zelfgekozen pincode van 4 tot 8 cijfers.
+- Een nummer opslaan en de Telefoon- of Sms-app openen.
+- Een bericht lokaal opslaan in de browser.
+- Microfoonopname lokaal opslaan als audiobestand.
+- Portofoonkanalen en noodoproepknoppen.
+
+## Belangrijke beperkingen
+
+Een gewone webpagina kan niet:
+
+- de echte wifi- of Bluetooth-instellingen van de telefoon wijzigen;
+- het echte iPhone-scherm vergrendelen;
+- zelfstandig bellen of sms’en;
+- op elke telefoon het echte batterijniveau uitlezen;
+- live-audio tussen gebruikers versturen zonder server of WebRTC-backend.
+
+Bellen en sms openen de bijbehorende telefoonapp. De gebruiker moet de actie daar zelf bevestigen. De pincode beveiligt alleen de webapp en is lokaal opgeslagen; gebruik deze niet voor gevoelige gegevens.
+
+## Opslag
+
+Instellingen, pincode en berichten worden opgeslagen in de lokale browseropslag. Ze worden niet automatisch gesynchroniseerd tussen apparaten.
