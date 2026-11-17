@@ -1,39 +1,58 @@
-(async () => {
-  const apiKey = window.GOOGLE_MAPS_API_KEY;
-  const mapId = window.GOOGLE_MAPS_MAP_ID;
+const form = document.getElementById("panel");
+const menu = document.getElementById("menu");
+const errorBox = document.getElementById("error");
 
-  if (!apiKey || apiKey === "JOUW_API_SLEUTEL" ||
-      !mapId || mapId === "JOUW_MAP_ID") {
-    document.body.insertAdjacentHTML(
-      "beforeend",
-      '<p style="position:fixed;top:100px;left:14px;z-index:5;background:white;padding:12px">Vul je Google Maps API-sleutel en Map ID in index.html in.</p>'
-    );
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  errorBox.textContent = "";
+
+  const apiKey = document.getElementById("apiKey").value.trim();
+  const mapId = document.getElementById("mapId").value.trim();
+
+  if (!apiKey || !mapId) {
+    errorBox.textContent = "Vul zowel je API-sleutel als Map ID in.";
     return;
   }
 
-  // Laad Google Maps JavaScript API.
-  const script = document.createElement("script");
-  script.src =
-    `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&v=beta&libraries=maps3d`;
-  script.async = true;
+  try {
+    await startGame(apiKey, mapId);
+    menu.style.display = "none";
+    document.getElementById("info").style.display = "block";
+  } catch (error) {
+    console.error(error);
+    errorBox.textContent =
+      "Kaart laden mislukt. Controleer je sleutel, Map ID en Google Maps-instellingen.";
+  }
+});
 
-  await new Promise((resolve, reject) => {
-    script.onload = resolve;
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
+async function startGame(apiKey, mapId) {
+  // Voorkom dat het script per ongeluk twee keer wordt geladen.
+  if (!window.google?.maps?.importLibrary) {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src =
+        "https://maps.googleapis.com/maps/api/js?key=" +
+        encodeURIComponent(apiKey) +
+        "&v=beta&libraries=maps3d";
+      script.async = true;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error("Google Maps script kon niet laden."));
+      document.head.appendChild(script);
+    });
+  }
 
   const { Map3DElement, Marker3DElement } =
     await google.maps.importLibrary("maps3d");
 
   // Startlocatie: Oranjestad, Aruba.
-  const start = { lat: 12.5092, lng: -70.0086 };
-  let truckLat = start.lat;
-  let truckLng = start.lng;
-  let heading = 0; // 0 = noord
+  let lat = 12.5092;
+  let lng = -70.0086;
+  let heading = 0;
+  let speed = 0;
+  let previousTime = performance.now();
 
   const map = new Map3DElement({
-    center: { ...start, altitude: 0 },
+    center: { lat, lng, altitude: 0 },
     range: 90,
     tilt: 65,
     heading,
@@ -42,76 +61,62 @@
 
   document.body.appendChild(map);
 
-  // Truckmarker op de kaart; de camera blijft erachter.
-  const truckMarker = new Marker3DElement({
-    position: { ...start, altitude: 0 },
-    label: "ORANJESTAD RP"
+  const truck = new Marker3DElement({
+    position: { lat, lng, altitude: 0 },
+    label: "🚚 ORANJESTAD RP"
   });
-  map.appendChild(truckMarker);
+  map.appendChild(truck);
 
-  const pressed = {};
-  window.addEventListener("keydown", (e) => {
-    pressed[e.key.toLowerCase()] = true;
-    if (e.key.startsWith("Arrow")) e.preventDefault();
+  const keys = {};
+  window.addEventListener("keydown", (event) => {
+    keys[event.key.toLowerCase()] = true;
+    if (event.key.startsWith("Arrow")) event.preventDefault();
   });
-  window.addEventListener("keyup", (e) => {
-    pressed[e.key.toLowerCase()] = false;
+  window.addEventListener("keyup", (event) => {
+    keys[event.key.toLowerCase()] = false;
   });
-
-  const speedText = document.getElementById("speed");
-  let speed = 0;
-  let previousTime = performance.now();
 
   function animate(now) {
     const dt = Math.min((now - previousTime) / 1000, 0.05);
     previousTime = now;
 
-    const forward = pressed.w || pressed.arrowup;
-    const backward = pressed.s || pressed.arrowdown;
-    const left = pressed.a || pressed.arrowleft;
-    const right = pressed.d || pressed.arrowright;
+    const forward = keys.w || keys.arrowup;
+    const backward = keys.s || keys.arrowdown;
+    const left = keys.a || keys.arrowleft;
+    const right = keys.d || keys.arrowright;
 
     if (forward) speed = Math.min(speed + 8 * dt, 25);
     else if (backward) speed = Math.max(speed - 8 * dt, -10);
     else speed *= Math.pow(0.94, dt * 60);
 
     if (Math.abs(speed) > 0.2) {
-      const turn = (right ? 1 : 0) - (left ? 1 : 0);
-      heading = (heading + turn * 65 * dt * Math.sign(speed) + 360) % 360;
+      const steering = (right ? 1 : 0) - (left ? 1 : 0);
+      heading = (heading + steering * 65 * dt * Math.sign(speed) + 360) % 360;
 
-      // Muunna nopeus ja suunta pieneksi lat/lng-siirtymäksi.
+      const radians = heading * Math.PI / 180;
+      const metersPerLatDegree = 111320;
+      const metersPerLngDegree =
+        111320 * Math.cos(lat * Math.PI / 180);
       const distance = speed * dt;
-      const radians = THREE_DEG_TO_RAD(heading);
-      const metersPerLat = 111320;
-      const metersPerLng = 111320 * Math.cos(truckLat * Math.PI / 180);
 
-      truckLat += Math.cos(radians) * distance / metersPerLat;
-      truckLng += Math.sin(radians) * distance / metersPerLng;
+      lat += Math.cos(radians) * distance / metersPerLatDegree;
+      lng += Math.sin(radians) * distance / metersPerLngDegree;
     }
 
-    const position = { lat: truckLat, lng: truckLng, altitude: 0 };
+    const position = { lat, lng, altitude: 0 };
+    truck.position = position;
 
-    truckMarker.position = position;
-
-    // Camera staat achter de truck en kijkt schuin omlaag.
+    // De camera volgt de locatie en kijkt vanuit achter de truck.
     map.center = position;
     map.heading = heading;
     map.tilt = 65;
     map.range = 90;
 
-    speedText.textContent = Math.round(Math.abs(speed) * 3.6);
+    document.getElementById("speed").textContent =
+      Math.round(Math.abs(speed) * 3.6);
+
     requestAnimationFrame(animate);
   }
 
-  function THREE_DEG_TO_RAD(degrees) {
-    return degrees * Math.PI / 180;
-  }
-
   requestAnimationFrame(animate);
-})().catch((error) => {
-  console.error(error);
-  document.body.insertAdjacentHTML(
-    "beforeend",
-    '<p style="position:fixed;top:100px;left:14px;z-index:5;background:white;padding:12px">Google Maps kon niet laden. Controleer je API-sleutel, Map ID en Maps JavaScript API-instellingen.</p>'
-  );
-});
+}
