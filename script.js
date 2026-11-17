@@ -1,60 +1,133 @@
-// Haalt een echte rijroute op en geeft de Google Maps-routepunten door aan Three.js.
-const pickup = { lat: 52.3676, lng: 4.9041 };   // Amsterdam
-const delivery = { lat: 52.0907, lng: 5.1214 }; // Utrecht
+"use strict";
 
-window.initMap = function () {
-  const status = document.querySelector("#map-status");
+const $ = (id) => document.getElementById(id);
+let recorder = null;
+let audioStream = null;
+let audioUrl = null;
 
-  if (!window.google?.maps) {
-    status.textContent = "Google Maps kon niet laden. Controleer je API-key.";
+function updateClock() {
+  $("clock").textContent = new Date().toLocaleTimeString("nl-NL");
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+function getPhoneNumber() {
+  return $("phone").value.trim().replace(/[^\d+]/g, "");
+}
+
+$("callBtn").addEventListener("click", () => {
+  const phone = getPhoneNumber();
+  if (!phone) return alert("Vul eerst een telefoonnummer in.");
+  window.location.href = `tel:${phone}`;
+});
+
+$("smsBtn").addEventListener("click", () => {
+  const phone = getPhoneNumber();
+  if (!phone) return alert("Vul eerst een telefoonnummer in.");
+  window.location.href = `sms:${phone}`;
+});
+
+$("recordBtn").addEventListener("click", async () => {
+  if (recorder?.state === "recording") {
+    recorder.stop();
+    $("recordBtn").disabled = true;
+    $("status").textContent = "Opname wordt opgeslagen…";
     return;
   }
 
-  const map = new google.maps.Map(document.querySelector("#map"), {
-    center: pickup,
-    zoom: 9,
-    mapTypeControl: false,
-    streetViewControl: false,
-    fullscreenControl: false
-  });
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    $("status").textContent =
+      "Opnemen wordt niet ondersteund. Gebruik een moderne browser via HTTPS of localhost.";
+    return;
+  }
 
-  const directionsService = new google.maps.DirectionsService();
-  const directionsRenderer = new google.maps.DirectionsRenderer({
-    map,
-    polylineOptions: { strokeColor: "#f07822", strokeWeight: 6 }
-  });
+  try {
+    audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const chunks = [];
+    recorder = new MediaRecorder(audioStream);
 
-  directionsService.route({
-    origin: pickup,
-    destination: delivery,
-    travelMode: google.maps.TravelMode.DRIVING
-  }, (result, code) => {
-    if (code !== "OK") {
-      status.textContent = `Route niet beschikbaar: ${code}`;
-      return;
-    }
+    recorder.addEventListener("dataavailable", (event) => {
+      if (event.data.size > 0) chunks.push(event.data);
+    });
 
-    directionsRenderer.setDirections(result);
+    recorder.addEventListener("stop", () => {
+      const blob = new Blob(chunks, {
+        type: recorder.mimeType || "audio/webm"
+      });
 
-    const route = result.routes[0];
-    const points = route.overview_path.map(p => ({
-      lat: p.lat(),
-      lng: p.lng()
-    }));
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioUrl = URL.createObjectURL(blob);
 
-    status.textContent = `Echte route geladen: ${route.legs[0].distance.text}`;
+      $("player").src = audioUrl;
+      $("player").hidden = false;
+      $("download").href = audioUrl;
+      $("download").download = "spraakbericht.webm";
+      $("download").textContent = "⬇️ Download spraakbericht";
+      $("download").hidden = false;
 
-    // De 3D-game bouwt een weg van exact deze routepunten.
-    window.dispatchEvent(new CustomEvent("truck-route-ready", {
-      detail: {
-        points,
-        distanceMeters: route.legs[0].distance.value
-      }
-    }));
-  });
-};
+      audioStream?.getTracks().forEach((track) => track.stop());
+      audioStream = null;
+      $("recordBtn").disabled = false;
+      $("recordBtn").textContent = "🎙️ Start opname";
+      $("status").textContent = "Opname klaar. Je kunt hem afspelen of downloaden.";
+    });
 
-window.gm_authFailure = function () {
-  document.querySelector("#map-status").textContent =
-    "Google Maps-key geweigerd. Controleer de key en API-instellingen.";
-};
+    recorder.addEventListener("error", (event) => {
+      $("status").textContent = `Opnamefout: ${event.error?.message || "onbekende fout"}`;
+      audioStream?.getTracks().forEach((track) => track.stop());
+      audioStream = null;
+      $("recordBtn").disabled = false;
+      $("recordBtn").textContent = "🎙️ Start opname";
+    });
+
+    recorder.start();
+    $("recordBtn").textContent = "⏹️ Stop opname";
+    $("status").textContent = "Opname loopt…";
+  } catch (error) {
+    $("status").textContent = `Geen microfoontoegang: ${error.message}`;
+  }
+});
+
+$("savePinBtn").addEventListener("click", () => {
+  const pin = $("pin").value.trim();
+
+  if (!/^\d{4,8}$/.test(pin)) {
+    alert("Kies een pincode van 4 tot 8 cijfers.");
+    return;
+  }
+
+  localStorage.setItem("freddoPin", pin);
+  $("pin").value = "";
+  alert("Pincode opgeslagen op dit apparaat.");
+});
+
+$("lockBtn").addEventListener("click", () => {
+  if (!localStorage.getItem("freddoPin")) {
+    alert("Stel eerst een pincode in.");
+    return;
+  }
+
+  $("lockScreen").style.display = "grid";
+  $("unlockPin").value = "";
+  $("lockError").textContent = "";
+  $("unlockPin").focus();
+});
+
+$("unlockBtn").addEventListener("click", unlockApp);
+$("unlockPin").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") unlockApp();
+});
+
+function unlockApp() {
+  const savedPin = localStorage.getItem("freddoPin");
+
+  if ($("unlockPin").value === savedPin) {
+    $("lockScreen").style.display = "none";
+    $("unlockPin").value = "";
+    $("lockError").textContent = "";
+  } else {
+    $("lockError").textContent = "Onjuiste pincode.";
+    $("unlockPin").value = "";
+    $("unlockPin").focus();
+  }
+}
