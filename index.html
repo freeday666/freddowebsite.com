@@ -1,98 +1,234 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Oranjestad RP</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { width: 100%; height: 100%; overflow: hidden; background: #0b1020; font-family: Arial, sans-serif; color: #fff; }
-  #map { position: absolute; inset: 0; }
-  #panel {
-    position: absolute; top: 12px; left: 12px; z-index: 10;
-    background: rgba(0,0,0,0.7); padding: 12px 14px; border-radius: 10px; width: 280px; max-width: calc(100% - 24px);
-  }
-  #panel h1 { font-size: 18px; margin-bottom: 8px; }
-  #panel input {
-    width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #555; background: #111; color: #fff; font-size: 14px; margin-bottom: 8px;
-  }
-  #panel button {
-    width: 100%; padding: 9px; border: none; border-radius: 6px; background: #1e88e5; color: #fff; font-size: 14px; cursor: pointer;
-  }
-  #panel button:active { background: #1565c0; }
-  #status { font-size: 12px; margin-top: 8px; color: #ccc; }
-  #gate {
-    position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
-    background: rgba(11,16,32,0.95); padding: 20px;
-  }
-  #gate div { max-width: 420px; text-align: center; line-height: 1.5; }
-  #gate code { background: #222; padding: 2px 6px; border-radius: 4px; }
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden;font-family:Arial;background:#87ceeb}
+canvas{display:block}
+#hud{position:fixed;top:12px;left:12px;color:white;
+background:#14202dcc;padding:12px;border-radius:12px}
+#buttons{position:fixed;bottom:20px;left:0;right:0;
+display:flex;justify-content:space-between;padding:15px}
+button{padding:18px;border:0;border-radius:12px;
+background:#14202d;color:white;font-size:18px}
+#camera{position:fixed;right:12px;top:12px}
 </style>
 </head>
 <body>
-
-<div id="map"></div>
-
-<div id="panel">
-  <h1>Oranjestad RP</h1>
-  <input id="apiKey" type="text" placeholder="Plak hier je Google Maps API-key">
-  <button id="loadBtn">Kaart laden</button>
-  <div id="status">Voer je eigen API-key in om de kaart te tonen.</div>
+<div id="hud">
+<b>ORANJESTAD RP</b><br>
+<span id="speed">0 km/u</span><br>
+3D Open World
+</div>
+<button id="camera">Camera wisselen</button>
+<div id="buttons">
+<div>
+<button id="left">◀</button>
+<button id="right">▶</button>
+</div>
+<div>
+<button id="brake">REM</button>
+<button id="gas">GAS</button>
+</div>
 </div>
 
-<div id="gate" style="display:none"></div>
+<script type="module">
+import * as THREE from
+'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
-<script>
-  // Oranjestad, Aruba
-  const ORANJESTAD = { lat: 12.5186, lng: -70.0358 };
-  const STORAGE_KEY = 'oranjestad_gmaps_key';
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x87ceeb);
+scene.fog=new THREE.Fog(0x87ceeb,100,400);
 
-  const statusEl = document.getElementById('status');
-  const input = document.getElementById('apiKey');
-  const btn = document.getElementById('loadBtn');
+const camera=new THREE.PerspectiveCamera(
+70,innerWidth/innerHeight,0.1,1000);
 
-  // Onthoud je key lokaal in je browser (niet op een server)
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) input.value = saved;
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+document.body.appendChild(renderer.domElement);
 
-  btn.addEventListener('click', () => {
-    const key = input.value.trim();
-    if (!key) {
-      statusEl.textContent = 'Vul eerst een API-key in.';
-      return;
-    }
-    localStorage.setItem(STORAGE_KEY, key);
-    loadGoogleMaps(key);
-  });
+scene.add(new THREE.HemisphereLight(0xffffff,0x777777,2));
 
-  function loadGoogleMaps(key) {
-    statusEl.textContent = 'Kaart laden...';
-    // Verwijder eventueel een vorig script
-    const old = document.getElementById('gmaps-script');
-    if (old) old.remove();
+const sun=new THREE.DirectionalLight(0xffffff,2);
+sun.position.set(-50,100,50);
+sun.castShadow=true;
+scene.add(sun);
 
-    window.initMap = function () {
-      const map = new google.maps.Map(document.getElementById('map'), {
-        center: ORANJESTAD,
-        zoom: 15,
-        mapTypeId: 'roadmap',
-        tilt: 45,
-        disableDefaultUI: false,
-      });
-      new google.maps.Marker({ position: ORANJESTAD, map, title: 'Oranjestad' });
-      statusEl.textContent = 'Kaart geladen. Oranjestad, Aruba.';
-    };
+function material(color){
+return new THREE.MeshStandardMaterial({color});
+}
 
-    const s = document.createElement('script');
-    s.id = 'gmaps-script';
-    s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&callback=initMap&loading=async';
-    s.async = true;
-    s.onerror = () => { statusEl.textContent = 'Kon kaart niet laden. Controleer je API-key.'; };
-    document.head.appendChild(s);
-  }
+function box(w,h,d,color,x,y,z){
+const obj=new THREE.Mesh(
+new THREE.BoxGeometry(w,h,d),material(color));
+obj.position.set(x,y,z);
+obj.castShadow=true;
+obj.receiveShadow=true;
+scene.add(obj);
+return obj;
+}
 
-  // Auto-laden als er al een key is opgeslagen
-  if (saved) loadGoogleMaps(saved);
+// Grond
+box(600,0.2,600,0xd8c49b,0,-0.2,0);
+
+// Zee
+const sea=box(600,0.2,150,0x12a6c7,0,-0.1,-220);
+
+// Wegen
+for(let z=-150;z<=150;z+=60){
+box(600,.15,16,0x30343a,0,0,z);
+}
+for(let x=-240;x<=240;x+=60){
+box(16,.15,600,0x30343a,x,0,0);
+}
+
+// Gekleurde gebouwen
+const colors=[0xf2c77b,0xe89d91,0xf1e5c9,
+0x83c5b5,0xe7b9d1,0xd9d5a5];
+
+for(let x=-210;x<=210;x+=60){
+for(let z=-120;z<=120;z+=60){
+const h=10+Math.random()*15;
+const color=colors[Math.floor(Math.random()*colors.length)];
+box(25,h,25,color,x,h/2,z);
+}
+}
+
+// Palmbomen
+function palm(x,z){
+box(.7,8, .7,0x79502c,x,4,z);
+for(let i=0;i<6;i++){
+const leaf=new THREE.Mesh(
+new THREE.ConeGeometry(.7,5,5),
+material(0x238443));
+leaf.position.set(x+Math.cos(i)*2,8,
+z+Math.sin(i)*2);
+leaf.rotation.z=Math.PI/2;
+scene.add(leaf);
+}
+}
+for(let x=-270;x<=270;x+=30){
+palm(x,-165);
+palm(x,165);
+}
+
+// Auto
+const car=new THREE.Group();
+scene.add(car);
+
+const body=new THREE.Mesh(
+new THREE.BoxGeometry(2.3,.8,4.5),
+material(0x1766cc));
+body.position.y=.8;
+car.add(body);
+
+const cabin=new THREE.Mesh(
+new THREE.BoxGeometry(1.8,.8,2.2),
+material(0x182d3c));
+cabin.position.set(0,1.55,-.2);
+car.add(cabin);
+
+const wheels=[];
+for(const x of [-1.2,1.2]){
+for(const z of [-1.5,1.5]){
+const wheel=new THREE.Mesh(
+new THREE.CylinderGeometry(.43,.43,.3,20),
+material(0x111111));
+wheel.rotation.z=Math.PI/2;
+wheel.position.set(x,.45,z);
+car.add(wheel);
+wheels.push(wheel);
+}
+}
+
+car.position.set(0,0,20);
+
+let speed=0;
+let steering=0;
+let firstPerson=false;
+const keys={};
+const touch={};
+
+addEventListener('keydown',e=>{
+keys[e.key.toLowerCase()]=true;
+});
+addEventListener('keyup',e=>{
+keys[e.key.toLowerCase()]=false;
+});
+
+function hold(id,name){
+const el=document.getElementById(id);
+el.onpointerdown=e=>{e.preventDefault();touch[name]=true};
+el.onpointerup=el.onpointercancel=el.onpointerleave=
+()=>touch[name]=false;
+}
+hold('gas','gas');
+hold('brake','brake');
+hold('left','left');
+hold('right','right');
+
+document.getElementById('camera').onclick=()=>{
+firstPerson=!firstPerson;
+};
+
+function animate(){
+requestAnimationFrame(animate);
+const dt=1/60;
+
+if(keys.w||keys.arrowup||touch.gas)
+speed=Math.min(speed+0.25,35);
+else if(keys.s||touch.brake)
+speed=Math.max(speed-0.4,-10);
+else speed*=.985;
+
+const left=keys.a||keys.arrowleft||touch.left;
+const right=keys.d||keys.arrowright||touch.right;
+
+steering=(left?1:0)-(right?1:0);
+
+if(Math.abs(speed)>.1){
+car.rotation.y+=steering*.035*Math.sign(speed);
+}
+
+car.position.x+=Math.sin(car.rotation.y)*speed*dt;
+car.position.z+=Math.cos(car.rotation.y)*speed*dt;
+
+car.position.x=Math.max(-280,Math.min(280,car.position.x));
+car.position.z=Math.max(-180,Math.min(180,car.position.z));
+
+wheels.forEach(w=>w.rotation.x+=speed*.04);
+
+if(firstPerson){
+camera.position.set(car.position.x,
+car.position.y+2,car.position.z);
+camera.rotation.set(0,car.rotation.y,0);
+}else{
+const behind=new THREE.Vector3(
+car.position.x-Math.sin(car.rotation.y)*9,
+car.position.y+5,
+car.position.z-Math.cos(car.rotation.y)*9);
+camera.position.lerp(behind,.1);
+camera.lookAt(car.position.x,1,car.position.z);
+}
+
+document.getElementById('speed').textContent=
+Math.round(Math.abs(speed)*3.6)+' km/u';
+
+renderer.render(scene,camera);
+}
+
+animate();
+
+addEventListener('resize',()=>{
+camera.aspect=innerWidth/innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(innerWidth,innerHeight);
+});
 </script>
 </body>
 </html>
