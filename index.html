@@ -1,293 +1,98 @@
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Oranjestad RP</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#101722;color:#fff;font-family:Arial,sans-serif}
-#map{height:100vh;width:100%;z-index:1}
-.panel{position:absolute;z-index:1000;background:#182434ed;
-border:1px solid #34475d;border-radius:12px;padding:14px;
-box-shadow:0 5px 20px #0008}
-#hud{top:12px;left:12px;min-width:190px}
-#menu{top:12px;right:12px;width:220px;max-height:85vh;overflow:auto}
-#controls{bottom:22px;left:50%;transform:translateX(-50%);
-display:flex;gap:8px;align-items:center}
-button{background:#18a889;color:white;border:0;padding:11px;
-border-radius:8px;cursor:pointer;font-weight:bold;margin:3px}
-button:hover{background:#0f806c}
-select{background:#26394e;color:white;padding:9px;width:100%;
-border-radius:7px;border:1px solid #52677d;margin:5px 0}
-.stat{margin:9px 0;color:#b8c9dc}
-.stat b{color:#fff}
-h3{margin:4px 0 12px;color:#5ce0bd}
-#toast{position:absolute;z-index:2000;bottom:100px;left:50%;
-transform:translateX(-50%);background:#182434;padding:12px;
-border-radius:9px;display:none}
-@media(max-width:600px){
- #menu{top:auto;bottom:105px;right:8px;width:165px;padding:9px}
- #hud{left:8px;top:8px;padding:9px;min-width:145px}
- #controls{bottom:15px}
- button{padding:10px 12px}
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0b1020; font-family: Arial, sans-serif; color: #fff; }
+  #map { position: absolute; inset: 0; }
+  #panel {
+    position: absolute; top: 12px; left: 12px; z-index: 10;
+    background: rgba(0,0,0,0.7); padding: 12px 14px; border-radius: 10px; width: 280px; max-width: calc(100% - 24px);
+  }
+  #panel h1 { font-size: 18px; margin-bottom: 8px; }
+  #panel input {
+    width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #555; background: #111; color: #fff; font-size: 14px; margin-bottom: 8px;
+  }
+  #panel button {
+    width: 100%; padding: 9px; border: none; border-radius: 6px; background: #1e88e5; color: #fff; font-size: 14px; cursor: pointer;
+  }
+  #panel button:active { background: #1565c0; }
+  #status { font-size: 12px; margin-top: 8px; color: #ccc; }
+  #gate {
+    position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+    background: rgba(11,16,32,0.95); padding: 20px;
+  }
+  #gate div { max-width: 420px; text-align: center; line-height: 1.5; }
+  #gate code { background: #222; padding: 2px 6px; border-radius: 4px; }
 </style>
 </head>
 <body>
 
 <div id="map"></div>
 
-<div class="panel" id="hud">
-<h3>🌴 ORANJESTAD RP</h3>
-<div class="stat">💰 Geld: <b id="money">€2.500</b></div>
-<div class="stat">👤 Rol: <b id="roleHud">Burger</b></div>
-<div class="stat">🚗 Voertuig: <b id="vehicleHud">Te voet</b></div>
-<div class="stat">📍 Snelheid: <b id="speed">0 km/u</b></div>
-<div class="stat">⭐ Missies: <b id="missions">0</b></div>
+<div id="panel">
+  <h1>Oranjestad RP</h1>
+  <input id="apiKey" type="text" placeholder="Plak hier je Google Maps API-key">
+  <button id="loadBtn">Kaart laden</button>
+  <div id="status">Voer je eigen API-key in om de kaart te tonen.</div>
 </div>
 
-<div class="panel" id="menu">
-<h3>Spelmenu</h3>
+<div id="gate" style="display:none"></div>
 
-<label>Jouw rol</label>
-<select id="role">
-<option>Burger</option>
-<option>Politie</option>
-<option>Taxi</option>
-<option>Bezorger</option>
-</select>
-<button onclick="changeRole()">Rol kiezen</button>
-
-<hr>
-<h3>Garage</h3>
-<button onclick="buyCar()">Koop auto (€1.000)</button>
-<button onclick="enterCar()">Instappen</button>
-<button onclick="exitCar()">Uitstappen</button>
-
-<hr>
-<h3>Missies</h3>
-<button onclick="mission()">Start bezorgmissie</button>
-<button onclick="finishMission()">Voltooi missie</button>
-
-<hr>
-<h3>Overig</h3>
-<button onclick="locate()">📍 GPS-locatie</button>
-<button onclick="save()">💾 Opslaan</button>
-<button onclick="resetGame()">Nieuwe game</button>
-</div>
-
-<div id="controls">
-<button onmousedown="move(0,-1)" onmouseup="stop()"
-ontouchstart="move(0,-1)" ontouchend="stop()">▲</button>
-<button onmousedown="move(-1,0)" onmouseup="stop()"
-ontouchstart="move(-1,0)" ontouchend="stop()">◀</button>
-<button onmousedown="move(1,0)" onmouseup="stop()"
-ontouchstart="move(1,0)" ontouchend="stop()">▶</button>
-<button onmousedown="move(0,1)" onmouseup="stop()"
-ontouchstart="move(0,1)" ontouchend="stop()">▼</button>
-</div>
-
-<div id="toast"></div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const START=[12.5092,-70.0086];
+  // Oranjestad, Aruba
+  const ORANJESTAD = { lat: 12.5186, lng: -70.0358 };
+  const STORAGE_KEY = 'oranjestad_gmaps_key';
 
-let money=2500;
-let role="Burger";
-let vehicle=false;
-let missions=0;
-let activeMission=false;
-let direction={x:0,y:0};
-let speed=0;
+  const statusEl = document.getElementById('status');
+  const input = document.getElementById('apiKey');
+  const btn = document.getElementById('loadBtn');
 
-const saved=JSON.parse(localStorage.getItem("oranjestadRP")||"null");
+  // Onthoud je key lokaal in je browser (niet op een server)
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) input.value = saved;
 
-if(saved){
- money=saved.money??money;
- role=saved.role??role;
- missions=saved.missions??0;
-}
+  btn.addEventListener('click', () => {
+    const key = input.value.trim();
+    if (!key) {
+      statusEl.textContent = 'Vul eerst een API-key in.';
+      return;
+    }
+    localStorage.setItem(STORAGE_KEY, key);
+    loadGoogleMaps(key);
+  });
 
-let position=saved?.position||START;
+  function loadGoogleMaps(key) {
+    statusEl.textContent = 'Kaart laden...';
+    // Verwijder eventueel een vorig script
+    const old = document.getElementById('gmaps-script');
+    if (old) old.remove();
 
-const map=L.map("map").setView(START,16);
+    window.initMap = function () {
+      const map = new google.maps.Map(document.getElementById('map'), {
+        center: ORANJESTAD,
+        zoom: 15,
+        mapTypeId: 'roadmap',
+        tilt: 45,
+        disableDefaultUI: false,
+      });
+      new google.maps.Marker({ position: ORANJESTAD, map, title: 'Oranjestad' });
+      statusEl.textContent = 'Kaart geladen. Oranjestad, Aruba.';
+    };
 
-const streets=L.tileLayer(
- "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
- {attribution:"© OpenStreetMap contributors",maxZoom:20}
-).addTo(map);
+    const s = document.createElement('script');
+    s.id = 'gmaps-script';
+    s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&callback=initMap&loading=async';
+    s.async = true;
+    s.onerror = () => { statusEl.textContent = 'Kon kaart niet laden. Controleer je API-key.'; };
+    document.head.appendChild(s);
+  }
 
-const satellite=L.tileLayer(
- "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
- {attribution:"Esri"}
-);
-
-L.control.layers({
- "OpenStreetMap":streets,
- "Satelliet":satellite
-}).addTo(map);
-
-const player=L.marker(position,{
- icon:L.divIcon({
- html:"<div style='font-size:29px'>🧍</div>",
- iconSize:[30,30],iconAnchor:[15,15]
- })
-}).addTo(map).bindPopup("Jij bent hier!");
-
-const locations=[
- ["Politie 🚓",12.5100,-70.0080],
- ["Ziekenhuis 🏥",12.5150,-70.0100],
- ["Garage 🚗",12.5060,-70.0050],
- ["Gemeentehuis 🏛️",12.5090,-70.0120],
- ["Winkel 🏪",12.5120,-70.0040]
-];
-
-locations.forEach(p=>{
- L.marker([p[1],p[2]])
- .addTo(map).bindPopup(p[0]);
-});
-
-function update(){
- document.getElementById("money").textContent=
- "€"+money.toLocaleString("nl-NL");
- document.getElementById("roleHud").textContent=role;
- document.getElementById("vehicleHud").textContent=
- vehicle?"Auto":"Te voet";
- document.getElementById("missions").textContent=missions;
- document.getElementById("speed").textContent=
- speed+" km/u";
-}
-
-function toast(message){
- let el=document.getElementById("toast");
- el.textContent=message;
- el.style.display="block";
- setTimeout(()=>el.style.display="none",2500);
-}
-
-function changeRole(){
- role=document.getElementById("role").value;
- update();
- toast("Je bent nu: "+role);
-}
-
-function buyCar(){
- if(vehicle){toast("Je hebt al een auto!");return}
- if(money<1000){toast("Niet genoeg geld!");return}
- money-=1000;
- vehicle=true;
- update();
- toast("Je hebt een auto gekocht!");
-}
-
-function enterCar(){
- if(!vehicle){toast("Je hebt geen auto!");return}
- toast("Je bent ingestapt!");
-}
-
-function exitCar(){
- toast("Je bent uitgestapt!");
-}
-
-function mission(){
- if(activeMission){toast("Je hebt al een missie!");return}
- activeMission=true;
- toast("Missie gestart! Bereik het gemeentehuis.");
- L.popup().setLatLng([12.5090,-70.0120])
- .setContent("📦 Bezorg de bestelling hier!")
- .openOn(map);
-}
-
-function finishMission(){
- if(!activeMission){toast("Geen actieve missie!");return}
- const target=[12.5090,-70.0120];
- const distance=map.distance(position,target);
- if(distance>100){
- toast("Je bent nog niet bij de bestemming!");
- return;
- }
- activeMission=false;
- money+=500;
- missions++;
- update();
- toast("Missie voltooid! +€500");
-}
-
-function move(x,y){
- direction={x,y};
-}
-
-function stop(){
- direction={x:0,y:0};
- speed=0;
- update();
-}
-
-function movement(){
- if(direction.x||direction.y){
- const rate=vehicle?0.000035:0.000012;
- position=[
- position[0]-direction.y*rate,
- position[1]+direction.x*rate
- ];
- player.setLatLng(position);
- speed=vehicle?45:5;
- update();
- }
- requestAnimationFrame(movement);
-}
-
-document.addEventListener("keydown",e=>{
- const k=e.key.toLowerCase();
- if(k==="w"||k==="arrowup")move(0,-1);
- if(k==="s"||k==="arrowdown")move(0,1);
- if(k==="a"||k==="arrowleft")move(-1,0);
- if(k==="d"||k==="arrowright")move(1,0);
-});
-
-document.addEventListener("keyup",e=>{
- if(["w","a","s","d","arrowup","arrowdown",
- "arrowleft","arrowright"].includes(e.key.toLowerCase()))
- stop();
-});
-
-function locate(){
- if(!navigator.geolocation){
- toast("GPS niet beschikbaar");
- return;
- }
- navigator.geolocation.getCurrentPosition(pos=>{
- const p=[pos.coords.latitude,pos.coords.longitude];
- L.marker(p).addTo(map).bindPopup("Jouw GPS-locatie").openPopup();
- map.setView(p,17);
- },()=>toast("GPS-toegang geweigerd"));
-}
-
-function save(){
- localStorage.setItem("oranjestadRP",JSON.stringify({
- money,role,missions,position
- }));
- toast("Spel opgeslagen!");
-}
-
-function resetGame(){
- if(!confirm("Weet je zeker dat je opnieuw wilt beginnen?"))return;
- localStorage.removeItem("oranjestadRP");
- location.reload();
-}
-
-window.addEventListener("beforeunload",()=>{
- localStorage.setItem("oranjestadRP",JSON.stringify({
- money,role,missions,position
- }));
-});
-
-update();
-movement();
+  // Auto-laden als er al een key is opgeslagen
+  if (saved) loadGoogleMaps(saved);
 </script>
 </body>
 </html>
